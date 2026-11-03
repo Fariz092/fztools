@@ -17,6 +17,7 @@ import {
   Zap,
   ShieldCheck,
   Layers,
+  Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
@@ -80,8 +81,8 @@ export default function HomePage() {
     >
       {activeTab === 'all' && !searchQuery && (
         <div className="relative mb-8">
-          <div 
-            aria-hidden="true" 
+          <div
+            aria-hidden="true"
             className="absolute -top-24 sm:-top-32 left-1/2 w-screen h-[calc(100%+6rem)] sm:h-[calc(100%+8rem)] overflow-hidden pointer-events-none z-0"
             style={{
               transform: 'translate3d(-50%, 0, 0)',
@@ -100,9 +101,9 @@ export default function HomePage() {
                 opacity: 1,
               }}
             >
-              <source 
-                src="/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4" 
-                type="video/mp4" 
+              <source
+                src="/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4"
+                type="video/mp4"
               />
             </video>
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-zinc-50 dark:to-zinc-950 pointer-events-none" />
@@ -137,7 +138,7 @@ export default function HomePage() {
                   </AnimatePresence>
                 </span>
               </h1>
-              
+
               <div className="min-h-[4rem] sm:min-h-[3.5rem] flex items-center justify-center max-w-2xl mx-auto mb-10">
                 <AnimatePresence mode="wait">
                   <motion.p
@@ -163,7 +164,7 @@ export default function HomePage() {
                     transition={{ delay: 0.2 + idx * 0.04 }}
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-5 py-2.5 bg-black/45 hover:bg-black/65 text-white border border-white/25 hover:border-white/50 backdrop-blur-md rounded-xl text-xs font-semibold transition-all shadow-md cursor-pointer"
+                    className="glass-btn-purple px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-md cursor-pointer border border-white/20"
                   >
                     {t.name}
                   </motion.button>
@@ -171,13 +172,26 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pb-4 border-b border-white/20 dark:border-white/10 mb-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-white/20 dark:border-white/10 mb-8">
               <h2 className="text-[10px] font-extrabold uppercase tracking-[0.3em] text-white drop-shadow-md">
                 Direktori Alat
               </h2>
-              <div className="flex items-center gap-2 text-[10px] font-bold text-white drop-shadow-md">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                {filteredTools.length} MODUL AKTIF
+              
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <div className="glass-input rounded-full flex items-center px-4 py-2 flex-1 sm:w-64">
+                  <Search className="w-4 h-4 text-zinc-500 mr-2 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Cari alat..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-transparent border-none outline-none flex-1 text-xs text-zinc-800 dark:text-white placeholder-zinc-500"
+                  />
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-bold text-white drop-shadow-md shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  {filteredTools.length} MODUL AKTIF
+                </div>
               </div>
             </div>
           </div>
@@ -185,7 +199,7 @@ export default function HomePage() {
       )}
 
       {searchQuery && (
-        <div className="mb-6 p-4 bg-zinc-100/80 dark:bg-zinc-900/80 backdrop-blur-md border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl text-xs font-semibold flex items-center justify-between">
+        <div className="mb-6 p-4 modern-glass-card rounded-2xl text-xs font-semibold flex items-center justify-between">
           <span className="text-zinc-600 dark:text-zinc-400">
             Menampilkan {filteredTools.length} hasil untuk pencarian &quot;{searchQuery}&quot;
           </span>
@@ -205,11 +219,11 @@ export default function HomePage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ 
-              type: 'spring', 
-              stiffness: 300, 
+            transition={{
+              type: 'spring',
+              stiffness: 300,
               damping: 30,
-              duration: 0.3 
+              duration: 0.3
             }}
             className="w-full"
           >
@@ -218,7 +232,7 @@ export default function HomePage() {
                 onClick={() => setActiveTab('all')}
                 whileHover={{ x: -4 }}
                 whileTap={{ scale: 0.98 }}
-                className="mb-8 flex items-center gap-2.5 px-4 py-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white transition-all cursor-pointer font-semibold text-[11px] uppercase tracking-wider group shadow-sm"
+                className="mb-8 flex items-center gap-2.5 px-4 py-2 glass-circle rounded-xl text-zinc-900 dark:text-white transition-all cursor-pointer font-semibold text-[11px] uppercase tracking-wider group"
               >
                 <ArrowRight className="w-3.5 h-3.5 rotate-180 group-hover:-translate-x-1 transition-transform" />
                 <span>Kembali ke Beranda</span>
@@ -234,18 +248,18 @@ export default function HomePage() {
                       onClick={() => setActiveTab(t.id)}
                       whileHover={{ y: -5 }}
                       whileTap={{ scale: 0.98 }}
-                      className="text-left bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:shadow-zinc-200/40 dark:hover:shadow-black/40 hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all cursor-pointer group flex flex-col justify-between h-full"
+                      className="modern-glass-card text-left rounded-2xl p-6 group flex flex-col justify-between h-full cursor-pointer"
                     >
                       <div>
                         <div className="flex items-center justify-between mb-5">
-                          <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shadow-xs text-zinc-700 dark:text-zinc-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/40 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center text-zinc-700 dark:text-zinc-200 group-hover:scale-110 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all">
                             <Zap className="w-4 h-4" />
                           </div>
                           <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {t.id}
                           </span>
                         </div>
-                        
+
                         <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-2 leading-tight">
                           {t.name}
                         </h3>
@@ -290,7 +304,7 @@ export default function HomePage() {
       <section className="mt-20 py-12 border-t border-zinc-200/60 dark:border-zinc-800/60">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           <div className="space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center">
               <Zap className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-900 dark:text-white">
@@ -301,7 +315,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-900 dark:text-white">
@@ -312,7 +326,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center">
               <Layers className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
             </div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-900 dark:text-white">

@@ -102,7 +102,7 @@ export default function Navbar({
   return (
     <>
       <header className="sticky top-3 sm:top-5 z-50 px-3 sm:px-6 w-full flex justify-center pointer-events-none">
-        <div className="pointer-events-auto rounded-full py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6 shadow-2xl shadow-black/25 transition-all max-w-2xl w-full backdrop-blur-2xl bg-white/75 dark:bg-zinc-950/75 border border-white/40 dark:border-white/15">
+        <div className="pointer-events-auto liquid-glass-pill rounded-full py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6 transition-all max-w-2xl w-full">
           <Link
             href="/"
             className="flex items-center gap-2.5 group cursor-pointer select-none"
@@ -122,7 +122,7 @@ export default function Navbar({
             </span>
           </Link>
 
-          <div className="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100/60 dark:bg-zinc-900/60 text-[10px] font-bold text-zinc-600 dark:text-zinc-300 border border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-xs">
+          <div className="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full glass-circle text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
             <span className="tracking-widest uppercase">{getCurrentSectionTitle()}</span>
           </div>
@@ -175,7 +175,7 @@ export default function Navbar({
               onClick={() => setIsSidebarOpen(true)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full bg-white/80 dark:bg-zinc-900/80 text-zinc-900 dark:text-white border border-zinc-200/60 dark:border-zinc-800/60 shadow-xs transition-all cursor-pointer hover:border-indigo-500/50"
+              className="p-2 rounded-full glass-circle text-zinc-900 dark:text-white transition-all cursor-pointer"
               aria-label="Buka Menu"
             >
               <Menu className="w-4 h-4" strokeWidth={2} />
@@ -200,12 +200,12 @@ export default function Navbar({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-              className="relative z-10 w-full max-w-xs sm:max-w-sm bg-white/80 dark:bg-zinc-950/85 backdrop-blur-2xl border-l border-white/20 dark:border-white/10 h-full shadow-2xl flex flex-col overflow-hidden will-change-transform transform-gpu"
+              className="relative z-10 w-full max-w-xs sm:max-w-sm bg-white/80 dark:bg-zinc-950/85 backdrop-blur-3xl border-l border-white/20 dark:border-white/10 h-full shadow-[-20px_0_60px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden will-change-transform transform-gpu"
             >
               <div className="p-5 flex items-center justify-between border-b border-zinc-200/40 dark:border-zinc-800/40">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-800/60">
-                    <Layers className="w-4 h-4 text-zinc-900 dark:text-white" />
+                  <div className="w-8 h-8 rounded-full glass-circle flex items-center justify-center text-zinc-900 dark:text-white">
+                    <Layers className="w-4 h-4" />
                   </div>
                   <span className="font-bold text-xs uppercase text-zinc-900 dark:text-white tracking-widest">
                     Menu Aplikasi
@@ -213,7 +213,7 @@ export default function Navbar({
                 </div>
                 <button
                   onClick={() => setIsSidebarOpen(false)}
-                  className="w-8 h-8 bg-zinc-100/80 dark:bg-zinc-900/80 text-zinc-400 border border-zinc-200/60 dark:border-zinc-800/60 rounded-full flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-500 transition-all cursor-pointer"
+                  className="w-8 h-8 glass-circle text-zinc-400 rounded-full flex items-center justify-center hover:text-rose-500 transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -222,7 +222,7 @@ export default function Navbar({
               <div className="flex-1 overflow-y-auto p-4 space-y-5">
                 <div className="space-y-3">
                   {userSession ? (
-                    <div className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 shadow-xs">
+                    <div className="p-4 rounded-2xl modern-glass-card shadow-xs">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div className="relative w-11 h-11 rounded-full p-[2.5px] flex items-center justify-center overflow-hidden shrink-0 shadow-md">
@@ -246,13 +246,12 @@ export default function Navbar({
                         </div>
                         <button
                           onClick={handleLogout}
-                          className="p-2 bg-white/80 dark:bg-zinc-800/80 text-rose-500 border border-zinc-200/60 dark:border-zinc-700/60 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer shadow-xs"
+                          className="p-2 glass-circle text-rose-500 rounded-xl hover:scale-105 transition-all cursor-pointer shadow-xs"
                           title="Keluar Akun"
                         >
                           <LogOut className="w-4 h-4" />
                         </button>
                       </div>
-
                       <Link
                         href="/akun"
                         onClick={() => setIsSidebarOpen(false)}
@@ -262,7 +261,7 @@ export default function Navbar({
                       </Link>
                     </div>
                   ) : (
-                    <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 backdrop-blur-md border border-indigo-200/50 dark:border-indigo-900/40">
+                    <div className="p-4 rounded-2xl modern-glass-card">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="relative w-10 h-10 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0 shadow-md">
                           <motion.div
@@ -275,10 +274,10 @@ export default function Navbar({
                           </div>
                         </div>
                         <div>
-                          <p className="font-bold text-[11px] text-indigo-950 dark:text-indigo-300 uppercase tracking-wider">
+                          <p className="font-bold text-[11px] text-zinc-900 dark:text-white uppercase tracking-wider">
                             Akun Kreator
                           </p>
-                          <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">
+                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
                             Daftar instan untuk menyimpan sesi
                           </p>
                         </div>
@@ -286,7 +285,7 @@ export default function Navbar({
                       <Link
                         href="/daftar"
                         onClick={() => setIsSidebarOpen(false)}
-                        className="w-full flex items-center justify-center py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/20"
+                        className="w-full flex items-center justify-center py-2.5 glass-btn-purple rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-md"
                       >
                         Mulai Sekarang
                       </Link>
@@ -296,13 +295,13 @@ export default function Navbar({
 
                 <div className="space-y-1">
                   <p className="px-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-2">Navigasi Utama</p>
-                  
+
                   <Link
                     href="/"
                     onClick={() => setIsSidebarOpen(false)}
                     className={`flex items-center justify-between p-3 rounded-xl transition-all group ${
-                      pathname === '/' 
-                        ? 'bg-zinc-100/90 dark:bg-zinc-900/90 text-zinc-900 dark:text-white font-semibold' 
+                      pathname === '/'
+                        ? 'glass-circle text-zinc-900 dark:text-white font-semibold'
                         : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'
                     }`}
                   >
@@ -342,12 +341,12 @@ export default function Navbar({
                                 setIsSidebarOpen(false);
                               }}
                               className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
-                                pathname === t.path 
-                                  ? 'bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-semibold' 
+                                pathname === t.path
+                                  ? 'glass-btn-purple text-white font-semibold shadow-md'
                                   : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                               }`}
                             >
-                              <div className={`w-1.5 h-1.5 rounded-full ${pathname === t.path ? 'bg-indigo-500' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
+                              <div className={`w-1.5 h-1.5 rounded-full ${pathname === t.path ? 'bg-white' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
                               <span className="text-[11px] font-bold uppercase tracking-tight">{t.name}</span>
                             </Link>
                           ))}
@@ -360,8 +359,8 @@ export default function Navbar({
                     href="/akun"
                     onClick={() => setIsSidebarOpen(false)}
                     className={`flex items-center justify-between p-3 rounded-xl transition-all group ${
-                      pathname === '/akun' 
-                        ? 'bg-zinc-100/90 dark:bg-zinc-900/90 text-zinc-900 dark:text-white font-semibold' 
+                      pathname === '/akun'
+                        ? 'glass-circle text-zinc-900 dark:text-white font-semibold'
                         : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'
                     }`}
                   >
@@ -373,7 +372,7 @@ export default function Navbar({
 
                   <div className="pt-4 pb-2">
                     <p className="px-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-2">Informasi</p>
-                    
+
                     <Link
                       href="/tentang"
                       onClick={() => setIsSidebarOpen(false)}
@@ -408,19 +407,19 @@ export default function Navbar({
                         setIsSidebarOpen(false);
                         openHistory();
                       }}
-                      className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/40 transition-all group cursor-pointer mt-3 border border-emerald-200/40 dark:border-emerald-900/30"
+                      className="w-full flex items-center justify-between p-3 rounded-xl glass-btn-teal transition-all group cursor-pointer mt-3"
                     >
                       <div className="flex items-center gap-3">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-tight">Riwayat Log</span>
+                        <Clock className="w-4 h-4 text-white" />
+                        <span className="text-xs font-bold uppercase tracking-tight text-white">Riwayat Log</span>
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      <ChevronRight className="w-3.5 h-3.5 text-white group-hover:translate-x-0.5 transition-transform" />
                     </button>
                   )}
                 </div>
               </div>
 
-              <div className="p-6 border-t border-zinc-200/40 dark:border-zinc-800/40 bg-zinc-50/40 dark:bg-zinc-900/40 backdrop-blur-xs flex flex-col items-center text-center gap-3">
+              <div className="p-6 border-t border-zinc-200/40 dark:border-zinc-800/40 bg-white/20 dark:bg-zinc-900/20 backdrop-blur-xs flex flex-col items-center text-center gap-3">
                 <div className="relative w-12 h-12 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-md overflow-hidden bg-white">
                   <Image
                     src="/assets/aistudio/Alice_ac18f5a2.jpeg"
