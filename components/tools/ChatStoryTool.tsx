@@ -48,6 +48,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Jangan bangun. Aku lagi di samping kamu.", time: '22.23' },
   { sender: 'me', type: 'voice', content: "VN: Babe, serius deh...", time: '22.24', duration: '0:09', audioSrc: '/vn-cowo.mp3' },
   { sender: 'them', type: 'voice', content: "VN: Ssstt... jangan berisik sayang...", time: '22.25', duration: '0:10', audioSrc: '/vn-cewe2.mp3' },
+  { sender: 'me', type: 'voice', content: "VN: (Napas terengah, suara pintu dibanting)", time: '22.26', duration: '0:05', audioSrc: '/voice-cowo2.mp3' },
 ];
 
 const KEYBOARD_ROWS = [
@@ -202,7 +203,7 @@ export default function ChatStoryTool() {
               const prevInterval = setInterval(() => { if (audioPreview.duration) setPreviewProgress((audioPreview.currentTime / audioPreview.duration) * 100); }, 100);
               audioPreview.onended = () => { clearInterval(prevInterval); setPreviewPlaying(false); setPreviewProgress(0); };
             }).catch(() => setTimeout(() => setPreviewPlaying(false), 3000));
-            await new Promise(r => setTimeout(r, 9500)); 
+            await new Promise(r => setTimeout(r, 6000)); 
             if (cancelRef.current) return;
             setPreviewVn(null);
             setDisplayedMessages(prev => [...prev, previewMsg]);
@@ -270,14 +271,14 @@ export default function ChatStoryTool() {
             <ChevronLeft className="w-7 h-7 text-[#007AFF] -ml-1" strokeWidth={2.5} />
             <span className="text-[#007AFF] text-[17px] font-normal mr-2">{unreadCount}</span>
             
-            {/* FOTO PROFIL ESTETIK URL EKSTERNAL */}
             <div className="w-[38px] h-[38px] bg-[#D1D1D6] rounded-full overflow-hidden flex items-center justify-center">
                <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
             </div>
             
             <div className="flex flex-col ml-2">
               <div className="flex items-center gap-1">
-                <span className="text-[16px] font-semibold text-black leading-tight">mas rafli ❤️</span>
+                {/* UBAH NAMA KONTAK DISINI */}
+                <span className="text-[16px] font-semibold text-black leading-tight">MyPrincess💖</span>
               </div>
               <span className="text-[12px] text-[#8E8E93] leading-tight">
                 {typingSender === 'them' ? 'sedang mengetik...' : 'online'}
@@ -357,7 +358,7 @@ export default function ChatStoryTool() {
             <div className="flex-1 flex items-center gap-2 px-2 h-[36px]">
               <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
               <span className="text-red-500 font-mono text-sm">{formatTime(recordTime)}</span>
-              <span className="text-zinc-400 text-sm ml-2">Sedang merekam...</span>
+              <span className="text-zinc-400 text-sm ml-2">Merekam Audio...</span>
             </div>
           ) : previewVn ? (
             <div className="flex-1 flex items-center gap-2 bg-white rounded-[18px] px-2 py-1.5 border border-[#D1D1D6] min-h-[36px]">
@@ -378,8 +379,12 @@ export default function ChatStoryTool() {
               <div className="w-9 h-9 flex items-center justify-center shrink-0 mb-0.5">
                 <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
               </div>
-              <div className="flex-1 bg-white rounded-[18px] flex items-end px-2 py-1.5 border border-[#D1D1D6] min-h-[36px]">
-                <textarea ref={textareaRef} value={inputText} readOnly rows={1} placeholder="" className="flex-1 bg-transparent outline-none text-[15px] text-black placeholder-zinc-400 resize-none max-h-[80px] overflow-y-auto leading-tight" />
+              <div className="flex-1 bg-white rounded-[18px] flex items-end px-2 py-1.5 border border-[#D1D1D6] min-h-[36px] relative">
+                {/* PLACEHOLDER ANIMASI */}
+                {inputText === '' && (
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[15px] text-zinc-400 pointer-events-none">Ketikkan sesuatu...</span>
+                )}
+                <textarea ref={textareaRef} value={inputText} readOnly rows={1} className="flex-1 bg-transparent outline-none text-[15px] text-black placeholder-zinc-400 resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" />
                 <div className="flex items-center gap-3 text-[#007AFF] pl-2 shrink-0 pb-0.5">
                   <FileText className="w-[22px] h-[22px]" strokeWidth={1.5} />
                   <Camera className="w-[22px] h-[22px]" strokeWidth={1.5} />
@@ -389,6 +394,9 @@ export default function ChatStoryTool() {
             </>
           )}
         </div>
+
+        {/* GARIS ANIMASI GLOWING */}
+        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-pulse shrink-0" />
         
         {/* KEYBOARD */}
         <div className="bg-[#D1D5DB] h-[250px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
