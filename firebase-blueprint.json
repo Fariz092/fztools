@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID", "maxLength": 128 },
+        "email": { "type": "string", "description": "User email address", "maxLength": 256 },
+        "displayName": { "type": "string", "description": "User display name", "maxLength": 100 },
+        "photoURL": { "type": "string", "description": "User profile photo URL", "maxLength": 512 },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Account update timestamp" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "ConversionHistory": {
+      "title": "ConversionHistory",
+      "description": "History item for conversions and generated tools",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique history item ID", "maxLength": 128 },
+        "userId": { "type": "string", "description": "Owner user UID", "maxLength": 128 },
+        "toolType": { "type": "string", "description": "Type of tool used", "maxLength": 64 },
+        "title": { "type": "string", "description": "Short title or input summary", "maxLength": 256 },
+        "details": { "type": "string", "description": "Extra details or metadata", "maxLength": 4096 },
+        "previewUrl": { "type": "string", "description": "Data URL or preview snippet", "maxLength": 204800 },
+        "fileFormat": { "type": "string", "description": "Result format (png, gif, etc.)", "maxLength": 32 },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["id", "userId", "toolType", "title", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User private profile document"
+    },
+    "/users/{userId}/history/{historyId}": {
+      "schema": "ConversionHistory",
+      "description": "User private conversion and generation history records"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "FZTOOLS - Minimalist Creative & Utility Suite",
+  "description": "A modern, minimalist, and aesthetic utility suite for creative tools: file conversion, social media generators, QR codes, and AI-powered meme creation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
