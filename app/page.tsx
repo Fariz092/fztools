@@ -25,8 +25,7 @@ import {
   MessageCircle,
   Laugh,
   Flame,
-  Video,
-  Search
+  Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
@@ -75,7 +74,7 @@ export default function HomePage() {
       fakett: <MessageCircle className="w-5 h-5" />,
       meme: <Laugh className="w-5 h-5" />,
       sarcasm: <Flame className="w-5 h-5" />,
-      tiktok: <Video className="w-5 h-5" />,
+      tiktok: <Video className="w-5 h-5" />
     };
     return icons[id] || <Zap className="w-5 h-5" />;
   };
@@ -107,72 +106,38 @@ export default function HomePage() {
               <p className="text-base sm:text-xl text-white/95 leading-relaxed font-medium drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">
                 {ROTATING_SUBTITLES[subtitleIndex]}
               </p>
-              
-              {/* CTA Button - Liquid Glass Style */}
-              <div className="mt-10 flex justify-center gap-4">
-                <button 
-                  onClick={() => document.getElementById('tools-grid')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="glass-btn-purple px-8 py-3.5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform"
-                >
-                  Mulai Jelajahi <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      <section className="relative min-h-[400px]" id="tools-grid">
+      <section className="relative min-h-[400px]">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          
-          {/* Search Bar - Liquid Glass Style */}
-          {activeTab === 'all' && (
-            <div className="mb-10 flex justify-center px-4">
-              <div className="glass-input rounded-full flex items-center px-5 py-3 w-full max-w-lg shadow-xl">
-                <Search className="w-5 h-5 text-zinc-500 mr-3" />
-                <input
-                  type="text"
-                  placeholder="Cari alat yang Anda butuhkan..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none flex-1 text-sm text-zinc-800 dark:text-white placeholder-zinc-500"
-                />
-              </div>
-            </div>
-          )}
-
           {activeTab === 'all' && !searchQuery && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTools.map((t) => (
                 <motion.button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="modern-glass-card rounded-3xl p-7 text-left flex flex-col justify-between h-full cursor-pointer group"
+                  whileHover={{ y: -5 }}
+                  className="modern-glass-card rounded-3xl p-8 text-left flex flex-col justify-between h-full cursor-pointer group"
                 >
-                  <div className="w-12 h-12 rounded-2xl glass-circle flex items-center justify-center mb-6 text-zinc-700 dark:text-zinc-200 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-6 text-zinc-700 dark:text-zinc-300 group-hover:text-indigo-600 transition-colors">
                     {getToolIcon(t.id)}
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">{t.name}</h3>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6 line-clamp-2">Suite untuk {t.name.toLowerCase()} dengan pemrosesan instan.</p>
-                  </div>
-                  <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-white glass-btn-purple px-5 py-2.5 rounded-full w-fit shadow-md group-hover:shadow-lg transition-all">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">{t.name}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6 line-clamp-2">Suite untuk {t.name.toLowerCase()} dengan pemrosesan instan.</p>
+                  <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-indigo-600">
                     Buka Alat <ArrowRight className="w-3.5 h-3.5 ml-2" />
                   </div>
                 </motion.button>
               ))}
             </div>
           )}
-
           {activeTab !== 'all' && (
             <>
-              <button 
-                onClick={() => setActiveTab('all')} 
-                className="mb-8 px-5 py-2.5 glass-circle rounded-full font-bold text-xs cursor-pointer hover:scale-105 transition-transform flex items-center gap-2 text-zinc-800 dark:text-white"
-              >
-                <ArrowRightLeft className="w-4 h-4 rotate-180" /> Kembali
+              <button onClick={() => setActiveTab('all')} className="mb-8 px-4 py-2 bg-white/80 dark:bg-zinc-900/80 rounded-xl font-bold text-xs shadow-sm cursor-pointer">
+                ← Kembali
               </button>
               {activeTab === 'converter' && <FileConverterTool />}
               {activeTab === 'brat' && <BratTool />}
