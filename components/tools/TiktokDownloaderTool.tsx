@@ -9,13 +9,14 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Loader2, 
-  ChevronRight,
-  Heart,
-  MessageCircle,
-  Share2,
-  Copy,
-  Check,
-  Images
+  ChevronRight, 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Copy, 
+  Check, 
+  Images,
+  Video
 } from 'lucide-react';
 import { brutalistToast } from '@/lib/popup-service';
 import { saveHistoryItem } from '@/lib/history-service';
@@ -84,7 +85,7 @@ export default function TiktokDownloaderTool() {
       }
 
       setResult(data);
-      brutalistToast('Media TikTok berhasil ditemukan!', 'success');
+      brutalistToast('Media TikTok siap diputar & diunduh!', 'success');
 
       try {
         await saveHistoryItem({
@@ -95,7 +96,7 @@ export default function TiktokDownloaderTool() {
           fileFormat: data.images && data.images.length > 0 ? 'jpg' : 'mp4',
         });
       } catch (histErr) {
-        console.warn('Gagal menyimpan riwayat:', histErr);
+        console.warn('Gagal mencatat riwayat:', histErr);
       }
     } catch (err: any) {
       console.error('Download error:', err);
@@ -107,22 +108,24 @@ export default function TiktokDownloaderTool() {
     }
   };
 
+  // Mengunduh langsung ke storage HP secara otomatis tanpa preview
   const handleDownloadFile = (downloadUrl: string, filename: string) => {
     if (!downloadUrl) {
       brutalistToast('Tautan berkas tidak tersedia.', 'error');
       return;
     }
 
+    brutalistToast('Mengunduh berkas langsung ke perangkat...', 'info');
+
+    const safeName = filename.replace(/[^a-zA-Z0-9_.-]/g, '_');
+    const directDownloadEndpoint = `/api/tiktok/download?url=${encodeURIComponent(downloadUrl)}&filename=${encodeURIComponent(safeName)}`;
+
     const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.download = filename;
+    a.href = directDownloadEndpoint;
+    a.download = safeName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-
-    brutalistToast('Mengunduh berkas...', 'info');
   };
 
   const handleCopy = (text: string) => {
@@ -142,11 +145,11 @@ export default function TiktokDownloaderTool() {
               Pengunduh Video TikTok
             </h2>
             <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-md">
-              Aktif & Cepat
+              Unduhan Otomatis
             </span>
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
-            Unduh video tanpa tanda air (watermark), slide foto HD, atau file musik MP3 secara instan.
+            Unduh video tanpa watermark langsung tersimpan ke perangkat tanpa masuk ke pemutar tab baru.
           </p>
         </div>
       </div>
@@ -163,7 +166,7 @@ export default function TiktokDownloaderTool() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchTiktokData()}
-            className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400 shadow-sm font-medium"
+            className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400 shadow-sm font-medium text-zinc-900 dark:text-white"
           />
           <motion.button
             onClick={fetchTiktokData}
@@ -181,7 +184,7 @@ export default function TiktokDownloaderTool() {
               </>
             ) : (
               <>
-                Unduh Media
+                Ambil Media
                 <ChevronRight className="w-4 h-4" />
               </>
             )}
@@ -197,54 +200,76 @@ export default function TiktokDownloaderTool() {
             exit={{ opacity: 0, y: -15 }}
             className="grid grid-cols-1 md:grid-cols-12 gap-8"
           >
+            {/* Box Pratinjau Video/Foto yang bisa diputar langsung */}
             <div className="md:col-span-5 lg:col-span-4">
-              <div className="bg-zinc-950 rounded-2xl shadow-xl overflow-hidden group border border-zinc-800">
-                <div className="aspect-[9/16] relative bg-black">
-                  <img
-                    src={result.thumbnail}
-                    alt="Pratinjau Video"
-                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                  />
-                  <div className="absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-black/95 via-black/40 to-transparent">
-                    <div className="flex items-center gap-3 mb-3">
-                      {result.author.avatar && (
-                        <div className="w-9 h-9 rounded-xl border border-white/20 overflow-hidden bg-white/10 backdrop-blur-md shrink-0">
-                          <img src={result.author.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <div className="text-white min-w-0">
-                        <p className="font-bold text-xs truncate">@{result.author.nickname}</p>
-                        <p className="text-[10px] text-zinc-400 font-medium tracking-wide">Kreator TikTok</p>
-                      </div>
+              <div className="bg-zinc-950 rounded-2xl shadow-xl overflow-hidden border border-zinc-800 flex flex-col">
+                <div className="aspect-[9/16] relative bg-black flex items-center justify-center overflow-hidden">
+                  {result.images && result.images.length > 0 ? (
+                    <img
+                      src={result.images[0] || result.thumbnail}
+                      alt="Pratinjau Slide Foto"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <video
+                      key={result.video.noWatermark}
+                      src={result.video.hd || result.video.noWatermark}
+                      poster={result.thumbnail}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-contain bg-black"
+                    />
+                  )}
+                </div>
+
+                {/* Info Kreator & Metrik */}
+                <div className="p-4 bg-zinc-900 border-t border-zinc-800 flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    {result.author.avatar && (
+                      <img
+                        src={result.author.avatar}
+                        alt={result.author.nickname}
+                        referrerPolicy="no-referrer"
+                        className="w-9 h-9 rounded-xl border border-white/10 object-cover shrink-0"
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-bold text-xs text-white truncate">@{result.author.nickname}</p>
+                      <p className="text-[10px] text-zinc-400">Kreator TikTok</p>
                     </div>
-                    <div className="flex gap-4 text-white font-bold text-[10px] tracking-wider">
-                      <div className="flex items-center gap-1.5">
-                        <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-                        {result.stats.likeCount}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MessageCircle className="w-3.5 h-3.5 text-sky-400 fill-sky-400" />
-                        {result.stats.commentCount}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Share2 className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
-                        {result.stats.shareCount}
-                      </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-zinc-300 font-bold text-[10px] pt-2 border-t border-zinc-800/60">
+                    <div className="flex items-center gap-1.5">
+                      <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+                      <span>{result.stats.likeCount}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <MessageCircle className="w-3.5 h-3.5 text-sky-400 fill-sky-400" />
+                      <span>{result.stats.commentCount}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Share2 className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+                      <span>{result.stats.shareCount}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* Opsi Unduhan Otomatis */}
             <div className="md:col-span-7 lg:col-span-8 space-y-6">
               <div className="p-6 bg-white/50 dark:bg-zinc-950/40 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 backdrop-blur-md">
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-800/50">
                   <h3 className="font-bold text-xs uppercase tracking-[0.2em] text-zinc-400">
-                    Opsi Unduhan Siap Pakai
+                    Pilihan Unduhan Langsung
                   </h3>
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-md">
                     <CheckCircle2 className="w-3 h-3" />
-                    SUKSES
+                    SIAP SIMPAN
                   </div>
                 </div>
                 
@@ -254,10 +279,10 @@ export default function TiktokDownloaderTool() {
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    {/* Tombol Video Tanpa Watermark */}
+                    {/* Unduh Video HD Tanpa Watermark Otomatis */}
                     {result.video.noWatermark && (
                       <motion.button
-                        onClick={() => handleDownloadFile(result.video.hd || result.video.noWatermark, `tiktok_nowm_${Date.now()}.mp4`)}
+                        onClick={() => handleDownloadFile(result.video.hd || result.video.noWatermark, `tiktok_${result.author.nickname}_nowm.mp4`)}
                         whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.99 }}
                         className="flex flex-col p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl transition-all text-left hover:border-indigo-500 shadow-sm cursor-pointer group"
@@ -267,18 +292,18 @@ export default function TiktokDownloaderTool() {
                             <Download className="w-3.5 h-3.5" />
                           </div>
                           <span className="text-[9px] font-bold tracking-wider text-indigo-600 dark:text-indigo-400">
-                            HD TANPA WATERMARK
+                            OTOMATIS TERSIMPAN
                           </span>
                         </div>
                         <span className="font-bold text-xs text-zinc-900 dark:text-white uppercase tracking-tight">Unduh Video HD</span>
-                        <span className="text-[10px] text-zinc-400 font-medium mt-0.5">MP4 kualitas jernih langsung disimpan</span>
+                        <span className="text-[10px] text-zinc-400 font-medium mt-0.5">MP4 tanpa tanda air langsung masuk ke memori</span>
                       </motion.button>
                     )}
 
-                    {/* Tombol Audio MP3 */}
+                    {/* Unduh Audio MP3 Otomatis */}
                     {result.music.url && (
                       <motion.button
-                        onClick={() => handleDownloadFile(result.music.url, `tiktok_audio_${Date.now()}.mp3`)}
+                        onClick={() => handleDownloadFile(result.music.url, `tiktok_audio_${result.author.nickname}.mp3`)}
                         whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.99 }}
                         className="flex flex-col p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl transition-all text-left hover:border-amber-500 shadow-sm cursor-pointer group"
@@ -291,12 +316,12 @@ export default function TiktokDownloaderTool() {
                             AUDIO MP3
                           </span>
                         </div>
-                        <span className="font-bold text-xs text-zinc-900 dark:text-white uppercase tracking-tight">Unduh Audio</span>
+                        <span className="font-bold text-xs text-zinc-900 dark:text-white uppercase tracking-tight">Unduh Musik</span>
                         <span className="text-[10px] text-zinc-400 font-medium mt-0.5 truncate max-w-full">{result.music.title}</span>
                       </motion.button>
                     )}
 
-                    {/* Tombol Salin Tautan Langsung */}
+                    {/* Salin Link Langsung */}
                     <motion.button
                       onClick={() => handleCopy(result.video.hd || result.video.noWatermark || result.music.url)}
                       whileHover={{ scale: 1.01, y: -2 }}
@@ -308,31 +333,31 @@ export default function TiktokDownloaderTool() {
                           {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                         </div>
                         <span className="text-[9px] font-bold tracking-wider text-zinc-500">
-                          SALIN LINK
+                          LINK STREAM
                         </span>
                       </div>
                       <span className="font-bold text-xs text-zinc-900 dark:text-white uppercase tracking-tight">
-                        {copiedLink ? 'Link Tersalin!' : 'Salin URL Langsung'}
+                        {copiedLink ? 'Link Tersalin!' : 'Salin Tautan Video'}
                       </span>
-                      <span className="text-[10px] text-zinc-400 font-medium mt-0.5">Buka di peramban atau downloader lain</span>
+                      <span className="text-[10px] text-zinc-400 font-medium mt-0.5">Dapat dibagikan ke aplikasi lain</span>
                     </motion.button>
                   </div>
 
-                  {/* Jika Postingan Berupa Kumpulan Slide Foto */}
+                  {/* Kumpulan Slide Foto TikTok */}
                   {result.images && result.images.length > 0 && (
                     <div className="mt-4 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200/50 dark:border-indigo-900/40">
                       <div className="flex items-center gap-2 mb-3">
                         <Images className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                         <span className="font-bold text-xs text-indigo-950 dark:text-indigo-300 uppercase tracking-wider">
-                          Kumpulan Slide Foto ({result.images.length} Gambar)
+                          Kumpulan Slide Foto ({result.images.length} Foto)
                         </span>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {result.images.map((imgUrl, idx) => (
                           <button
                             key={idx}
-                            onClick={() => handleDownloadFile(imgUrl, `tiktok_slide_${idx + 1}_${Date.now()}.jpg`)}
-                            className="p-2 bg-white dark:bg-zinc-900 rounded-lg text-[10px] font-bold border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-1.5 hover:border-indigo-500 transition-all cursor-pointer text-zinc-700 dark:text-zinc-300"
+                            onClick={() => handleDownloadFile(imgUrl, `tiktok_slide_${idx + 1}.jpg`)}
+                            className="p-2.5 bg-white dark:bg-zinc-900 rounded-lg text-[10px] font-bold border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-1.5 hover:border-indigo-500 transition-all cursor-pointer text-zinc-700 dark:text-zinc-300"
                           >
                             <Download className="w-3 h-3 text-indigo-500" /> Foto #{idx + 1}
                           </button>
@@ -344,7 +369,7 @@ export default function TiktokDownloaderTool() {
                   <div className="mt-6 p-4 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 flex items-start gap-3">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                     <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
-                      Unduhan diproses melalui jalur server lokal tanpa watermark. Gunakan berkas sesuai ketentuan hak cipta pembuat konten.
+                      Berkas diunduh langsung melalui streaming server internal tanpa watermark. Gunakan berkas sesuai ketentuan hak cipta pembuat konten.
                     </p>
                   </div>
                 </div>
