@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause } from 'lucide-react';
 
 type Sender = 'me' | 'them';
-type MessageType = 'text' | 'image';
+type MessageType = 'text' | 'image' | 'voice';
 
 interface Message {
   id: number;
@@ -12,9 +12,12 @@ interface Message {
   type: MessageType;
   content: string;
   time: string;
+  duration?: string;
 }
 
+// Part 1 & Part 2 Script: My Princess
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
+  // --- PART 1 (Mistis) ---
   { sender: 'them', type: 'text', content: "Babe, udah tidur?", time: '22.00' },
   { sender: 'me', type: 'text', content: "Belum sayang, kenapa?", time: '22.01' },
   { sender: 'them', type: 'text', content: "Kangen aja hehe. Btw ini pap aku barusan, bagus ga?", time: '22.02' },
@@ -35,6 +38,16 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Aku serius sayang. Aku udah nungguin kamu dari jam 12 malam loh.", time: '22.16' },
   { sender: 'them', type: 'text', content: "Jangan nengok ke belakang ya.", time: '22.16' },
   { sender: 'them', type: 'text', content: "Aku udah di samping kamu.", time: '22.17' },
+  
+  // --- PART 2 (The Slow Burn) ---
+  { sender: 'me', type: 'text', content: "KAMU SERIUS DIMANA? JANGAN BIKIN PANIK", time: '22.18' },
+  { sender: 'them', type: 'voice', content: "VN: Bercanda babe... (ketawa kecil). Kamu takut banget sih? Aku cuma lagi di kamar sebelah kok. Tapi... jujur ya, kamar kamu wangi banget. Parfum apa yang kamu pake?", time: '22.19', duration: '0:15' },
+  { sender: 'me', type: 'text', content: "Parfum Baccarat. Kamu di kamar sebelah mana? Kok kamu tau wangi kamar aku?", time: '22.20' },
+  { sender: 'them', type: 'text', content: "Aku lagi di depan pintu kamar kamu.", time: '22.21' },
+  { sender: 'me', type: 'text', content: "Hah? Aku ga denger suara apa-apa.", time: '22.21' },
+  { sender: 'them', type: 'text', content: "Aku udah masuk kok. Kamu lagi rebahan kan?", time: '22.22' },
+  { sender: 'them', type: 'image', content: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", time: '22.22' },
+  { sender: 'them', type: 'text', content: "Jangan bangun. Aku lagi di samping kamu.", time: '22.23' },
 ];
 
 const KEYBOARD_ROWS = [
@@ -55,12 +68,18 @@ export default function ChatStoryTool() {
   const [unreadCount, setUnreadCount] = useState(10);
   const [isEmojiKeyboard, setIsEmojiKeyboard] = useState(false);
   
+  // State for Voice Note Player
+  const [activeVnId, setActiveVnId] = useState<number | null>(null);
+  const [vnProgress, setVnProgress] = useState(0);
+  const [vnDurationText, setVnDurationText] = useState('0:00');
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const cancelRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- WEB AUDIO API (SFX SINYAL SINTESIS) ---
+  // --- WEB AUDIO API (SFX) ---
   const initAudio = () => {
     if (typeof window === 'undefined') return;
     if (!audioCtxRef.current) {
@@ -81,7 +100,6 @@ export default function ChatStoryTool() {
     gain.connect(ctx.destination);
 
     if (type === 'type') {
-      // Suara ketikan (tik pendek)
       osc.type = 'sine';
       osc.frequency.setValueAtTime(800, ctx.currentTime);
       gain.gain.setValueAtTime(0.08, ctx.currentTime);
@@ -89,7 +107,6 @@ export default function ChatStoryTool() {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.04);
     } else if (type === 'send') {
-      // Suara kirim (swoosh naik)
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(400, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
@@ -98,7 +115,6 @@ export default function ChatStoryTool() {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.1);
     } else if (type === 'receive') {
-      // Suara notif masuk (ting-ting)
       osc.type = 'sine';
       osc.frequency.setValueAtTime(800, ctx.currentTime);
       osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
@@ -106,6 +122,55 @@ export default function ChatStoryTool() {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.2);
+    }
+  };
+
+  // Setup Voice Note Audio Element
+  useEffect(() => {
+    const audio = new Audio('/voice-note.mp3');
+    voiceNoteAudioRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      if (audio.duration) {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        setVnProgress(progress);
+        
+        // Format durasi saat ini (misal 0:05)
+        const mins = Math.floor(audio.currentTime / 60);
+        const secs = Math.floor(audio.currentTime % 60);
+        setVnDurationText(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+      }
+    };
+
+    const handleEnded = () => {
+      setActiveVnId(null);
+      setVnProgress(0);
+      setVnDurationText('0:00');
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
+  const toggleVoiceNote = (msgId: number) => {
+    const audio = voiceNoteAudioRef.current;
+    if (!audio) return;
+
+    if (activeVnId === msgId) {
+      // Pause
+      audio.pause();
+      setActiveVnId(null);
+    } else {
+      // Play
+      audio.currentTime = 0;
+      audio.play().catch(e => console.log('Audio play failed:', e));
+      setActiveVnId(msgId);
     }
   };
 
@@ -127,6 +192,7 @@ export default function ChatStoryTool() {
   useEffect(() => {
     if (!isPlaying) {
       cancelRef.current = true;
+      if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
       return;
     }
     cancelRef.current = false;
@@ -137,6 +203,7 @@ export default function ChatStoryTool() {
       setTypingSender(null);
       setUnreadCount(10);
       setIsEmojiKeyboard(false);
+      setActiveVnId(null);
       await new Promise(r => setTimeout(r, 1000));
 
       for (let i = 0; i < STORY_SCRIPT.length; i++) {
@@ -145,14 +212,14 @@ export default function ChatStoryTool() {
 
         if (msg.sender === 'them') {
           setTypingSender('them');
-          await new Promise(r => setTimeout(r, msg.type === 'image' ? 2500 : 1500)); 
+          await new Promise(r => setTimeout(r, msg.type === 'image' ? 2500 : msg.type === 'voice' ? 2000 : 1500)); 
           if (cancelRef.current) return;
           
           setTypingSender(null);
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
           setUnreadCount(prev => prev + 1);
           playSfx('receive');
-          await new Promise(r => setTimeout(r, 800));
+          await new Promise(r => setTimeout(r, 1000));
         } else {
           setTypingSender('me');
           const text = msg.content;
@@ -177,7 +244,7 @@ export default function ChatStoryTool() {
             }
 
             setInputText(text.slice(0, j));
-            await new Promise(r => setTimeout(r, 80)); 
+            await new Promise(r => setTimeout(r, 70)); 
           }
           
           setIsEmojiKeyboard(false);
@@ -192,7 +259,7 @@ export default function ChatStoryTool() {
           
           if (textareaRef.current) textareaRef.current.style.height = 'auto';
           
-          await new Promise(r => setTimeout(r, 800));
+          await new Promise(r => setTimeout(r, 1000));
         }
       }
       if (!cancelRef.current) setIsPlaying(false);
@@ -214,6 +281,8 @@ export default function ChatStoryTool() {
     setTypingSender(null);
     setUnreadCount(10);
     setIsEmojiKeyboard(false);
+    setActiveVnId(null);
+    if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
@@ -234,7 +303,7 @@ export default function ChatStoryTool() {
       </div>
 
       {/* BINGKAI HP */}
-      <div className="w-full max-w-[380px] h-[80dvh] sm:h-[750px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
+      <div className="w-full max-w-[380px] h-[85dvh] sm:h-[750px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
         
         {/* HEADER */}
         <div className="bg-[#F6F6F6] border-b border-[#D1D1D6] px-2 py-1.5 flex items-center justify-between z-40 shrink-0">
@@ -270,6 +339,8 @@ export default function ChatStoryTool() {
         >
           {displayedMessages.map((msg) => {
             const isMe = msg.sender === 'me';
+            const isVnPlaying = activeVnId === msg.id;
+
             return (
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}>
                 <div className={`relative max-w-[85%] rounded-[16px] shadow-sm flex flex-col ${isMe ? 'bg-[#DCF8C6] rounded-tr-[4px]' : 'bg-white rounded-tl-[4px]'} ${msg.type === 'image' ? 'p-1' : 'px-2.5 py-1'}`}>
@@ -280,14 +351,43 @@ export default function ChatStoryTool() {
                     <div className="absolute top-0 -left-[6px] w-2 h-3"><svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" transform="scale(-1, 1) translate(-8, 0)"></path><path fill="#FFFFFF" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z" transform="scale(-1, 1) translate(-8, 0)"></path></svg></div>
                   )}
 
-                  {msg.type === 'text' ? (
+                  {/* ISI PESAN */}
+                  {msg.type === 'text' && (
                     <span className="text-black text-[14.5px] pr-12 leading-snug">{msg.content}</span>
-                  ) : (
+                  )}
+
+                  {msg.type === 'image' && (
                     <div className="relative rounded-xl overflow-hidden bg-zinc-200">
                       <img src={msg.content} alt="PAP" className="w-full h-auto max-h-[350px] object-cover" />
                     </div>
                   )}
 
+                  {msg.type === 'voice' && (
+                    <div 
+                      onClick={() => toggleVoiceNote(msg.id)}
+                      className="flex items-center gap-2 pr-12 py-1 cursor-pointer min-w-[180px]"
+                    >
+                      <div className="w-8 h-8 bg-[#007AFF]/10 rounded-full flex items-center justify-center shrink-0">
+                        {isVnPlaying ? <Pause className="w-4 h-4 text-[#007AFF]" fill="currentColor" /> : <Play className="w-4 h-4 text-[#007AFF]" fill="currentColor" />}
+                      </div>
+                      
+                      {/* Waveform Visual & Progress */}
+                      <div className="flex items-center gap-0.5 h-6 flex-1 relative overflow-hidden">
+                         {[...Array(15)].map((_, i) => (
+                           <div key={i} className="w-[2px] bg-zinc-400 rounded-full shrink-0" style={{ height: `${Math.random() * 100}%` }}></div>
+                         ))}
+                         {/* Progress bar (menutupi dari kiri ke kanan) */}
+                         <div className="absolute top-0 bottom-0 left-0 bg-[#DCF8C6]/80 mix-blend-overlay pointer-events-none" style={{ width: `${vnProgress}%` }} />
+                      </div>
+
+                      {/* Duration (Realtime / static) */}
+                      <span className="text-[10px] text-[#8E8E93] w-8 shrink-0 mt-2 text-right">
+                        {isVnPlaying ? vnDurationText : msg.duration}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Time & Ticks */}
                   <div className={`absolute bottom-1 right-2 flex items-center gap-1 ${msg.type === 'image' ? 'bg-black/40 px-1.5 py-0.5 rounded-full backdrop-blur-sm' : ''}`}>
                     <span className={`text-[10px] font-medium ${msg.type === 'image' ? 'text-white' : 'text-[#8E8E93]'}`}>{msg.time}</span>
                     {isMe && (
@@ -312,7 +412,7 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT AREA (Auto-Resize) */}
+        {/* INPUT AREA */}
         <div className="bg-[#F6F6F6] border-t border-[#D1D1D6] p-1.5 flex items-end gap-2 z-30 shrink-0">
           <div className="w-9 h-9 flex items-center justify-center shrink-0 mb-0.5">
             <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
