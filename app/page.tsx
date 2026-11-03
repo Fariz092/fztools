@@ -43,8 +43,8 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const getToolIcon = (id: string) => {
-    const icons: Record<string, JSX.Element> = {
+  const getToolIcon = (id: string): React.ReactElement => {
+    const icons: Record<string, React.ReactElement> = {
       converter: <ArrowRightLeft className="w-6 h-6" />,
       brat: <Type className="w-6 h-6" />,
       iqc: <MessageSquareQuote className="w-6 h-6" />,
