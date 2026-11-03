@@ -141,8 +141,16 @@ export default function Navbar({
                       transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                       className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]"
                     />
-                    <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white">
-                      {userSession.initials}
+                    <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
+                      {userSession.avatarUrl ? (
+                        <img
+                          src={userSession.avatarUrl}
+                          alt={userSession.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{userSession.initials}</span>
+                      )}
                     </div>
                   </div>
                   <span className="text-[10px] font-bold max-w-[65px] truncate">
@@ -231,8 +239,16 @@ export default function Navbar({
                               transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                               className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]"
                             />
-                            <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-sm text-white">
-                              {userSession.initials}
+                            <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-sm text-white overflow-hidden">
+                              {userSession.avatarUrl ? (
+                                <img
+                                  src={userSession.avatarUrl}
+                                  alt={userSession.username}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span>{userSession.initials}</span>
+                              )}
                             </div>
                           </div>
                           <div>

@@ -1,29 +1,32 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import {
   User,
-  ShieldCheck,
   Calendar,
   LogOut,
   UserPlus,
-  CheckCircle2,
   ArrowLeft,
-  Key,
+  Camera,
+  Trash2,
+  RefreshCw,
+  Image as ImageIcon
 } from 'lucide-react';
 import {
   UserSession,
   getStoredUserSession,
+  saveUserSession,
   clearUserSession,
   AUTH_CHANGE_EVENT,
 } from '@/lib/auth-session';
 import { brutalistAlert, brutalistConfirm, brutalistToast } from '@/lib/popup-service';
-import { motion } from 'motion/react';
 
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleAuthChange = (e: Event) => {
@@ -56,6 +59,86 @@ export default function AccountPage() {
     });
   };
 
+  // Kompresi dan simpan foto ke sesi pengguna
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !session) return;
+
+    if (!file.type.startsWith('image/')) {
+      brutalistToast('Harap pilih file gambar (JPG, PNG, atau WEBP)!', 'error');
+      return;
+    }
+
+    setIsProcessingPhoto(true);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Buat canvas persegi 256x256 untuk performa maksimal
+        const canvas = document.createElement('canvas');
+        const size = 256;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          setIsProcessingPhoto(false);
+          brutalistToast('Gagal memproses gambar.', 'error');
+          return;
+        }
+
+        // Potong gambar secara proporsional di tengah (Center Crop 1:1)
+        const minDim = Math.min(img.naturalWidth, img.naturalHeight);
+        const sx = (img.naturalWidth - minDim) / 2;
+        const sy = (img.naturalHeight - minDim) / 2;
+
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        const updatedSession: UserSession = {
+          ...session,
+          avatarUrl: compressedDataUrl,
+        };
+
+        saveUserSession(updatedSession);
+        setSession(updatedSession);
+        setIsProcessingPhoto(false);
+        brutalistToast('Foto profil berhasil dipasang!', 'success');
+      };
+
+      img.onerror = () => {
+        setIsProcessingPhoto(false);
+        brutalistToast('Gagal membaca gambar.', 'error');
+      };
+
+      img.src = event.target?.result as string;
+    };
+
+    reader.readAsDataURL(file);
+    // Reset value input file
+    e.target.value = '';
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!session || !session.avatarUrl) return;
+
+    const confirmed = await brutalistConfirm(
+      'HAPUS FOTO PROFIL',
+      'Apakah Anda ingin menghapus foto profil dan kembali menggunakan inisial nama?'
+    );
+
+    if (confirmed) {
+      const updatedSession: UserSession = { ...session };
+      delete updatedSession.avatarUrl;
+
+      saveUserSession(updatedSession);
+      setSession(updatedSession);
+      brutalistToast('Foto profil dihapus, kembali ke inisial.', 'info');
+    }
+  };
+
   return (
     <AppShell>
       <div className="max-w-2xl mx-auto py-4 sm:py-8">
@@ -72,10 +155,43 @@ export default function AccountPage() {
         {session ? (
           <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl shadow-xl shadow-zinc-200/20 dark:shadow-black/20 overflow-hidden">
             <div className="p-6 sm:p-8 border-b border-zinc-200/60 dark:border-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg shadow-indigo-600/20 select-none">
-                  {session.initials}
+              <div className="flex items-center gap-5">
+                {/* Avatar Box dengan Tombol Kamera */}
+                <div className="relative group/avatar shrink-0">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl sm:text-3xl shadow-lg shadow-indigo-600/20 overflow-hidden select-none border border-zinc-200/50 dark:border-zinc-800">
+                    {session.avatarUrl ? (
+                      <img
+                        src={session.avatarUrl}
+                        alt={session.username}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{session.initials}</span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isProcessingPhoto}
+                    className="absolute -bottom-1.5 -right-1.5 p-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl shadow-md border border-white/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    title="Ganti Foto Profil"
+                  >
+                    {isProcessingPhoto ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Camera className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
                 </div>
+
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md uppercase tracking-wider">
@@ -92,12 +208,23 @@ export default function AccountPage() {
                     <Calendar className="w-3.5 h-3.5" />
                     Terdaftar: {session.registeredAt}
                   </p>
+
+                  {session.avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="text-[10px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 mt-2 cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Hapus Foto (Gunakan Inisial)</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
               <button
                 onClick={handleLogout}
-                className="self-start sm:self-center px-4 py-2 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer border border-rose-200/50 dark:border-rose-900/40"
+                className="self-start sm:self-center px-4 py-2 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/50 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer border border-rose-200/50 dark:border-rose-900/40"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Keluar Sesi</span>
@@ -118,20 +245,20 @@ export default function AccountPage() {
                       LocalStorage Peramban
                     </p>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1">
-                      Data akun tersimpan aman di perangkat tanpa pelacakan server.
+                      Foto dan profil tersimpan secara privat di perangkat Anda.
                     </p>
                   </div>
 
                   <div className="p-4 bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl">
                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                      Inisial Navigasi
+                      Status Identitas
                     </span>
                     <p className="font-bold text-sm text-indigo-600 dark:text-indigo-400 mt-0.5 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Aktif ({session.initials})
+                      {session.avatarUrl ? 'Foto Pribadi Aktif' : `Inisial Aktif (${session.initials})`}
                     </p>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1">
-                      Tampil otomatis pada bilah navigasi header dan sidebar.
+                      Identitas ini otomatis ditampilkan pada bilah navigasi atas.
                     </p>
                   </div>
                 </div>
@@ -144,19 +271,19 @@ export default function AccountPage() {
                 <div className="flex flex-wrap gap-2.5">
                   <Link
                     href="/iqc"
-                    className="px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 rounded-xl font-bold text-xs transition-all border border-indigo-200/50 dark:border-indigo-900/50"
+                    className="px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 rounded-xl font-bold text-xs transition-all border border-indigo-200/50 dark:border-indigo-900/50"
                   >
                     Buka IQC WhatsApp
                   </Link>
                   <Link
                     href="/brat"
-                    className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 rounded-xl font-bold text-xs transition-all border border-emerald-200/50 dark:border-emerald-900/50"
+                    className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 rounded-xl font-bold text-xs transition-all border border-emerald-200/50 dark:border-emerald-900/50"
                   >
                     Buka Brat Generator
                   </Link>
                   <button
                     onClick={handleChangePassword}
-                    className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 rounded-xl font-bold text-xs transition-all cursor-pointer"
+                    className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl font-bold text-xs transition-all cursor-pointer"
                   >
                     Keamanan Password
                   </button>
@@ -173,7 +300,7 @@ export default function AccountPage() {
               Belum Ada Sesi Pengguna
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto mb-6 leading-relaxed">
-              Anda sedang menjelajah sebagai tamu. Buat akun gratis untuk menyimpan sesi dan menampilkan inisial personal Anda.
+              Anda sedang menjelajah sebagai tamu. Buat akun gratis untuk menyimpan sesi dan memasang foto profil personal Anda.
             </p>
             <Link
               href="/daftar"
