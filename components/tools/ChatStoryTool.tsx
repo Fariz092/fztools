@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, Send } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, Send, Volume2, VolumeX } from 'lucide-react';
 
 type Sender = 'me' | 'them';
 type MessageType = 'text' | 'image';
@@ -10,7 +10,7 @@ interface Message {
   id: number;
   sender: Sender;
   type: MessageType;
-  content: string; // text or image URL
+  content: string;
   time: string;
 }
 
@@ -50,11 +50,62 @@ export default function ChatStoryTool() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [typingSender, setTypingSender] = useState<Sender | null>(null);
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
-  // Scroll HANYA di dalam container chat, bukan window
+  // --- WEB AUDIO API UNTUK SFX ---
+  const initAudio = () => {
+    if (typeof window === 'undefined') return;
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+  };
+
+  const playSfx = (type: 'type' | 'send' | 'receive') => {
+    if (isMuted || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'type') {
+      // Suara ketikan (klik pendek)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.05);
+    } else if (type === 'send') {
+      // Suara kirim pesan (swoosh naik)
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.1);
+    } else if (type === 'receive') {
+      // Suara notifikasi WA (ting-ting)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.2);
+    }
+  };
+
+  // Scroll internal
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -80,16 +131,15 @@ export default function ChatStoryTool() {
         const msg = STORY_SCRIPT[i];
 
         if (msg.sender === 'them') {
-          // Lawan bicara mengetik
           setTypingSender('them');
           await new Promise(r => setTimeout(r, msg.type === 'image' ? 2500 : 1800)); 
           if (cancelRef.current) return;
           
           setTypingSender(null);
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
+          playSfx('receive'); // Suara notif masuk
           await new Promise(r => setTimeout(r, 1000));
         } else {
-          // Kita (sender) mengetik otomatis di keyboard
           setTypingSender('me');
           const text = msg.content;
           for (let j = 0; j <= text.length; j++) {
@@ -98,12 +148,13 @@ export default function ChatStoryTool() {
             const char = text[j - 1];
             if (char && char !== ' ') {
               setActiveKey(char.toLowerCase());
+              playSfx('type'); // Suara ketikan
             } else {
               setActiveKey(null);
             }
 
             setInputText(text.slice(0, j));
-            await new Promise(r => setTimeout(r, 80)); // Kecepatan ngetik
+            await new Promise(r => setTimeout(r, 80)); 
           }
           
           setActiveKey(null);
@@ -112,6 +163,7 @@ export default function ChatStoryTool() {
           
           setTypingSender(null);
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
+          playSfx('send'); // Suara terkirim
           setInputText('');
           await new Promise(r => setTimeout(r, 1000));
         }
@@ -121,14 +173,18 @@ export default function ChatStoryTool() {
       }
     };
 
-    runSequence();
+    runScript();
 
     return () => {
       cancelRef.current = true;
     };
   }, [isPlaying]);
 
-  const handlePlay = () => setIsPlaying(true);
+  const handlePlay = () => {
+    initAudio();
+    setIsPlaying(true);
+  };
+  
   const handleReset = () => {
     setIsPlaying(false);
     setDisplayedMessages([]);
@@ -139,12 +195,15 @@ export default function ChatStoryTool() {
   return (
     <div className="max-w-md mx-auto w-full">
       {/* Kontrol Atas */}
-      <div className="flex justify-center gap-3 mb-4">
+      <div className="flex flex-wrap justify-center gap-3 mb-4">
         <button onClick={handlePlay} disabled={isPlaying} className="glass-btn-purple px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50">
           <Play className="w-3.5 h-3.5" /> {isPlaying ? 'Sedang Berjalan...' : 'Putar Cerita'}
         </button>
         <button onClick={handleReset} className="glass-circle px-4 py-2 rounded-full text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
           <RotateCcw className="w-3.5 h-3.5" /> Ulangi
+        </button>
+        <button onClick={() => setIsMuted(!isMuted)} className="glass-circle px-3 py-2 rounded-full text-zinc-900 dark:text-white flex items-center justify-center">
+          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
       </div>
 
@@ -158,7 +217,6 @@ export default function ChatStoryTool() {
             <span className="text-[#007AFF] text-sm font-medium mr-1">10</span>
             
             <div className="w-9 h-9 bg-zinc-300 rounded-full overflow-hidden ml-1">
-              {/* Foto Profil Princess */}
               <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
             </div>
             
@@ -188,14 +246,12 @@ export default function ChatStoryTool() {
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 <div className={`relative max-w-[80%] rounded-lg shadow-sm flex flex-col ${isMe ? 'bg-[#DCF8C6] rounded-tr-none' : 'bg-white rounded-tl-none'} ${msg.type === 'image' ? 'p-1' : 'px-2.5 py-1.5'}`}>
                   
-                  {/* Tail Chat */}
                   {isMe ? (
                     <div className="absolute top-0 -right-2 w-2 h-3"><svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z"></path><path fill="#DCF8C6" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z"></path></svg></div>
                   ) : (
                     <div className="absolute top-0 -left-2 w-2 h-3"><svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" transform="scale(-1, 1) translate(-8, 0)"></path><path fill="#FFFFFF" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z" transform="scale(-1, 1) translate(-8, 0)"></path></svg></div>
                   )}
 
-                  {/* Isi Pesan */}
                   {msg.type === 'text' ? (
                     <span className="text-zinc-900 text-[14px] pr-12">{msg.content}</span>
                   ) : (
@@ -204,7 +260,6 @@ export default function ChatStoryTool() {
                     </div>
                   )}
 
-                  {/* Time & Read Receipt */}
                   <div className={`absolute bottom-1 right-1.5 flex items-center gap-1 ${msg.type === 'image' ? 'bg-black/40 px-1.5 py-0.5 rounded-full backdrop-blur-sm' : ''}`}>
                     <span className={`text-[10px] font-medium ${msg.type === 'image' ? 'text-white' : 'text-zinc-400'}`}>{msg.time}</span>
                     {isMe && (
@@ -218,7 +273,6 @@ export default function ChatStoryTool() {
             );
           })}
 
-          {/* Typing Indicator (Titik-titik) */}
           {typingSender === 'them' && (
             <div className="flex justify-start animate-in fade-in">
               <div className="bg-white rounded-lg rounded-tl-none px-3 py-3 shadow-sm flex items-center gap-1">
@@ -254,7 +308,7 @@ export default function ChatStoryTool() {
           </div>
         </div>
         
-        {/* KEYBOARD iPHONE (Selalu Tampil) */}
+        {/* KEYBOARD iPHONE */}
         <div className="bg-[#D1D5DB] h-[230px] px-1 pt-2 pb-6 flex flex-col justify-between shrink-0">
            {KEYBOARD_ROWS.map((row, rowIndex) => (
              <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
