@@ -37,6 +37,7 @@ export default function ChatStoryTool() {
   useEffect(() => {
     if (!isPlaying) return;
     if (visibleCount >= messages.length) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(false);
       return;
     }
