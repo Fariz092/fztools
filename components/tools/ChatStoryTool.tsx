@@ -77,7 +77,6 @@ export default function ChatStoryTool() {
     gain.connect(ctx.destination);
 
     if (type === 'type') {
-      // Suara ketikan (klik pendek)
       osc.type = 'sine';
       osc.frequency.setValueAtTime(800, ctx.currentTime);
       gain.gain.setValueAtTime(0.1, ctx.currentTime);
@@ -85,7 +84,6 @@ export default function ChatStoryTool() {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.05);
     } else if (type === 'send') {
-      // Suara kirim pesan (swoosh naik)
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(400, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
@@ -94,7 +92,6 @@ export default function ChatStoryTool() {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.1);
     } else if (type === 'receive') {
-      // Suara notifikasi WA (ting-ting)
       osc.type = 'sine';
       osc.frequency.setValueAtTime(800, ctx.currentTime);
       osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
@@ -105,14 +102,12 @@ export default function ChatStoryTool() {
     }
   };
 
-  // Scroll internal
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [displayedMessages, typingSender]);
 
-  // Logika Animasi
   useEffect(() => {
     if (!isPlaying) {
       cancelRef.current = true;
@@ -137,7 +132,7 @@ export default function ChatStoryTool() {
           
           setTypingSender(null);
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
-          playSfx('receive'); // Suara notif masuk
+          playSfx('receive');
           await new Promise(r => setTimeout(r, 1000));
         } else {
           setTypingSender('me');
@@ -148,7 +143,7 @@ export default function ChatStoryTool() {
             const char = text[j - 1];
             if (char && char !== ' ') {
               setActiveKey(char.toLowerCase());
-              playSfx('type'); // Suara ketikan
+              playSfx('type');
             } else {
               setActiveKey(null);
             }
@@ -163,7 +158,7 @@ export default function ChatStoryTool() {
           
           setTypingSender(null);
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
-          playSfx('send'); // Suara terkirim
+          playSfx('send');
           setInputText('');
           await new Promise(r => setTimeout(r, 1000));
         }
@@ -173,7 +168,8 @@ export default function ChatStoryTool() {
       }
     };
 
-    runScript();
+    // INI YANG TADI SALAH KETIK
+    runSequence();
 
     return () => {
       cancelRef.current = true;
@@ -194,7 +190,6 @@ export default function ChatStoryTool() {
 
   return (
     <div className="max-w-md mx-auto w-full">
-      {/* Kontrol Atas */}
       <div className="flex flex-wrap justify-center gap-3 mb-4">
         <button onClick={handlePlay} disabled={isPlaying} className="glass-btn-purple px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50">
           <Play className="w-3.5 h-3.5" /> {isPlaying ? 'Sedang Berjalan...' : 'Putar Cerita'}
@@ -207,10 +202,8 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
-      {/* FRAME HP */}
       <div className="bg-[#EFEAE2] rounded-[2.5rem] overflow-hidden border-[8px] border-zinc-900 shadow-2xl relative flex flex-col h-[700px]">
         
-        {/* HEADER */}
         <div className="bg-[#F6F6F6] border-b border-zinc-300 px-2 py-2 flex items-center justify-between z-10 shrink-0">
           <div className="flex items-center gap-1.5">
             <ChevronLeft className="w-7 h-7 text-[#007AFF]" />
@@ -234,7 +227,6 @@ export default function ChatStoryTool() {
           </div>
         </div>
 
-        {/* AREA CHAT (SCROLL ONLY HERE) */}
         <div 
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto p-3 space-y-2 relative scroll-smooth" 
@@ -284,7 +276,6 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT AREA */}
         <div className="bg-[#F6F6F6] p-2 flex items-end gap-2 z-10 border-t border-zinc-300 shrink-0">
           <Plus className="w-7 h-7 text-[#007AFF] mb-0.5" strokeWidth={2} />
           <div className="flex-1 bg-white rounded-3xl flex items-end px-3 py-1.5 border border-zinc-300 shadow-sm min-h-[36px]">
@@ -308,7 +299,6 @@ export default function ChatStoryTool() {
           </div>
         </div>
         
-        {/* KEYBOARD iPHONE */}
         <div className="bg-[#D1D5DB] h-[230px] px-1 pt-2 pb-6 flex flex-col justify-between shrink-0">
            {KEYBOARD_ROWS.map((row, rowIndex) => (
              <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
