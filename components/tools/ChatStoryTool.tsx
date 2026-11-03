@@ -49,6 +49,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'me', type: 'voice', content: "VN: Babe, serius deh...", time: '22.24', duration: '0:09', audioSrc: '/vn-cowo.mp3' },
   { sender: 'them', type: 'voice', content: "VN: Ssstt... jangan berisik sayang...", time: '22.25', duration: '0:10', audioSrc: '/vn-cewe2.mp3' },
   { sender: 'me', type: 'voice', content: "VN: (Napas terengah, suara pintu dibanting)", time: '22.26', duration: '0:05', audioSrc: '/voice-cowo2.mp3' },
+  { sender: 'them', type: 'voice', content: "VN: (Suara napas pelan, ketawa merinding)", time: '22.27', duration: '0:08', audioSrc: '/voice-cewe3.mp3' },
 ];
 
 const KEYBOARD_ROWS = [
@@ -265,7 +266,6 @@ export default function ChatStoryTool() {
 
       <div className="w-full max-w-[380px] h-[85dvh] sm:h-[750px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
         
-        {/* HEADER PERSIS WA iOS */}
         <div className="bg-[#F6F6F6] border-b border-[#D1D1D6] px-2 py-1.5 flex items-center justify-between z-40 shrink-0">
           <div className="flex items-center">
             <ChevronLeft className="w-7 h-7 text-[#007AFF] -ml-1" strokeWidth={2.5} />
@@ -277,7 +277,6 @@ export default function ChatStoryTool() {
             
             <div className="flex flex-col ml-2">
               <div className="flex items-center gap-1">
-                {/* UBAH NAMA KONTAK DISINI */}
                 <span className="text-[16px] font-semibold text-black leading-tight">MyPrincess💖</span>
               </div>
               <span className="text-[12px] text-[#8E8E93] leading-tight">
@@ -292,7 +291,6 @@ export default function ChatStoryTool() {
           </div>
         </div>
 
-        {/* AREA CHAT */}
         <div 
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto p-3 space-y-1.5 relative scroll-smooth" 
@@ -352,7 +350,6 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT AREA */}
         <div className="bg-[#F6F6F6] border-t border-[#D1D1D6] p-1.5 flex items-end gap-2 z-30 shrink-0 min-h-[52px]">
           {isRecording ? (
             <div className="flex-1 flex items-center gap-2 px-2 h-[36px]">
@@ -380,7 +377,6 @@ export default function ChatStoryTool() {
                 <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
               </div>
               <div className="flex-1 bg-white rounded-[18px] flex items-end px-2 py-1.5 border border-[#D1D1D6] min-h-[36px] relative">
-                {/* PLACEHOLDER ANIMASI */}
                 {inputText === '' && (
                   <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[15px] text-zinc-400 pointer-events-none">Ketikkan sesuatu...</span>
                 )}
@@ -395,10 +391,8 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* GARIS ANIMASI GLOWING */}
         <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-pulse shrink-0" />
         
-        {/* KEYBOARD */}
         <div className="bg-[#D1D5DB] h-[250px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {isEmojiKeyboard ? (
              <div className="flex-1 grid grid-cols-8 gap-1 px-1 content-start pb-2">
