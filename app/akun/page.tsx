@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import {
@@ -12,11 +12,13 @@ import {
   CheckCircle2,
   ArrowLeft,
   Key,
+  Camera,
 } from 'lucide-react';
 import {
   UserSession,
   getStoredUserSession,
   clearUserSession,
+  saveUserSession,
   AUTH_CHANGE_EVENT,
 } from '@/lib/auth-session';
 import { brutalistAlert, brutalistConfirm, brutalistToast } from '@/lib/popup-service';
@@ -24,6 +26,7 @@ import { motion } from 'motion/react';
 
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleAuthChange = (e: Event) => {
@@ -56,6 +59,32 @@ export default function AccountPage() {
     });
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !session) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      brutalistToast('Ukuran gambar maksimal 2MB', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      
+      const updatedSession: UserSession = { 
+        ...session, 
+        avatarUrl: base64String 
+      };
+      
+      saveUserSession(updatedSession);
+      setSession(updatedSession);
+      
+      brutalistToast('Foto profil berhasil diperbarui', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <AppShell>
       <div className="max-w-2xl mx-auto py-4 sm:py-8">
@@ -73,9 +102,30 @@ export default function AccountPage() {
           <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl shadow-xl shadow-zinc-200/20 dark:shadow-black/20 overflow-hidden">
             <div className="p-6 sm:p-8 border-b border-zinc-200/60 dark:border-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg shadow-indigo-600/20 select-none">
-                  {session.initials}
+                
+                {/* AVATAR DENGAN FITUR UPLOAD */}
+                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg shadow-indigo-600/20 select-none overflow-hidden relative">
+                    {session.avatarUrl ? (
+                      <img src={session.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      session.initials
+                    )}
+                    
+                    {/* Overlay Hover */}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    ref={fileInputRef} 
+                    onChange={handleImageUpload} 
+                    className="hidden" 
+                  />
                 </div>
+
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md uppercase tracking-wider">
@@ -118,17 +168,17 @@ export default function AccountPage() {
                       LocalStorage Peramban
                     </p>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1">
-                      Data akun tersimpan aman di perangkat tanpa pelacakan server.
+                      Data akun dan foto profil tersimpan aman di perangkat Anda.
                     </p>
                   </div>
 
                   <div className="p-4 bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl">
                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                      Inisial Navigasi
+                      Profil Navigasi
                     </span>
                     <p className="font-bold text-sm text-indigo-600 dark:text-indigo-400 mt-0.5 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Aktif ({session.initials})
+                      Aktif
                     </p>
                     <p className="text-[11px] text-zinc-500 font-medium mt-1">
                       Tampil otomatis pada bilah navigasi header dan sidebar.

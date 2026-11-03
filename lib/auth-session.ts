@@ -5,6 +5,7 @@ export interface UserSession {
   registeredAt: string;
   role: string;
   bio?: string;
+  avatarUrl?: string;
   stats?: {
     quotesCreated: number;
     conversions: number;
