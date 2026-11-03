@@ -14,7 +14,6 @@ interface Message {
   time: string;
 }
 
-// Alur Cerita "My Princess" (Romantis -> Mistis)
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Babe, udah tidur?", time: '22.00' },
   { sender: 'me', type: 'text', content: "Belum sayang, kenapa?", time: '22.01' },
@@ -59,20 +58,58 @@ export default function ChatStoryTool() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const cancelRef = useRef(false);
-  
-  // Audio Refs
-  const typingAudioRef = useRef<HTMLAudioElement | null>(null);
-  const sendAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
-  // Inisialisasi Audio
-  useEffect(() => {
-    typingAudioRef.current = new Audio('/sound-typing.mp3');
-    sendAudioRef.current = new Audio('/sound-send.mp3');
-    if (typingAudioRef.current) typingAudioRef.current.volume = 0.6;
-    if (sendAudioRef.current) sendAudioRef.current.volume = 0.9;
-  }, []);
+  // --- WEB AUDIO API (SFX SINYAL SINTESIS) ---
+  const initAudio = () => {
+    if (typeof window === 'undefined') return;
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+  };
 
-  // Auto-resize Textarea (Memanjang ke atas saat teks panjang)
+  const playSfx = (type: 'type' | 'send' | 'receive') => {
+    if (isMuted || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'type') {
+      // Suara ketikan (tik pendek)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.04);
+    } else if (type === 'send') {
+      // Suara kirim (swoosh naik)
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.1);
+    } else if (type === 'receive') {
+      // Suara notif masuk (ting-ting)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.2);
+    }
+  };
+
+  // Auto-resize Textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -80,23 +117,12 @@ export default function ChatStoryTool() {
     }
   }, [inputText]);
 
-  // Scroll HANYA di dalam container chat
+  // Scroll terisolasi
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [displayedMessages, typingSender]);
-
-  const playSfx = (type: 'type' | 'send') => {
-    if (isMuted) return;
-    if (type === 'type' && typingAudioRef.current) {
-      typingAudioRef.current.currentTime = 0;
-      typingAudioRef.current.play().catch(() => {});
-    } else if (type === 'send' && sendAudioRef.current) {
-      sendAudioRef.current.currentTime = 0;
-      sendAudioRef.current.play().catch(() => {});
-    }
-  };
 
   useEffect(() => {
     if (!isPlaying) {
@@ -125,6 +151,7 @@ export default function ChatStoryTool() {
           setTypingSender(null);
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
           setUnreadCount(prev => prev + 1);
+          playSfx('receive');
           await new Promise(r => setTimeout(r, 800));
         } else {
           setTypingSender('me');
@@ -150,7 +177,7 @@ export default function ChatStoryTool() {
             }
 
             setInputText(text.slice(0, j));
-            await new Promise(r => setTimeout(r, 80)); // Kecepatan ngetik
+            await new Promise(r => setTimeout(r, 80)); 
           }
           
           setIsEmojiKeyboard(false);
@@ -163,7 +190,6 @@ export default function ChatStoryTool() {
           playSfx('send');
           setInputText('');
           
-          // Kembalikan tinggi textarea ke awal setelah terkirim
           if (textareaRef.current) textareaRef.current.style.height = 'auto';
           
           await new Promise(r => setTimeout(r, 800));
@@ -176,7 +202,11 @@ export default function ChatStoryTool() {
     return () => { cancelRef.current = true; };
   }, [isPlaying, isMuted]);
 
-  const handlePlay = () => setIsPlaying(true);
+  const handlePlay = () => {
+    initAudio();
+    setIsPlaying(true);
+  };
+  
   const handleReset = () => {
     setIsPlaying(false);
     setDisplayedMessages([]);
@@ -190,7 +220,7 @@ export default function ChatStoryTool() {
   return (
     <div className="w-full flex flex-col items-center gap-3">
       
-      {/* TOMBOL KONTROL (Di luar HP) */}
+      {/* TOMBOL KONTROL */}
       <div className="flex justify-center gap-2 w-full z-50">
         <button onClick={handlePlay} disabled={isPlaying} className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg">
           <Play className="w-4 h-4" /> {isPlaying ? 'Memutar...' : 'Putar Cerita'}
@@ -203,7 +233,7 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
-      {/* BINGKAI HP MOCKUP */}
+      {/* BINGKAI HP */}
       <div className="w-full max-w-[380px] h-[80dvh] sm:h-[750px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
         
         {/* HEADER */}
@@ -282,7 +312,7 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT AREA (Auto-Resize Textarea) */}
+        {/* INPUT AREA (Auto-Resize) */}
         <div className="bg-[#F6F6F6] border-t border-[#D1D1D6] p-1.5 flex items-end gap-2 z-30 shrink-0">
           <div className="w-9 h-9 flex items-center justify-center shrink-0 mb-0.5">
             <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
