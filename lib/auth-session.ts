@@ -2,7 +2,6 @@ export interface UserSession {
   username: string;
   initials: string;
   avatarColor: string;
-  avatarUrl?: string; // Menyimpan data foto profil (Base64)
   registeredAt: string;
   role: string;
   bio?: string;

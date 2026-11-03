@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion } from 'motion/react';
-import { MessageSquareQuote } from 'lucide-react';
 
 const POPULAR_QUOTES = [
   { text: 'makanya cantik.', name: 'ayang', time: '18.30' },
@@ -36,6 +35,22 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
+/**
+ * Ultra-smooth Liquid Glass / Glossy Water Reflection Surface:
+ * - 100% smooth, seamless curves with NO scratch lines or diagonal cuts (bebas geratan)
+ * - Solid opaque foundation to guarantee emojis and text remain 100% crisp
+ * - Convex 3D curved gradient
+ * - Specular curved meniscus water dome on upper edge
+ * - Bottom refraction caustic bounce light
+ * - Outer beveled rim reflection
+ * - Liquid drop ambient shadow
+  */
+/**
+ * Clean Minimalist Glassmorphism Surface:
+ * - Subtle translucency with backdrop blur
+ * - Crisp inner rim for depth
+ * - No aggressive 3D highlights or liquid effects
+ */
 function drawCleanGlassSurface(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -49,19 +64,23 @@ function drawCleanGlassSurface(
   ctx.save();
   ctx.globalAlpha = 1.0;
 
+  // 1. Ambient Soft Shadow
   ctx.shadowColor = isPink ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.6)';
   ctx.shadowBlur = isMenu ? 40 : 20;
   ctx.shadowOffsetY = isMenu ? 12 : 6;
 
+  // 2. Base Surface
   drawRoundedRect(ctx, x, y, w, h, r);
   if (isMenu) {
     ctx.fillStyle = isPink ? 'rgba(255, 255, 255, 0.85)' : 'rgba(35, 45, 52, 0.9)';
   } else {
+    // Reaction pill: Solid or very subtle glass
     ctx.fillStyle = isPink ? 'rgba(255, 255, 255, 0.98)' : 'rgba(31, 44, 51, 1)';
   }
   ctx.fill();
   ctx.restore();
 
+  // 3. Subtle inner glass rim for definition
   ctx.save();
   const rimGrad = ctx.createLinearGradient(x, y, x + w, y + h);
   if (isPink) {
@@ -108,14 +127,17 @@ function drawLucideSvg(
 }
 
 function drawIconReply(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  // Lucide Reply SVG
   drawLucideSvg(ctx, 'M9 17L4 12l5-5 M20 18v-2a4 4 0 0 0-4-4H4', x, y, color, 26, 2.4);
 }
 
 function drawIconForward(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  // Lucide Forward SVG
   drawLucideSvg(ctx, 'M15 17l5-5-5-5 M4 18v-2a4 4 0 0 1 4-4h12', x, y, color, 26, 2.4);
 }
 
 function drawIconCopy(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  // Lucide Copy SVG
   drawLucideSvg(
     ctx,
     'M9 9h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',
@@ -128,6 +150,7 @@ function drawIconCopy(ctx: CanvasRenderingContext2D, x: number, y: number, color
 }
 
 function drawIconStar(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  // Lucide Star SVG
   drawLucideSvg(
     ctx,
     'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
@@ -140,6 +163,7 @@ function drawIconStar(ctx: CanvasRenderingContext2D, x: number, y: number, color
 }
 
 function drawIconTrash(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  // Lucide Trash2 SVG
   drawLucideSvg(
     ctx,
     'M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M10 11v6 M14 11v6',
@@ -152,6 +176,7 @@ function drawIconTrash(ctx: CanvasRenderingContext2D, x: number, y: number, colo
 }
 
 function drawIconInfo(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  // Lucide Info SVG
   drawLucideSvg(
     ctx,
     'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 16v-4 M12 8h.01',
@@ -204,6 +229,7 @@ function drawHeaderVideoIcon(ctx: CanvasRenderingContext2D, x: number, y: number
 function drawHeaderPhoneIcon(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
   ctx.save();
   ctx.strokeStyle = color;
+  ctx.fillStyle = color;
   ctx.lineWidth = 2.6;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -262,7 +288,7 @@ export default function IqcTool() {
 
     const isPink = variant === 'iqcpink';
     const w = 1080;
-    const h = 1920;
+    const h = 1920; // 9:16 portrait
     canvas.width = w;
     canvas.height = h;
 
@@ -275,6 +301,9 @@ export default function IqcTool() {
     const sfFontFamily =
       '"SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
+    // -------------------------------------------------------------
+    // LAYER 1: BACKGROUND SCENE (Wallpaper, Header, Dummy Messages, Input Bar)
+    // -------------------------------------------------------------
     const bgCanvas = document.createElement('canvas');
     bgCanvas.width = w;
     bgCanvas.height = h;
@@ -284,6 +313,7 @@ export default function IqcTool() {
     bgCtx.imageSmoothingEnabled = true;
     bgCtx.imageSmoothingQuality = 'high';
 
+    // 1. Wallpaper
     const bgImg = isPink ? pinkBgImgRef.current : darkBgImgRef.current;
     if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
       bgCtx.drawImage(bgImg, 0, 0, w, h);
@@ -302,15 +332,18 @@ export default function IqcTool() {
       bgCtx.fillRect(0, 0, w, h);
     }
 
+    // 2. iOS Status Bar
     bgCtx.fillStyle = isPink ? '#000000' : '#FFFFFF';
     bgCtx.font = `600 32px ${sfFontFamily}`;
     bgCtx.textAlign = 'left';
     bgCtx.fillText('09:41', 72, 68);
 
+    // Dynamic Island notch pill in top center
     bgCtx.fillStyle = '#000000';
     drawRoundedRect(bgCtx, (w - 220) / 2, 28, 220, 52, 26);
     bgCtx.fill();
 
+    // Signal & Battery on right
     bgCtx.save();
     bgCtx.lineWidth = 2.4;
     bgCtx.strokeStyle = isPink ? '#000000' : '#FFFFFF';
@@ -322,6 +355,7 @@ export default function IqcTool() {
     bgCtx.fillRect(w - 70, 54, 4, 10);
     bgCtx.restore();
 
+    // 3. iOS WhatsApp Header Bar
     const headerH = 142;
     const headerY = 96;
     bgCtx.save();
@@ -380,6 +414,7 @@ export default function IqcTool() {
     drawHeaderPhoneIcon(bgCtx, w - 84, headerY + 46, accentColor);
     bgCtx.restore();
 
+    // 4. Date Badge ("HARI INI")
     bgCtx.save();
     const dateText = 'HARI INI';
     bgCtx.font = `500 22px ${sfFontFamily}`;
@@ -396,6 +431,7 @@ export default function IqcTool() {
     bgCtx.fillText(dateText, dateX + dateW / 2, dateY + 19);
     bgCtx.restore();
 
+    // Helper for realistic dummy messages in background
     const drawDummyBubble = (
       x: number,
       y: number,
@@ -437,15 +473,18 @@ export default function IqcTool() {
       bgCtx.fillText(time, x + bW - 16, y + bH - 10);
     };
 
+    // Sequential conversation in the upper background
     const topChatY = dateY + 50;
     drawDummyBubble(86, topChatY, 'kamu lagi dimana sayang?', '18.25', true);
     drawDummyBubble(w - 86 - 380, topChatY + 86, 'ini baru mau otw pulang kok', '18.27', false);
     drawDummyBubble(86, topChatY + 172, 'yaudah hati-hati di jalan yaa', '18.28', true);
     drawDummyBubble(w - 86 - 330, topChatY + 258, 'siap meluncur pulang', '18.29', false);
 
+    // Messages in the lower background
     drawDummyBubble(86, 1530, 'nanti malam telfonan yaa', '18.31', true);
     drawDummyBubble(w - 86 - 280, 1616, 'iyaa sayang aman', '18.32', false);
 
+    // 5. iOS Bottom Input Bar
     const inputBarH = 140;
     const inputBarY = h - inputBarH;
     bgCtx.save();
@@ -479,11 +518,15 @@ export default function IqcTool() {
     bgCtx.strokeRect(w - 116, inputBarY + 42, 26, 22);
     bgCtx.strokeRect(w - 60, inputBarY + 42, 20, 26);
 
+    // Home indicator bar at bottom
     bgCtx.fillStyle = isPink ? '#000000' : '#FFFFFF';
     drawRoundedRect(bgCtx, (w - 280) / 2, h - 18, 280, 8, 4);
     bgCtx.fill();
     bgCtx.restore();
 
+    // -------------------------------------------------------------
+    // APPLY BLUR & FROSTED DIMMING TO CANVAS
+    // -------------------------------------------------------------
     ctx.save();
     if (typeof ctx.filter !== 'undefined') {
       ctx.filter = 'blur(14px)';
@@ -491,19 +534,27 @@ export default function IqcTool() {
     ctx.drawImage(bgCanvas, 0, 0);
     ctx.restore();
 
+    // Dimming overlay
     ctx.fillStyle = isPink ? 'rgba(40, 15, 25, 0.25)' : 'rgba(0, 0, 0, 0.55)';
     ctx.fillRect(0, 0, w, h);
 
+    // -------------------------------------------------------------
+    // LAYER 2: SHARP FOCUSED MESSAGE (Haptic Touch Long-Press)
+    // OPTIMIZED, REFINED SIZES (Anti-oversized, Authentic iOS scale)
+    // -------------------------------------------------------------
     ctx.globalAlpha = 1.0;
     ctx.fillStyle = '#000000';
 
     const bubbleX = 86;
+    // Calibrated max width so bubble leaves comfortable right margin
     const bubbleMaxW = Math.min(740, w - bubbleX * 2);
 
+    // Optimized font sizes: 34px text, 48px line height
     const fontSize = 34;
     const lineHeight = 48;
     ctx.font = `400 ${fontSize}px ${sfFontFamily}`;
 
+    // Word-wrapping for quote text
     const textLines: string[] = [];
     const rawParagraphs = quoteText.split('\n');
     rawParagraphs.forEach((p) => {
@@ -548,6 +599,7 @@ export default function IqcTool() {
       senderNameWidth = ctx.measureText(senderName.trim()).width + 16;
     }
 
+    // Time & double checkmark measurement
     ctx.font = `400 20px ${sfFontFamily}`;
     const timeWidth = ctx.measureText(timeText).width + 30;
     const contentNeededW = Math.max(longestLineWidth, senderNameWidth);
@@ -566,29 +618,35 @@ export default function IqcTool() {
       nameHeaderH + textLines.length * lineHeight + (needExtraLineForTime ? 54 : 30)
     );
 
+    // REFINED REACTION PILL:
+    // Snug, compact fit hugging emojis closely
     const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
     const emojiCellW = 44;
     const plusButtonW = 40;
     const pillPaddingX = 18;
-    const pillW = pillPaddingX * 2 + emojis.length * emojiCellW + plusButtonW;
+    const pillW = pillPaddingX * 2 + emojis.length * emojiCellW + plusButtonW; // ~340px
     const pillH = 74;
 
     const gapPillBubble = 12;
     const gapBubbleMenu = 16;
 
+    // Refined Menu rows: 68px row height, authentic compact iOS menu width (390px)
     const menuRowH = 68;
     const menuRows = 6;
-    const menuH = menuRowH * menuRows;
-    const menuW = 390;
+    const menuH = menuRowH * menuRows; // 408px
+    const menuW = 390; // Normal compact iOS context menu (text and icon stay close)
 
+    // Balanced vertical positioning in the middle focal area
     const bubbleY = 740;
     const pillY = bubbleY - pillH - gapPillBubble;
     const pillX = bubbleX;
     const menuY = bubbleY + bubbleH + gapBubbleMenu;
     const menuX = bubbleX;
 
+    // 1. REACTION PILL SURFACE (Clean glass for both .iqcpink and .iqc)
     drawCleanGlassSurface(ctx, pillX, pillY, pillW, pillH, pillH / 2, isPink, false);
 
+    // DRAW EMOJIS WITH 100% SOLID OPAQUE GLYPHS
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.fillStyle = '#000000';
@@ -603,6 +661,7 @@ export default function IqcTool() {
       ctx.fillText(em, ex, emojiCenterY + 2);
     });
 
+    // Plus (+) button
     const plusCenterX = pillX + pillPaddingX + emojis.length * emojiCellW + plusButtonW / 2;
     const plusCenterY = emojiCenterY;
     const plusRadius = 16;
@@ -622,14 +681,17 @@ export default function IqcTool() {
     ctx.fillText('+', plusCenterX, plusCenterY + 1);
     ctx.restore();
 
+    // 2. FOCUSED CHAT BUBBLE (Refined scale, Clean WhatsApp style)
     const r = 22;
     ctx.save();
     ctx.globalAlpha = 1.0;
     
+    // 1. Shadow for the focused bubble
     ctx.shadowColor = isPink ? 'rgba(0, 0, 0, 0.12)' : 'rgba(0, 0, 0, 0.75)';
     ctx.shadowBlur = 36;
     ctx.shadowOffsetY = 12;
 
+    // Organic iOS speech tail
     ctx.beginPath();
     ctx.moveTo(bubbleX + r, bubbleY);
     ctx.lineTo(bubbleX + bubbleW - r, bubbleY);
@@ -643,10 +705,12 @@ export default function IqcTool() {
     ctx.bezierCurveTo(bubbleX - 10, bubbleY - 1, bubbleX - 2, bubbleY + 2, bubbleX + 5, bubbleY);
     ctx.closePath();
 
+    // 2. Solid Background (Removing liquid glass gradients/highlights)
     ctx.fillStyle = isPink ? '#FFFFFF' : '#202C33';
     ctx.fill();
     ctx.restore();
 
+    // 3. Subtle rim for Pink variant to match iOS light theme
     if (isPink) {
       ctx.save();
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
@@ -667,6 +731,7 @@ export default function IqcTool() {
       ctx.restore();
     }
 
+    // Sender Name inside bubble
     let contentStartY = bubbleY + 16;
     const textPaddingX = bubbleX + 26;
 
@@ -682,6 +747,7 @@ export default function IqcTool() {
       contentStartY += 30;
     }
 
+    // Message text lines inside bubble (Proportional 34px font)
     ctx.fillStyle = isPink ? '#111B21' : '#E9EDEF';
     ctx.font = `400 ${fontSize}px ${sfFontFamily}`;
     ctx.textAlign = 'left';
@@ -691,6 +757,7 @@ export default function IqcTool() {
       ctx.fillText(l, textPaddingX, contentStartY + idx * lineHeight);
     });
 
+    // Time & Double Blue Ticks (Proportional 20px font)
     ctx.fillStyle = isPink ? '#667781' : '#8696A0';
     ctx.font = `400 20px ${sfFontFamily}`;
     ctx.textAlign = 'right';
@@ -701,6 +768,7 @@ export default function IqcTool() {
     drawBlueTicks(ctx, timeEndX + 6, bubbleY + bubbleH - 22);
     ctx.restore();
 
+    // 3. CONTEXT MENU POPUP (Clean Glassmorphism for both .iqcpink and .iqc)
     drawCleanGlassSurface(ctx, menuX, menuY, menuW, menuH, 22, isPink, true);
 
     ctx.save();
@@ -717,6 +785,7 @@ export default function IqcTool() {
     menuItems.forEach((item, idx) => {
       const rowY = menuY + idx * menuRowH;
 
+      // Subtle iOS context menu separator (clean translucent hairline, no harsh cuts/geratan)
       if (idx > 0) {
         ctx.save();
         ctx.strokeStyle = isPink ? 'rgba(0, 0, 0, 0.07)' : 'rgba(255, 255, 255, 0.08)';
@@ -767,6 +836,7 @@ export default function IqcTool() {
     } else {
       renderCard();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant, senderName, quoteText, timeText, imagesLoaded]);
 
   const handleDownload = async () => {
@@ -847,6 +917,7 @@ export default function IqcTool() {
 
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-10 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/20 border border-zinc-200/80 dark:border-zinc-800/80">
+      {/* Version Switcher Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl mb-8 border border-indigo-100 dark:border-indigo-900/30">
         <div className="flex items-center gap-3">
           <span className="px-3 py-1 bg-indigo-600 text-white font-bold text-[10px] rounded-full uppercase tracking-widest">
@@ -865,10 +936,11 @@ export default function IqcTool() {
         </Link>
       </div>
 
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-zinc-100 dark:border-zinc-900 mb-10">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-950/40 border border-pink-200/70 dark:border-pink-800/50 flex items-center justify-center shadow-xs">
-            <MessageSquareQuote className="w-6 h-6 text-pink-600 dark:text-pink-400" />
+        <div className="flex items-center gap-5">
+          <div className="w-14 h-14 bg-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/20 font-bold text-2xl text-white">
+            IQ
           </div>
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -885,6 +957,7 @@ export default function IqcTool() {
           </div>
         </div>
 
+        {/* Template Switcher */}
         <div className="flex items-center gap-2 p-1 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
           <button
             onClick={() => setVariant('iqcpink')}
@@ -912,7 +985,9 @@ export default function IqcTool() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Streamlined Controls */}
         <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Set Nama Kontak */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
@@ -940,6 +1015,7 @@ export default function IqcTool() {
             />
           </div>
 
+          {/* Set Teks Pesan */}
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
               Teks Kutipan:
@@ -953,6 +1029,7 @@ export default function IqcTool() {
             />
           </div>
 
+          {/* Set Jam */}
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
               Waktu Pesan:
@@ -982,6 +1059,7 @@ export default function IqcTool() {
             </div>
           </div>
 
+          {/* Preset Populer */}
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
               Preset Populer:
@@ -1004,6 +1082,7 @@ export default function IqcTool() {
             </div>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex flex-col gap-3 pt-6 border-t border-zinc-100 dark:border-zinc-900">
             <motion.button
               onClick={handleDownload}
@@ -1050,6 +1129,7 @@ export default function IqcTool() {
           </div>
         </div>
 
+        {/* Real-time Result Canvas */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="rounded-3xl bg-zinc-950 p-6 sm:p-8 shadow-2xl shadow-black/20 flex flex-col items-center justify-center min-h-[600px] border border-zinc-800 relative group/canvas">
             <div className="absolute top-4 left-6 flex items-center gap-3">

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { 
+  Upload, 
   ArrowRightLeft, 
   Download, 
   Check, 
@@ -13,7 +14,8 @@ import {
   FileText, 
   RefreshCw,
   Zap,
-  CloudUpload
+  CloudUpload,
+  ArrowRight
 } from 'lucide-react';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion, AnimatePresence } from 'motion/react';
@@ -33,6 +35,7 @@ export default function FileConverterTool() {
     sizeKb: number;
     dimensions: string;
   } | null>(null);
+  const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
   const [base64Input, setBase64Input] = useState<string>('');
   const [base64Output, setBase64Output] = useState<string>('');
@@ -49,6 +52,7 @@ export default function FileConverterTool() {
       const file = e.target.files[0];
       setSelectedFile(file);
       setConvertedResult(null);
+      setSavedSuccess(false);
 
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -63,6 +67,7 @@ export default function FileConverterTool() {
   const processImageConversion = () => {
     if (!previewSrc || !selectedFile) return;
     setConverting(true);
+    setSavedSuccess(false);
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -109,6 +114,7 @@ export default function FileConverterTool() {
           previewUrl: convertedDataUrl,
           fileFormat: ext,
         });
+        setSavedSuccess(true);
       } catch (err) {
         console.warn(err);
       } finally {
@@ -170,23 +176,18 @@ export default function FileConverterTool() {
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-10 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/20 border border-zinc-200/80 dark:border-zinc-800/80">
       <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-zinc-200/50 dark:border-zinc-800/50 mb-10">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/50 flex items-center justify-center shadow-xs">
-            <ArrowRightLeft className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+              Konverter File Instan
+            </h2>
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+              Lokal Client-Side
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                Konverter File Instan
-              </h2>
-              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md">
-                Lokal Client-Side
-              </span>
-            </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
-              Konversi format gambar instan, enkripsi Base64, dan manipulasi data JSON/CSV berkecepatan tinggi.
-            </p>
-          </div>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
+            Konversi format gambar instan, enkripsi Base64, dan manipulasi data JSON/CSV berkecepatan tinggi.
+          </p>
         </div>
 
         <div className="flex p-1 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-2xl border border-zinc-200/60 dark:border-zinc-700/60">

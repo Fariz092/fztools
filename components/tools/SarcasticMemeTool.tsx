@@ -5,8 +5,14 @@ import {
   Download, 
   Flame, 
   RefreshCw, 
+  Copy, 
+  Check, 
+  Send,
   Zap,
-  Palette
+  Info,
+  Type,
+  Palette,
+  MessageSquare
 } from 'lucide-react';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion, AnimatePresence } from 'motion/react';
@@ -21,7 +27,7 @@ interface SarcasticResult {
 
 export default function SarcasticMemeTool() {
   const [topic, setTopic] = useState<string>('Kerja lembur bagai kuda tapi gaji numpang lewat');
-  const [tone] = useState<string>('pedas');
+  const [tone, setTone] = useState<string>('pedas');
   const [loading, setLoading] = useState<boolean>(false);
   const [results, setResults] = useState<SarcasticResult[]>([
     {
@@ -211,27 +217,22 @@ export default function SarcasticMemeTool() {
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-10 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/20 border border-zinc-200/80 dark:border-zinc-800/80">
       <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-zinc-200/50 dark:border-zinc-800/50 mb-10">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/70 dark:border-rose-800/50 flex items-center justify-center shadow-xs">
-            <Flame className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+              Sarkasme AI
+            </h2>
+            <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">
+              Gemini AI
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                Sarkasme AI
-              </h2>
-              <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md">
-                Gemini AI
-              </span>
-            </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
-              Gunakan kekuatan AI untuk membuat sindiran tajam khas netizen dalam format poster estetik.
-            </p>
-          </div>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
+            Gunakan kekuatan AI untuk membuat sindiran tajam khas netizen dalam format poster estetik.
+          </p>
         </div>
 
         <div className="flex items-center p-1 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-2xl border border-zinc-200/60 dark:border-zinc-700/60">
-          {[
+           {[
             { id: 'indigo', color: 'bg-indigo-600' },
             { id: 'rose', color: 'bg-rose-600' },
             { id: 'emerald', color: 'bg-emerald-600' },
@@ -285,8 +286,8 @@ export default function SarcasticMemeTool() {
           </div>
 
           <div className="space-y-3">
-            <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Pilihan Sindiran</label>
-            <AnimatePresence mode="popLayout">
+             <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Pilihan Sindiran</label>
+             <AnimatePresence mode="popLayout">
               {results.map((item, idx) => (
                 <motion.button
                   key={idx}
@@ -307,7 +308,7 @@ export default function SarcasticMemeTool() {
                   <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300 line-clamp-2 italic">“{item.quote}”</p>
                 </motion.button>
               ))}
-            </AnimatePresence>
+             </AnimatePresence>
           </div>
 
           {activeResult && (
@@ -355,7 +356,7 @@ export default function SarcasticMemeTool() {
             </div>
 
             <div className="relative max-w-full overflow-hidden rounded-2xl shadow-2xl border border-zinc-800">
-              <canvas
+               <canvas
                 ref={canvasRef}
                 className="max-h-[480px] max-w-full object-contain"
               />

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import AppPopupProvider from '@/components/AppPopupProvider';
-import TopProgressBar from '@/components/TopProgressBar';
 
 export const metadata: Metadata = {
   title: 'FZTOOLS - Minimalist Creative & Utility Suite',
@@ -29,7 +28,6 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body suppressHydrationWarning className="bg-zinc-50 min-h-screen text-zinc-900 selection:bg-indigo-100">
-        <TopProgressBar />
         <AppPopupProvider />
         {children}
       </body>

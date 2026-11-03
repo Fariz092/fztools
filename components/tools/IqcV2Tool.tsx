@@ -3,14 +3,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { saveHistoryItem } from '@/lib/history-service';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Upload, 
   Download, 
-  Crop,
+  Settings2, 
+  Image as ImageIcon, 
+  MessageSquare, 
   Smartphone,
+  ChevronLeft,
+  Crop,
+  Zap,
+  Check,
+  SmartphoneIcon,
+  Copy,
   Info
 } from 'lucide-react';
 
+// Preset sample photos & captions
 const PRESET_PHOTOS = [
   {
     id: 'mlbb',
@@ -68,6 +78,9 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
+/**
+ * Universal Lucide SVG Path Renderer for HTML5 Canvas
+ */
 function drawLucideSvg(
   ctx: CanvasRenderingContext2D,
   pathData: string,
@@ -97,6 +110,7 @@ function drawLucideSvg(
   ctx.restore();
 }
 
+// Exact Lucide SVG Icon Drawers
 function drawIconStar(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
   drawLucideSvg(
     ctx,
@@ -173,6 +187,9 @@ function drawBlueTicks(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.restore();
 }
 
+/**
+ * Authentic iOS Glassmorphism Surface for Context Menu
+ */
 function drawFrostedGlassMenuSurface(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -219,13 +236,15 @@ export default function IqcV2Tool() {
   const [senderName, setSenderName] = useState<string>('');
   const [timeText, setTimeText] = useState<string>('18:02');
   const [aspectRatioId, setAspectRatioId] = useState<string>('3:4');
-  const [cropOffsetY] = useState<number>(0.5);
+  const [cropOffsetY, setCropOffsetY] = useState<number>(0.5);
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
   const [isOutgoing, setIsOutgoing] = useState<boolean>(false);
   const [showBlueTicks, setShowBlueTicks] = useState<boolean>(true);
-  const [watermarkOverlay] = useState<string>('Hasilnya:');
-  const [showWatermark] = useState<boolean>(true);
+  const [watermarkOverlay, setWatermarkOverlay] = useState<string>('Hasilnya:');
+  const [showWatermark, setShowWatermark] = useState<boolean>(true);
+  const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
 
+  // Bubble Chat & Inset Photo Optimization Settings
   const [bubblePadding] = useState<number>(6);
   const [photoRadius] = useState<number>(16);
   const [bubbleWidth] = useState<number>(620);
@@ -239,6 +258,7 @@ export default function IqcV2Tool() {
   const [imageKey, setImageKey] = useState<number>(0);
   const [wallpapersLoaded, setWallpapersLoaded] = useState<boolean>(false);
 
+  // Load WhatsApp wallpaper background images
   useEffect(() => {
     let count = 0;
     const checkReady = () => {
@@ -260,6 +280,7 @@ export default function IqcV2Tool() {
     darkBgImgRef.current = dImg;
   }, []);
 
+  // Load active photo
   useEffect(() => {
     let active = true;
     const img = new Image();
@@ -282,6 +303,7 @@ export default function IqcV2Tool() {
     };
   }, [imageSrc]);
 
+  // Handle local user upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -313,6 +335,9 @@ export default function IqcV2Tool() {
     const isPink = variant === 'iqcpink';
     const sfFontFamily = '"SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
+    // -------------------------------------------------------------
+    // LAYER 1: AUTHENTIC BLURRED CHAT BACKGROUND & DUMMY CHATS
+    // -------------------------------------------------------------
     const bgCanvas = document.createElement('canvas');
     bgCanvas.width = w;
     bgCanvas.height = h;
@@ -340,6 +365,7 @@ export default function IqcV2Tool() {
       bgCtx.fillRect(0, 0, w, h);
     }
 
+    // iOS WhatsApp Top Navigation Header Bar
     const headerH = 120;
     const headerY = 54;
     const accentColor = isPink ? '#D81B60' : '#00A884';
@@ -396,6 +422,7 @@ export default function IqcV2Tool() {
     drawLucideSvg(bgCtx, 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z', w - 74, headerY + 52, accentColor, 28, 2.5);
     bgCtx.restore();
 
+    // Date Pill
     const dateText = 'HARI INI';
     bgCtx.font = `600 20px ${sfFontFamily}`;
     const dateW = bgCtx.measureText(dateText).width + 36;
@@ -411,6 +438,7 @@ export default function IqcV2Tool() {
     bgCtx.fillText(dateText, w / 2, dateY + 19);
     bgCtx.restore();
 
+    // Apply Blur
     ctx.save();
     if (typeof ctx.filter !== 'undefined') {
       ctx.filter = 'blur(14px)';
@@ -418,9 +446,13 @@ export default function IqcV2Tool() {
     ctx.drawImage(bgCanvas, 0, 0);
     ctx.restore();
 
+    // Dimming
     ctx.fillStyle = isPink ? 'rgba(40, 15, 25, 0.32)' : 'rgba(0, 0, 0, 0.68)';
     ctx.fillRect(0, 0, w, h);
 
+    // -------------------------------------------------------------
+    // 2. FOCUSED MEDIA CHAT BUBBLE
+    // -------------------------------------------------------------
     const bubbleW = bubbleWidth;
     const bubbleX = isOutgoing ? w - bubbleW - 74 : 74;
     const bubbleY = bubbleTopY;
@@ -534,6 +566,7 @@ export default function IqcV2Tool() {
     }
     ctx.restore();
 
+    // Caption
     ctx.save();
     let currentTextY = photoY + photoH + captionMarginTop;
     const textX = bubbleX + textPaddingX;
@@ -561,6 +594,7 @@ export default function IqcV2Tool() {
     }
     ctx.restore();
 
+    // Context Menu
     const menuW = 390;
     const menuX = isOutgoing ? bubbleX + bubbleW - menuW : bubbleX;
     const menuRowH = 68;
@@ -605,6 +639,7 @@ export default function IqcV2Tool() {
 
   useEffect(() => {
     renderCanvas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant, imageSrc, captionText, senderName, timeText, aspectRatioId, cropOffsetY, zoomLevel, isOutgoing, showBlueTicks, watermarkOverlay, showWatermark, imageKey, wallpapersLoaded]);
 
   const handleDownload = async () => {
@@ -628,24 +663,20 @@ export default function IqcV2Tool() {
 
   return (
     <div className="w-full max-w-6xl mx-auto">
+      {/* Header Section */}
       <div className="mb-10 text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/50 flex items-center justify-center shadow-xs">
-            <Smartphone className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+        <div>
+          <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-3 py-1 rounded-full">
+              Versi Terkini • V2
+            </span>
           </div>
-          <div>
-            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 py-0.5 rounded-full">
-                Versi Terkini • V2
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-              IQC <span className="text-indigo-600 dark:text-indigo-400">Media</span> Generator
-            </h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
-              Buat kartu media WhatsApp dengan menu iOS asli dan pemotongan foto otomatis yang presisi.
-            </p>
-          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
+            IQC <span className="text-indigo-600 dark:text-indigo-400">Media</span> Generator
+          </h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium max-w-md">
+            Buat kartu media WhatsApp dengan menu iOS asli dan pemotongan foto otomatis yang presisi.
+          </p>
         </div>
 
         <div className="flex items-center gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
@@ -662,7 +693,9 @@ export default function IqcV2Tool() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Controls */}
         <div className="lg:col-span-5 space-y-8">
+          {/* Theme Selector */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
             <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4">Pilih Tema</label>
             <div className="grid grid-cols-2 gap-3">
@@ -691,6 +724,7 @@ export default function IqcV2Tool() {
             </div>
           </div>
 
+          {/* Image Upload */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
             <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4 flex items-center justify-between">
               <span>Unggah Foto</span>
@@ -732,6 +766,7 @@ export default function IqcV2Tool() {
             </div>
           </div>
 
+          {/* Configuration */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm space-y-6">
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">Teks Caption</label>
@@ -794,6 +829,7 @@ export default function IqcV2Tool() {
           </button>
         </div>
 
+        {/* Preview */}
         <div className="lg:col-span-7 flex flex-col items-center">
           <div className="sticky top-24 w-full flex flex-col items-center">
             <div className="mb-6 w-full flex items-center justify-between text-[10px] font-bold text-zinc-400 px-4">
@@ -804,13 +840,14 @@ export default function IqcV2Tool() {
                   Kualitas HD
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Smartphone className="w-3 h-3" />
+                  <SmartphoneIcon className="w-3 h-3" />
                   iOS 18 Context
                 </span>
               </div>
             </div>
             
             <div className="relative group bg-zinc-200 dark:bg-zinc-950 p-3 rounded-[52px] shadow-2xl border border-white/10">
+              {/* iPhone Mockup Frame */}
               <div className="absolute inset-0 border-[10px] border-zinc-900 dark:border-zinc-800 rounded-[52px] pointer-events-none z-20" />
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-zinc-900 dark:bg-zinc-800 rounded-b-2xl z-30" />
               
@@ -822,8 +859,9 @@ export default function IqcV2Tool() {
                 />
               </div>
 
+              {/* Action Floating Buttons */}
               <div className="absolute -right-16 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
+                 <button 
                   onClick={() => setZoomLevel(prev => prev > 1 ? prev - 0.1 : 1)}
                   className="w-10 h-10 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center shadow-lg border border-zinc-100 dark:border-zinc-800 text-zinc-600 hover:text-indigo-600 transition-colors cursor-pointer"
                 >
