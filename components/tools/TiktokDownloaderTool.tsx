@@ -15,8 +15,7 @@ import {
   Share2, 
   Copy, 
   Check, 
-  Images,
-  Video
+  Images
 } from 'lucide-react';
 import { brutalistToast } from '@/lib/popup-service';
 import { saveHistoryItem } from '@/lib/history-service';
@@ -108,7 +107,6 @@ export default function TiktokDownloaderTool() {
     }
   };
 
-  // Mengunduh langsung ke storage HP secara otomatis tanpa preview
   const handleDownloadFile = (downloadUrl: string, filename: string) => {
     if (!downloadUrl) {
       brutalistToast('Tautan berkas tidak tersedia.', 'error');
@@ -200,7 +198,7 @@ export default function TiktokDownloaderTool() {
             exit={{ opacity: 0, y: -15 }}
             className="grid grid-cols-1 md:grid-cols-12 gap-8"
           >
-            {/* Box Pratinjau Video/Foto yang bisa diputar langsung */}
+            {/* Box Pratinjau Video/Foto */}
             <div className="md:col-span-5 lg:col-span-4">
               <div className="bg-zinc-950 rounded-2xl shadow-xl overflow-hidden border border-zinc-800 flex flex-col">
                 <div className="aspect-[9/16] relative bg-black flex items-center justify-center overflow-hidden">
@@ -219,7 +217,6 @@ export default function TiktokDownloaderTool() {
                       controls
                       playsInline
                       preload="metadata"
-                      referrerPolicy="no-referrer"
                       className="w-full h-full object-contain bg-black"
                     />
                   )}
