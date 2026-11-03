@@ -29,16 +29,8 @@ export default function RootLayout({
     <html lang="id">
       <body suppressHydrationWarning className="bg-zinc-50 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-50 selection:bg-indigo-100 dark:selection:bg-indigo-900/30 relative overflow-x-hidden transition-colors duration-300">
         
-        {/* BACKGROUND LIQUID GLOW ORBS */}
-        <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-          <div className="bg-glow-orb bg-purple-500/20 w-[300px] h-[300px] top-[-50px] left-[-50px] dark:bg-purple-500/10" />
-          <div className="bg-glow-orb bg-teal-500/20 w-[400px] h-[400px] bottom-[-100px] right-[-100px] dark:bg-teal-500/10" />
-          <div className="bg-glow-orb bg-indigo-500/20 w-[250px] h-[250px] top-[40%] left-[20%] dark:bg-indigo-500/10" />
-        </div>
-
         <AppPopupProvider />
         
-        {/* WRAPPER UTAMA */}
         <div className="relative z-10 flex flex-col min-h-screen">
           {children}
         </div>

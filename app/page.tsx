@@ -30,10 +30,11 @@ const ROTATING_TARGETS = [
   'generasi kreatif.',
 ];
 
+// Anti-slop: Mengganti kata vague dengan fakta spesifik
 const ROTATING_SUBTITLES = [
-  'Konversi file instan, pembuat konten viral, dan alat visual estetik yang dirancang dengan presisi dan performa tinggi.',
-  'Suite produktivitas praktis berbasis peramban dengan pemrosesan instan tanpa registrasi yang rumit.',
-  'Ekspor format stiker WhatsApp 1:1, video TikTok kualitas jernih, dan kode QR vektor siap bagikan.',
+  'Konversi gambar (WEBP, PNG, JPG) hingga 10MB, buat stiker WhatsApp 1:1, dan unduh video TikTok tanpa watermark.',
+  'Semua pemrosesan file berjalan di browser Anda. Tanpa registrasi, tanpa upload ke server, dan tanpa antrean.',
+  'Buat kode QR vektor, ubah teks menjadi gambar gaya Brat, dan hasilkan roasting AI dengan model Gemini.',
 ];
 
 export default function HomePage() {
