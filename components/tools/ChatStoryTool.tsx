@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause, Send } from 'lucide-react';
 
 type Sender = 'me' | 'them';
 type MessageType = 'text' | 'image' | 'voice';
@@ -10,14 +10,15 @@ interface Message {
   id: number;
   sender: Sender;
   type: MessageType;
-  content: string;
+  content: string; // text, image URL, or VN label
   time: string;
   duration?: string;
+  audioSrc?: string;
 }
 
-// Part 1 & Part 2 Script: My Princess
+// Alur Cerita Lengkap: My Princess (Part 1 & Part 2)
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
-  // --- PART 1 (Mistis) ---
+  // --- PART 1 ---
   { sender: 'them', type: 'text', content: "Babe, udah tidur?", time: '22.00' },
   { sender: 'me', type: 'text', content: "Belum sayang, kenapa?", time: '22.01' },
   { sender: 'them', type: 'text', content: "Kangen aja hehe. Btw ini pap aku barusan, bagus ga?", time: '22.02' },
@@ -39,15 +40,24 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Jangan nengok ke belakang ya.", time: '22.16' },
   { sender: 'them', type: 'text', content: "Aku udah di samping kamu.", time: '22.17' },
   
-  // --- PART 2 (The Slow Burn) ---
+  // --- PART 2 ---
   { sender: 'me', type: 'text', content: "KAMU SERIUS DIMANA? JANGAN BIKIN PANIK", time: '22.18' },
-  { sender: 'them', type: 'voice', content: "VN: Bercanda babe... (ketawa kecil). Kamu takut banget sih? Aku cuma lagi di kamar sebelah kok. Tapi... jujur ya, kamar kamu wangi banget. Parfum apa yang kamu pake?", time: '22.19', duration: '0:15' },
+  
+  // VN 1 (Cewek)
+  { sender: 'them', type: 'voice', content: "VN: Bercanda babe...", time: '22.19', duration: '0:12', audioSrc: '/voice-note.mp3' },
+  
   { sender: 'me', type: 'text', content: "Parfum Baccarat. Kamu di kamar sebelah mana? Kok kamu tau wangi kamar aku?", time: '22.20' },
   { sender: 'them', type: 'text', content: "Aku lagi di depan pintu kamar kamu.", time: '22.21' },
   { sender: 'me', type: 'text', content: "Hah? Aku ga denger suara apa-apa.", time: '22.21' },
   { sender: 'them', type: 'text', content: "Aku udah masuk kok. Kamu lagi rebahan kan?", time: '22.22' },
   { sender: 'them', type: 'image', content: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", time: '22.22' },
   { sender: 'them', type: 'text', content: "Jangan bangun. Aku lagi di samping kamu.", time: '22.23' },
+
+  // VN 2 (Cowok - Bakal disimulasikan rekam & kirim)
+  { sender: 'me', type: 'voice', content: "VN: Babe, serius deh...", time: '22.24', duration: '0:09', audioSrc: '/vn-cowo.mp3' },
+
+  // VN 3 (Cewek Balas Terakhir)
+  { sender: 'them', type: 'voice', content: "VN: Ssstt... jangan berisik sayang...", time: '22.25', duration: '0:15', audioSrc: '/vn-cewe2.mp3' },
 ];
 
 const KEYBOARD_ROWS = [
@@ -68,10 +78,15 @@ export default function ChatStoryTool() {
   const [unreadCount, setUnreadCount] = useState(10);
   const [isEmojiKeyboard, setIsEmojiKeyboard] = useState(false);
   
-  // State for Voice Note Player
+  // State for Voice Note Player & Recording
   const [activeVnId, setActiveVnId] = useState<number | null>(null);
   const [vnProgress, setVnProgress] = useState(0);
   const [vnDurationText, setVnDurationText] = useState('0:00');
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordTime, setRecordTime] = useState(0);
+  const [previewVn, setPreviewVn] = useState<Message | null>(null);
+  const [previewPlaying, setPreviewPlaying] = useState(false);
+  const [previewProgress, setPreviewProgress] = useState(0);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -125,23 +140,20 @@ export default function ChatStoryTool() {
     }
   };
 
-  // Setup Voice Note Audio Element
+  // --- AUDIO SETUP (Untuk Chat) ---
   useEffect(() => {
-    const audio = new Audio('/voice-note.mp3');
+    const audio = new Audio();
     voiceNoteAudioRef.current = audio;
 
     const handleTimeUpdate = () => {
       if (audio.duration) {
         const progress = (audio.currentTime / audio.duration) * 100;
         setVnProgress(progress);
-        
-        // Format durasi saat ini (misal 0:05)
         const mins = Math.floor(audio.currentTime / 60);
         const secs = Math.floor(audio.currentTime % 60);
         setVnDurationText(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
       }
     };
-
     const handleEnded = () => {
       setActiveVnId(null);
       setVnProgress(0);
@@ -150,7 +162,6 @@ export default function ChatStoryTool() {
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('ended', handleEnded);
-
     return () => {
       audio.pause();
       audio.removeEventListener('timeupdate', handleTimeUpdate);
@@ -158,20 +169,48 @@ export default function ChatStoryTool() {
     };
   }, []);
 
-  const toggleVoiceNote = (msgId: number) => {
+  const toggleVoiceNote = (msg: Message) => {
     const audio = voiceNoteAudioRef.current;
-    if (!audio) return;
+    if (!audio || !msg.audioSrc) return;
 
-    if (activeVnId === msgId) {
-      // Pause
+    if (activeVnId === msg.id) {
       audio.pause();
       setActiveVnId(null);
     } else {
-      // Play
-      audio.currentTime = 0;
-      audio.play().catch(e => console.log('Audio play failed:', e));
-      setActiveVnId(msgId);
+      audio.src = msg.audioSrc;
+      audio.play().catch(e => console.log('Play error', e));
+      setActiveVnId(msg.id);
     }
+  };
+
+  // Fungsi simulasi play VN secara programatik (untuk alur cerita otomatis)
+  const autoPlayVoiceNote = (msg: Message) => {
+    return new Promise<void>((resolve) => {
+      const audio = new Audio(msg.audioSrc);
+      audio.play().then(() => {
+        setActiveVnId(msg.id);
+        const timeUpdate = setInterval(() => {
+          if (audio.duration) {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            setVnProgress(progress);
+            const mins = Math.floor(audio.currentTime / 60);
+            const secs = Math.floor(audio.currentTime % 60);
+            setVnDurationText(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+          }
+        }, 100);
+
+        audio.onended = () => {
+          clearInterval(timeUpdate);
+          setActiveVnId(null);
+          setVnProgress(0);
+          setVnDurationText('0:00');
+          resolve();
+        };
+      }).catch(() => {
+        // Jika browser blokir autoplay, resolve aja biar cerita lanjut
+        setTimeout(() => resolve(), 3000); 
+      });
+    });
   };
 
   // Auto-resize Textarea
@@ -187,8 +226,9 @@ export default function ChatStoryTool() {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [displayedMessages, typingSender]);
+  }, [displayedMessages, typingSender, isRecording, previewVn]);
 
+  // Main Sequence
   useEffect(() => {
     if (!isPlaying) {
       cancelRef.current = true;
@@ -204,6 +244,8 @@ export default function ChatStoryTool() {
       setUnreadCount(10);
       setIsEmojiKeyboard(false);
       setActiveVnId(null);
+      setIsRecording(false);
+      setPreviewVn(null);
       await new Promise(r => setTimeout(r, 1000));
 
       for (let i = 0; i < STORY_SCRIPT.length; i++) {
@@ -216,50 +258,101 @@ export default function ChatStoryTool() {
           if (cancelRef.current) return;
           
           setTypingSender(null);
-          setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
+          const newMsg = { ...msg, id: Date.now() + i };
+          setDisplayedMessages(prev => [...prev, newMsg]);
           setUnreadCount(prev => prev + 1);
           playSfx('receive');
-          await new Promise(r => setTimeout(r, 1000));
-        } else {
-          setTypingSender('me');
-          const text = msg.content;
           
-          for (let j = 0; j <= text.length; j++) {
+          // Jika itu VN, otomatis play
+          if (msg.type === 'voice') {
+            await autoPlayVoiceNote(newMsg);
+          } else {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+
+        } else {
+          // Kalo Cowok yang kirim VN (Record -> Preview -> Send)
+          if (msg.type === 'voice') {
+            setIsRecording(true);
+            setRecordTime(0);
+            const recInterval = setInterval(() => setRecordTime(p => p + 1), 1000);
+            
+            await new Promise(r => setTimeout(r, 4000)); // Simulasi rekam 4 detik
             if (cancelRef.current) return;
             
-            const char = text[j - 1];
+            clearInterval(recInterval);
+            setIsRecording(false);
             
-            // Deteksi Emoji
-            if (char && /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2700}-\u{27BF}]/u.test(char)) {
-              setIsEmojiKeyboard(true);
-            } else if (char === ' ') {
-              setIsEmojiKeyboard(false);
-            }
+            // Muncul Preview VN
+            const previewMsg = { ...msg, id: Date.now() + i };
+            setPreviewVn(previewMsg);
+            await new Promise(r => setTimeout(r, 500)); // Jeda bentar sebelum play
+            
+            if (cancelRef.current) return;
+            setPreviewPlaying(true);
+            
+            // Simulasi muter preview VN
+            const audioPreview = new Audio(msg.audioSrc);
+            audioPreview.play().then(() => {
+              const prevInterval = setInterval(() => {
+                if (audioPreview.duration) setPreviewProgress((audioPreview.currentTime / audioPreview.duration) * 100);
+              }, 100);
+              audioPreview.onended = () => {
+                clearInterval(prevInterval);
+                setPreviewPlaying(false);
+                setPreviewProgress(0);
+              };
+            }).catch(() => {
+              // Kalo autoplay kena blokir, asal jeda aja
+              setTimeout(() => setPreviewPlaying(false), 3000);
+            });
 
-            if (char && char !== ' ') {
-              setActiveKey(char.toLowerCase());
-              playSfx('type');
-            } else {
-              setActiveKey(null);
-            }
+            // Tunggu VN selesai baru kirim
+            await new Promise(r => setTimeout(r, 9500)); 
+            if (cancelRef.current) return;
+            
+            // Kirim
+            setPreviewVn(null);
+            setDisplayedMessages(prev => [...prev, previewMsg]);
+            playSfx('send');
+            await new Promise(r => setTimeout(r, 1000));
+          } else {
+            // Teks biasa
+            setTypingSender('me');
+            const text = msg.content;
+            for (let j = 0; j <= text.length; j++) {
+              if (cancelRef.current) return;
+              const char = text[j - 1];
+              
+              if (char && /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2700}-\u{27BF}]/u.test(char)) {
+                setIsEmojiKeyboard(true);
+              } else if (char === ' ') {
+                setIsEmojiKeyboard(false);
+              }
 
-            setInputText(text.slice(0, j));
-            await new Promise(r => setTimeout(r, 70)); 
+              if (char && char !== ' ') {
+                setActiveKey(char.toLowerCase());
+                playSfx('type');
+              } else {
+                setActiveKey(null);
+              }
+
+              setInputText(text.slice(0, j));
+              await new Promise(r => setTimeout(r, 70)); 
+            }
+            
+            setIsEmojiKeyboard(false);
+            setActiveKey(null);
+            await new Promise(r => setTimeout(r, 400));
+            if (cancelRef.current) return;
+            
+            setTypingSender(null);
+            setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
+            playSfx('send');
+            setInputText('');
+            if (textareaRef.current) textareaRef.current.style.height = 'auto';
+            await new Promise(r => setTimeout(r, 1000));
           }
-          
-          setIsEmojiKeyboard(false);
-          setActiveKey(null);
-          await new Promise(r => setTimeout(r, 400));
-          if (cancelRef.current) return;
-          
-          setTypingSender(null);
-          setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
-          playSfx('send');
-          setInputText('');
-          
-          if (textareaRef.current) textareaRef.current.style.height = 'auto';
-          
-          await new Promise(r => setTimeout(r, 1000));
         }
       }
       if (!cancelRef.current) setIsPlaying(false);
@@ -269,27 +362,21 @@ export default function ChatStoryTool() {
     return () => { cancelRef.current = true; };
   }, [isPlaying, isMuted]);
 
-  const handlePlay = () => {
-    initAudio();
-    setIsPlaying(true);
-  };
-  
+  const handlePlay = () => { initAudio(); setIsPlaying(true); };
   const handleReset = () => {
-    setIsPlaying(false);
-    setDisplayedMessages([]);
-    setInputText('');
-    setTypingSender(null);
-    setUnreadCount(10);
-    setIsEmojiKeyboard(false);
-    setActiveVnId(null);
+    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setUnreadCount(10); setIsEmojiKeyboard(false); setActiveVnId(null); setIsRecording(false); setPreviewVn(null);
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
   return (
     <div className="w-full flex flex-col items-center gap-3">
-      
-      {/* TOMBOL KONTROL */}
       <div className="flex justify-center gap-2 w-full z-50">
         <button onClick={handlePlay} disabled={isPlaying} className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg">
           <Play className="w-4 h-4" /> {isPlaying ? 'Memutar...' : 'Putar Cerita'}
@@ -302,7 +389,6 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
-      {/* BINGKAI HP */}
       <div className="w-full max-w-[380px] h-[85dvh] sm:h-[750px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
         
         {/* HEADER */}
@@ -351,7 +437,6 @@ export default function ChatStoryTool() {
                     <div className="absolute top-0 -left-[6px] w-2 h-3"><svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" transform="scale(-1, 1) translate(-8, 0)"></path><path fill="#FFFFFF" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z" transform="scale(-1, 1) translate(-8, 0)"></path></svg></div>
                   )}
 
-                  {/* ISI PESAN */}
                   {msg.type === 'text' && (
                     <span className="text-black text-[14.5px] pr-12 leading-snug">{msg.content}</span>
                   )}
@@ -364,30 +449,26 @@ export default function ChatStoryTool() {
 
                   {msg.type === 'voice' && (
                     <div 
-                      onClick={() => toggleVoiceNote(msg.id)}
+                      onClick={() => toggleVoiceNote(msg)}
                       className="flex items-center gap-2 pr-12 py-1 cursor-pointer min-w-[180px]"
                     >
-                      <div className="w-8 h-8 bg-[#007AFF]/10 rounded-full flex items-center justify-center shrink-0">
-                        {isVnPlaying ? <Pause className="w-4 h-4 text-[#007AFF]" fill="currentColor" /> : <Play className="w-4 h-4 text-[#007AFF]" fill="currentColor" />}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-[#25D366]/20' : 'bg-[#007AFF]/10'}`}>
+                        {isVnPlaying ? <Pause className={`w-4 h-4 ${isMe ? 'text-[#128C7E]' : 'text-[#007AFF]'}`} fill="currentColor" /> : <Play className={`w-4 h-4 ${isMe ? 'text-[#128C7E]' : 'text-[#007AFF]'}`} fill="currentColor" />}
                       </div>
                       
-                      {/* Waveform Visual & Progress */}
                       <div className="flex items-center gap-0.5 h-6 flex-1 relative overflow-hidden">
                          {[...Array(15)].map((_, i) => (
-                           <div key={i} className="w-[2px] bg-zinc-400 rounded-full shrink-0" style={{ height: `${Math.random() * 100}%` }}></div>
+                           <div key={i} className={`w-[2px] rounded-full shrink-0 ${isMe ? 'bg-zinc-500' : 'bg-zinc-400'}`} style={{ height: `${Math.random() * 100}%` }}></div>
                          ))}
-                         {/* Progress bar (menutupi dari kiri ke kanan) */}
-                         <div className="absolute top-0 bottom-0 left-0 bg-[#DCF8C6]/80 mix-blend-overlay pointer-events-none" style={{ width: `${vnProgress}%` }} />
+                         <div className="absolute top-0 bottom-0 left-0 bg-black/10 pointer-events-none" style={{ width: `${isVnPlaying ? vnProgress : 0}%` }} />
                       </div>
 
-                      {/* Duration (Realtime / static) */}
                       <span className="text-[10px] text-[#8E8E93] w-8 shrink-0 mt-2 text-right">
                         {isVnPlaying ? vnDurationText : msg.duration}
                       </span>
                     </div>
                   )}
 
-                  {/* Time & Ticks */}
                   <div className={`absolute bottom-1 right-2 flex items-center gap-1 ${msg.type === 'image' ? 'bg-black/40 px-1.5 py-0.5 rounded-full backdrop-blur-sm' : ''}`}>
                     <span className={`text-[10px] font-medium ${msg.type === 'image' ? 'text-white' : 'text-[#8E8E93]'}`}>{msg.time}</span>
                     {isMe && (
@@ -413,25 +494,56 @@ export default function ChatStoryTool() {
         </div>
 
         {/* INPUT AREA */}
-        <div className="bg-[#F6F6F6] border-t border-[#D1D1D6] p-1.5 flex items-end gap-2 z-30 shrink-0">
-          <div className="w-9 h-9 flex items-center justify-center shrink-0 mb-0.5">
-            <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
-          </div>
-          <div className="flex-1 bg-white rounded-[18px] flex items-end px-2 py-1.5 border border-[#D1D1D6] min-h-[36px]">
-            <textarea
-              ref={textareaRef}
-              value={inputText}
-              readOnly
-              rows={1}
-              placeholder=""
-              className="flex-1 bg-transparent outline-none text-[15px] text-black placeholder-zinc-400 resize-none max-h-[80px] overflow-y-auto leading-tight"
-            />
-            <div className="flex items-center gap-3 text-[#007AFF] pl-2 shrink-0 pb-0.5">
-              <FileText className="w-[22px] h-[22px]" strokeWidth={1.5} />
-              <Camera className="w-[22px] h-[22px]" strokeWidth={1.5} />
-              <Mic className="w-[22px] h-[22px]" strokeWidth={1.5} />
+        <div className="bg-[#F6F6F6] border-t border-[#D1D1D6] p-1.5 flex items-end gap-2 z-30 shrink-0 min-h-[52px]">
+          
+          {isRecording ? (
+            /* UI SEDANG MEREKAM */
+            <div className="flex-1 flex items-center gap-2 px-2 h-[36px]">
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-red-500 font-mono text-sm">{formatTime(recordTime)}</span>
+              <span className="text-zinc-400 text-sm ml-2">Sedang merekam...</span>
             </div>
-          </div>
+          ) : previewVn ? (
+            /* UI PREVIEW VN SEBELUM KIRIM */
+            <div className="flex-1 flex items-center gap-2 bg-white rounded-[18px] px-2 py-1.5 border border-[#D1D1D6] min-h-[36px]">
+              <div className="w-6 h-6 bg-[#25D366]/20 rounded-full flex items-center justify-center shrink-0">
+                {previewPlaying ? <Pause className="w-3 h-3 text-[#128C7E]" fill="currentColor" /> : <Play className="w-3 h-3 text-[#128C7E]" fill="currentColor" />}
+              </div>
+              <div className="flex items-center gap-0.5 h-4 flex-1 relative overflow-hidden">
+                 {[...Array(15)].map((_, i) => (
+                   <div key={i} className="w-[2px] bg-zinc-400 rounded-full shrink-0" style={{ height: `${Math.random() * 100}%` }}></div>
+                 ))}
+                 <div className="absolute top-0 bottom-0 left-0 bg-black/10 pointer-events-none" style={{ width: `${previewPlaying ? previewProgress : 0}%` }} />
+              </div>
+              <span className="text-[10px] text-[#8E8E93] w-8 shrink-0 text-right">{previewVn.duration}</span>
+              
+              <button className="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center shrink-0 ml-1 animate-in zoom-in duration-300">
+                <Send className="w-4 h-4 text-white -ml-0.5" fill="currentColor" />
+              </button>
+            </div>
+          ) : (
+            /* UI INPUT NORMAL */
+            <>
+              <div className="w-9 h-9 flex items-center justify-center shrink-0 mb-0.5">
+                <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1 bg-white rounded-[18px] flex items-end px-2 py-1.5 border border-[#D1D1D6] min-h-[36px]">
+                <textarea
+                  ref={textareaRef}
+                  value={inputText}
+                  readOnly
+                  rows={1}
+                  placeholder=""
+                  className="flex-1 bg-transparent outline-none text-[15px] text-black placeholder-zinc-400 resize-none max-h-[80px] overflow-y-auto leading-tight"
+                />
+                <div className="flex items-center gap-3 text-[#007AFF] pl-2 shrink-0 pb-0.5">
+                  <FileText className="w-[22px] h-[22px]" strokeWidth={1.5} />
+                  <Camera className="w-[22px] h-[22px]" strokeWidth={1.5} />
+                  <Mic className="w-[22px] h-[22px]" strokeWidth={1.5} />
+                </div>
+              </div>
+            </>
+          )}
         </div>
         
         {/* KEYBOARD (iOS Style) */}
