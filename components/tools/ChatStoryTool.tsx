@@ -57,59 +57,46 @@ export default function ChatStoryTool() {
   const [isEmojiKeyboard, setIsEmojiKeyboard] = useState(false);
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const cancelRef = useRef(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  
+  // Audio Refs
+  const typingAudioRef = useRef<HTMLAudioElement | null>(null);
+  const sendAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const initAudio = () => {
-    if (typeof window === 'undefined') return;
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+  // Inisialisasi Audio
+  useEffect(() => {
+    typingAudioRef.current = new Audio('/sound-typing.mp3');
+    sendAudioRef.current = new Audio('/sound-send.mp3');
+    if (typingAudioRef.current) typingAudioRef.current.volume = 0.6;
+    if (sendAudioRef.current) sendAudioRef.current.volume = 0.9;
+  }, []);
+
+  // Auto-resize Textarea (Memanjang ke atas saat teks panjang)
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  };
+  }, [inputText]);
 
-  const playSfx = (type: 'type' | 'send' | 'receive') => {
-    if (isMuted || !audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    if (type === 'type') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.05);
-    } else if (type === 'send') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(400, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.1);
-    } else if (type === 'receive') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.2);
-    }
-  };
-
+  // Scroll HANYA di dalam container chat
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [displayedMessages, typingSender]);
+
+  const playSfx = (type: 'type' | 'send') => {
+    if (isMuted) return;
+    if (type === 'type' && typingAudioRef.current) {
+      typingAudioRef.current.currentTime = 0;
+      typingAudioRef.current.play().catch(() => {});
+    } else if (type === 'send' && sendAudioRef.current) {
+      sendAudioRef.current.currentTime = 0;
+      sendAudioRef.current.play().catch(() => {});
+    }
+  };
 
   useEffect(() => {
     if (!isPlaying) {
@@ -138,17 +125,17 @@ export default function ChatStoryTool() {
           setTypingSender(null);
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
           setUnreadCount(prev => prev + 1);
-          playSfx('receive');
           await new Promise(r => setTimeout(r, 800));
         } else {
           setTypingSender('me');
           const text = msg.content;
+          
           for (let j = 0; j <= text.length; j++) {
             if (cancelRef.current) return;
             
             const char = text[j - 1];
             
-            // Deteksi Emoji untuk ganti keyboard
+            // Deteksi Emoji
             if (char && /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2700}-\u{27BF}]/u.test(char)) {
               setIsEmojiKeyboard(true);
             } else if (char === ' ') {
@@ -163,7 +150,7 @@ export default function ChatStoryTool() {
             }
 
             setInputText(text.slice(0, j));
-            await new Promise(r => setTimeout(r, 100)); 
+            await new Promise(r => setTimeout(r, 80)); // Kecepatan ngetik
           }
           
           setIsEmojiKeyboard(false);
@@ -175,6 +162,10 @@ export default function ChatStoryTool() {
           setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
           playSfx('send');
           setInputText('');
+          
+          // Kembalikan tinggi textarea ke awal setelah terkirim
+          if (textareaRef.current) textareaRef.current.style.height = 'auto';
+          
           await new Promise(r => setTimeout(r, 800));
         }
       }
@@ -183,13 +174,9 @@ export default function ChatStoryTool() {
 
     runSequence();
     return () => { cancelRef.current = true; };
-  }, [isPlaying]);
+  }, [isPlaying, isMuted]);
 
-  const handlePlay = () => {
-    initAudio();
-    setIsPlaying(true);
-  };
-  
+  const handlePlay = () => setIsPlaying(true);
   const handleReset = () => {
     setIsPlaying(false);
     setDisplayedMessages([]);
@@ -197,11 +184,13 @@ export default function ChatStoryTool() {
     setTypingSender(null);
     setUnreadCount(10);
     setIsEmojiKeyboard(false);
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
   return (
     <div className="w-full flex flex-col items-center gap-3">
-      {/* TOMBOL KONTROL DI LUAR HP */}
+      
+      {/* TOMBOL KONTROL (Di luar HP) */}
       <div className="flex justify-center gap-2 w-full z-50">
         <button onClick={handlePlay} disabled={isPlaying} className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg">
           <Play className="w-4 h-4" /> {isPlaying ? 'Memutar...' : 'Putar Cerita'}
@@ -214,7 +203,7 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
-      {/* BINGKAI HP MOCKUP (Berlaku di Mobile & Desktop) */}
+      {/* BINGKAI HP MOCKUP */}
       <div className="w-full max-w-[380px] h-[80dvh] sm:h-[750px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
         
         {/* HEADER */}
@@ -293,20 +282,21 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT AREA */}
+        {/* INPUT AREA (Auto-Resize Textarea) */}
         <div className="bg-[#F6F6F6] border-t border-[#D1D1D6] p-1.5 flex items-end gap-2 z-30 shrink-0">
-          <div className="w-9 h-9 flex items-center justify-center">
+          <div className="w-9 h-9 flex items-center justify-center shrink-0 mb-0.5">
             <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
           </div>
-          <div className="flex-1 bg-white rounded-[18px] flex items-center px-2 py-1 border border-[#D1D1D6] min-h-[36px]">
-            <input
-              type="text"
+          <div className="flex-1 bg-white rounded-[18px] flex items-end px-2 py-1.5 border border-[#D1D1D6] min-h-[36px]">
+            <textarea
+              ref={textareaRef}
               value={inputText}
               readOnly
+              rows={1}
               placeholder=""
-              className="flex-1 bg-transparent outline-none text-[15px] text-black placeholder-zinc-400"
+              className="flex-1 bg-transparent outline-none text-[15px] text-black placeholder-zinc-400 resize-none max-h-[80px] overflow-y-auto leading-tight"
             />
-            <div className="flex items-center gap-3 text-[#007AFF] pl-2">
+            <div className="flex items-center gap-3 text-[#007AFF] pl-2 shrink-0 pb-0.5">
               <FileText className="w-[22px] h-[22px]" strokeWidth={1.5} />
               <Camera className="w-[22px] h-[22px]" strokeWidth={1.5} />
               <Mic className="w-[22px] h-[22px]" strokeWidth={1.5} />
