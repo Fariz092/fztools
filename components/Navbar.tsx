@@ -103,7 +103,7 @@ export default function Navbar({
   return (
     <>
       <header className="sticky top-3 sm:top-5 z-50 px-3 sm:px-6 w-full flex justify-center pointer-events-none">
-        <div className="pointer-events-auto liquid-distort rounded-full py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6 transition-all max-w-2xl w-full border border-white/20 dark:border-white/10 shadow-lg">
+        <div className="pointer-events-auto navbar-blur rounded-full py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6 max-w-2xl w-full">
           <Link
             href="/"
             className="flex items-center gap-2.5 group cursor-pointer select-none"

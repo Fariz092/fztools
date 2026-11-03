@@ -4,19 +4,43 @@ import React, { useState, useEffect } from 'react';
 
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'dim'>('light');
+  const [mounted, setMounted] = useState(false);
 
+  // Ambil tema dari localStorage saat pertama kali dimuat
   useEffect(() => {
+    setMounted(true);
+    const savedTheme = localStorage.getItem('fztools_theme') as 'light' | 'dark' | 'dim' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  // Terapkan tema dan simpan ke localStorage setiap kali berubah
+  useEffect(() => {
+    if (!mounted) return;
+    
+    localStorage.setItem('fztools_theme', theme);
     const root = window.document.documentElement;
+    
     root.classList.remove('light', 'dark', 'dim');
     root.classList.add(theme);
+    
+    // Tailwind menggunakan class 'dark' untuk dark mode
     if (theme === 'dark' || theme === 'dim') {
       root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-  }, [theme]);
+  }, [theme, mounted]);
+
+  // Mencegah hydration mismatch di Next.js
+  if (!mounted) {
+    return <div className="w-[112px] h-[40px]" />;
+  }
 
   return (
-    <fieldset className="switcher liquid-distort">
-      <legend className="sr-only">Choose theme</legend>
+    <fieldset className="switcher">
+      <legend className="sr-only">Pilih tema</legend>
 
       <label className="switcher__option">
         <input
