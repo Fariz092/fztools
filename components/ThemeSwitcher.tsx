@@ -8,9 +8,11 @@ export default function ThemeSwitcher() {
 
   // Ambil tema dari localStorage saat pertama kali dimuat
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const savedTheme = localStorage.getItem('fztools_theme') as 'light' | 'dark' | 'dim' | null;
     if (savedTheme) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTheme(savedTheme);
     }
   }, []);
@@ -25,7 +27,6 @@ export default function ThemeSwitcher() {
     root.classList.remove('light', 'dark', 'dim');
     root.classList.add(theme);
     
-    // Tailwind menggunakan class 'dark' untuk dark mode
     if (theme === 'dark' || theme === 'dim') {
       root.classList.add('dark');
     } else {
@@ -33,7 +34,6 @@ export default function ThemeSwitcher() {
     }
   }, [theme, mounted]);
 
-  // Mencegah hydration mismatch di Next.js
   if (!mounted) {
     return <div className="w-[112px] h-[40px]" />;
   }

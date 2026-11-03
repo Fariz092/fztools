@@ -110,7 +110,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('fztools_theme') || 'light';
+                const root = document.documentElement;
+                root.classList.add(theme);
+                if (theme === 'dark' || theme === 'dim') {
+                  root.classList.add('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body
         suppressHydrationWarning
         className="bg-zinc-50 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-50 selection:bg-indigo-100 dark:selection:bg-indigo-900/30 relative overflow-x-hidden transition-colors duration-300"
