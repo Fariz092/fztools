@@ -27,6 +27,7 @@ import {
   AUTH_CHANGE_EVENT,
 } from '@/lib/auth-session';
 import { brutalistToast, brutalistConfirm } from '@/lib/popup-service';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 interface NavbarProps {
   activeTab?: string;
@@ -102,7 +103,7 @@ export default function Navbar({
   return (
     <>
       <header className="sticky top-3 sm:top-5 z-50 px-3 sm:px-6 w-full flex justify-center pointer-events-none">
-        <div className="pointer-events-auto liquid-glass-pill rounded-full py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6 transition-all max-w-2xl w-full">
+        <div className="pointer-events-auto liquid-distort rounded-full py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6 transition-all max-w-2xl w-full border border-white/20 dark:border-white/10 shadow-lg">
           <Link
             href="/"
             className="flex items-center gap-2.5 group cursor-pointer select-none"
@@ -128,6 +129,8 @@ export default function Navbar({
           </div>
 
           <div className="flex items-center gap-2.5">
+            <ThemeSwitcher />
+
             {userSession ? (
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
@@ -143,11 +146,11 @@ export default function Navbar({
                     />
                     <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
                       {(userSession as any).avatarUrl ? (
-                        <img 
-                          key={(userSession as any).avatarUrl} 
-                          src={(userSession as any).avatarUrl} 
-                          alt="User" 
-                          className="w-full h-full object-cover" 
+                        <img
+                          key={(userSession as any).avatarUrl}
+                          src={(userSession as any).avatarUrl}
+                          alt="User"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         userSession.initials
@@ -242,11 +245,11 @@ export default function Navbar({
                             />
                             <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-sm text-white overflow-hidden">
                               {(userSession as any).avatarUrl ? (
-                                <img 
-                                  key={(userSession as any).avatarUrl} 
-                                  src={(userSession as any).avatarUrl} 
-                                  alt="User" 
-                                  className="w-full h-full object-cover" 
+                                <img
+                                  key={(userSession as any).avatarUrl}
+                                  src={(userSession as any).avatarUrl}
+                                  alt="User"
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
                                 userSession.initials

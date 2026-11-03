@@ -7,6 +7,8 @@
   --font-plus-jakarta: 'Plus Jakarta Sans', sans-serif;
   --font-manrope: 'Manrope', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --glass-frost: 0.1;
+  --glass-saturation: 1.2;
 }
 
 @theme {
@@ -38,21 +40,37 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Liquid Glass UI Kit */
+/* Liquid Glass with SVG Distortion */
+.liquid-distort {
+  backdrop-filter: url(#liquid-glass-filter) blur(2px) saturate(var(--glass-saturation, 1));
+  -webkit-backdrop-filter: url(#liquid-glass-filter) blur(2px) saturate(var(--glass-saturation, 1));
+  background: hsl(0 0% 100% / var(--glass-frost, 0.1));
+}
+
+.dark .liquid-distort {
+  background: hsl(240 10% 10% / var(--glass-frost, 0.1));
+}
+
 .liquid-glass-pill {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(40px) saturate(150%);
-  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .dark .liquid-glass-pill {
-  background: rgba(24, 24, 27, 0.85);
-  backdrop-filter: blur(40px) saturate(150%);
-  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  background: rgba(24, 24, 27, 0.75);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 20px rgba(255, 255, 255, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .modern-glass-card {
@@ -70,14 +88,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .glass-btn-purple {
-  background: #4f46e5; /* Indigo solid */
+  background: #4f46e5;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(79, 70, 229, 0.3);
   color: white;
 }
 
 .glass-btn-teal {
-  background: #0d9488; /* Teal solid */
+  background: #0d9488;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(13, 148, 136, 0.3);
   color: white;
@@ -112,4 +130,53 @@ h1, h2, h3, h4, h5, h6 {
 
 .liquid-transition {
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Theme Switcher Styles (dari referensi) */
+.switcher {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+
+.switcher__option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.switcher__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switcher__icon {
+  width: 18px;
+  height: 18px;
+  color: #52525b;
+  transition: color 0.3s;
+}
+
+.dark .switcher__icon {
+  color: #a1a1aa;
+}
+
+.switcher__input:checked + .switcher__icon {
+  color: #4f46e5;
+}
+
+.switcher__filter {
+  display: none;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import AppPopupProvider from '@/components/AppPopupProvider';
+import LiquidGlassFilter from '@/components/LiquidGlassFilter';
 
 const SITE_URL = 'https://fztools.vercel.app';
 
@@ -114,6 +115,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-zinc-50 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-50 selection:bg-indigo-100 dark:selection:bg-indigo-900/30 relative overflow-x-hidden transition-colors duration-300"
       >
+        <LiquidGlassFilter />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
