@@ -21,7 +21,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Babe, udah tidur?", time: '22.00' },
   { sender: 'me', type: 'text', content: "Belum sayang, kenapa?", time: '22.01' },
   { sender: 'them', type: 'text', content: "Kangen aja hehe. Btw ini pap aku barusan, bagus ga?", time: '22.02' },
-  { sender: 'them', type: 'image', content: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", time: '22.02' },
+  { sender: 'them', type: 'image', content: "/pap-myprinces.png", time: '22.02' },
   { sender: 'me', type: 'text', content: "Cantik banget 😍", time: '22.03' },
   { sender: 'them', type: 'text', content: "Hehehe... Kamu lagi di kamar kan?", time: '22.05' },
   { sender: 'me', type: 'text', content: "Iya dong, kok kamu tau?", time: '22.06' },
@@ -32,7 +32,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Kamu takut ya? Hehehe.", time: '22.12' },
   { sender: 'them', type: 'text', content: "Btw, aku tadi liat kamu lagi rebahan di kasur.", time: '22.12' },
   { sender: 'me', type: 'text', content: "Hah? Serius kamu di mana?", time: '22.13' },
-  { sender: 'them', type: 'image', content: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", time: '22.14' },
+  { sender: 'them', type: 'image', content: "/fotopemandanganjendela.jpeg", time: '22.14' },
   { sender: 'them', type: 'text', content: "Ini pemandangan dari jendela kamar kamu kan?", time: '22.14' },
   { sender: 'me', type: 'text', content: "Bercanda kamu ya? Aku merinding beneran nih.", time: '22.15' },
   { sender: 'them', type: 'text', content: "Aku serius sayang. Aku udah nungguin kamu dari jam 12 malam loh.", time: '22.16' },
@@ -46,10 +46,10 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Aku lagi di depan pintu kamar kamu.", time: '22.21' },
   { sender: 'me', type: 'text', content: "Hah? Aku ga denger suara apa-apa.", time: '22.21' },
   { sender: 'them', type: 'text', content: "Aku udah masuk kok. Kamu lagi rebahan kan?", time: '22.22' },
-  { sender: 'them', type: 'image', content: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", time: '22.22' },
+  { sender: 'them', type: 'image', content: "/fotocowolagirebahan.jpeg", time: '22.22' },
   { sender: 'them', type: 'text', content: "Jangan bangun. Aku lagi di samping kamu.", time: '22.23' },
   { sender: 'me', type: 'voice', content: "VN: Babe, serius deh...", time: '22.24', duration: '0:09', audioSrc: '/vn-cowo.mp3' },
-  { sender: 'them', type: 'voice', content: "VN: Ssstt... jangan berisik sayang...", time: '22.25', duration: '0:15', audioSrc: '/vn-cewe2.mp3' },
+  { sender: 'them', type: 'voice', content: "VN: Ssstt... jangan berisik sayang...", time: '22.25', duration: '0:10', audioSrc: '/vn-cewe2.mp3' },
 ];
 
 const KEYBOARD_ROWS = [
@@ -60,7 +60,6 @@ const KEYBOARD_ROWS = [
 
 const EMOJI_LIST = ['😀','😂','🥺','😍','😭','👍','🔥','✨','🎀','❤️','💖','😎','😡','🥰','💔','🙏'];
 
-// Ganti Math.random() dengan array statis agar React 19 tidak error
 const WAVEFORM_HEIGHTS = [30, 60, 40, 80, 50, 90, 70, 40, 100, 60, 30, 80, 50, 70, 40];
 
 export default function ChatStoryTool() {
@@ -376,7 +375,7 @@ export default function ChatStoryTool() {
             <span className="text-[#007AFF] text-[17px] font-normal mr-2">{unreadCount}</span>
             
             <div className="w-[38px] h-[38px] bg-[#D1D1D6] rounded-full overflow-hidden flex items-center justify-center">
-               <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
+               <img src="/profil-myprincess.png" alt="Avatar" className="w-full h-full object-cover" />
             </div>
             
             <div className="flex flex-col ml-2">
