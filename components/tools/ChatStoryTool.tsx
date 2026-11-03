@@ -375,7 +375,7 @@ export default function ChatStoryTool() {
             <span className="text-[#007AFF] text-[17px] font-normal mr-2">{unreadCount}</span>
             
             <div className="w-[38px] h-[38px] bg-[#D1D1D6] rounded-full overflow-hidden flex items-center justify-center">
-               <img src="/profil-myprincess.png" alt="Avatar" className="w-full h-full object-cover" />
+               <img src="/profile.png" alt="Avatar" className="w-full h-full object-cover" />
             </div>
             
             <div className="flex flex-col ml-2">
