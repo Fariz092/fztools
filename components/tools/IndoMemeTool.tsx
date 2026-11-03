@@ -5,7 +5,8 @@ import {
   Download, 
   Type, 
   LayoutGrid,
-  CloudUpload
+  CloudUpload,
+  Laugh
 } from 'lucide-react';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion } from 'motion/react';
@@ -177,18 +178,23 @@ export default function IndoMemeTool() {
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-8 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/40 border border-zinc-200/60 dark:border-zinc-800/60">
       <div className="flex flex-wrap items-center justify-between gap-6 pb-6 border-b border-zinc-200/60 dark:border-zinc-800/60 mb-8">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
-              Meme Indonesia
-            </h2>
-            <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
-              · Koleksi Populer
-            </span>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/70 dark:border-orange-800/50 flex items-center justify-center shadow-xs">
+            <Laugh className="w-6 h-6 text-orange-600 dark:text-orange-400" />
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
-            Template meme legendaris dengan tipografi Impact khas media sosial.
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                Meme Indonesia
+              </h2>
+              <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-widest bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded-md">
+                · Koleksi Populer
+              </span>
+            </div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
+              Template meme legendaris dengan tipografi Impact khas media sosial.
+            </p>
+          </div>
         </div>
 
         <button

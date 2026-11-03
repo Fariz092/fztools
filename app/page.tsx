@@ -17,6 +17,15 @@ import {
   Zap,
   ShieldCheck,
   Layers,
+  ArrowRightLeft,
+  Type,
+  MessageSquareQuote,
+  Smartphone,
+  QrCode,
+  MessageCircle,
+  Laugh,
+  Flame,
+  Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
@@ -70,6 +79,56 @@ export default function HomePage() {
       tool.id.toLowerCase().includes(q)
     );
   });
+
+  const getToolIcon = (id: string) => {
+    switch (id) {
+      case 'converter':
+        return <ArrowRightLeft className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
+      case 'brat':
+        return <Type className="w-5 h-5 text-lime-600 dark:text-lime-400" />;
+      case 'iqc':
+        return <MessageSquareQuote className="w-5 h-5 text-pink-600 dark:text-pink-400" />;
+      case 'iqcv2':
+        return <Smartphone className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
+      case 'qr':
+        return <QrCode className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />;
+      case 'fakett':
+        return <MessageCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />;
+      case 'meme':
+        return <Laugh className="w-5 h-5 text-orange-600 dark:text-orange-400" />;
+      case 'sarcasm':
+        return <Flame className="w-5 h-5 text-rose-600 dark:text-rose-400" />;
+      case 'tiktok':
+        return <Video className="w-5 h-5 text-violet-600 dark:text-violet-400" />;
+      default:
+        return <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
+    }
+  };
+
+  const getToolBadgeColor = (id: string) => {
+    switch (id) {
+      case 'converter':
+        return 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200/60 dark:border-indigo-800/50';
+      case 'brat':
+        return 'bg-lime-50 dark:bg-lime-950/40 border-lime-200/60 dark:border-lime-800/50';
+      case 'iqc':
+        return 'bg-pink-50 dark:bg-pink-950/40 border-pink-200/60 dark:border-pink-800/50';
+      case 'iqcv2':
+        return 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200/60 dark:border-indigo-800/50';
+      case 'qr':
+        return 'bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200/60 dark:border-cyan-800/50';
+      case 'fakett':
+        return 'bg-amber-50 dark:bg-amber-950/40 border-amber-200/60 dark:border-amber-800/50';
+      case 'meme':
+        return 'bg-orange-50 dark:bg-orange-950/40 border-orange-200/60 dark:border-orange-800/50';
+      case 'sarcasm':
+        return 'bg-rose-50 dark:bg-rose-950/40 border-rose-200/60 dark:border-rose-800/50';
+      case 'tiktok':
+        return 'bg-violet-50 dark:bg-violet-950/40 border-violet-200/60 dark:border-violet-800/50';
+      default:
+        return 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200/60 dark:border-zinc-700/50';
+    }
+  };
 
   return (
     <AppShell
@@ -238,11 +297,11 @@ export default function HomePage() {
                     >
                       <div>
                         <div className="flex items-center justify-between mb-5">
-                          <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shadow-xs text-zinc-700 dark:text-zinc-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/40 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            <Zap className="w-4 h-4" />
+                          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border transition-all ${getToolBadgeColor(t.id)}`}>
+                            {getToolIcon(t.id)}
                           </div>
                           <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            {t.id}
+                            {t.badge}
                           </span>
                         </div>
                         

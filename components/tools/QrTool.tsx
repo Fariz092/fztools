@@ -7,7 +7,8 @@ import {
   Link, 
   MessageSquare, 
   Wifi, 
-  Type
+  Type,
+  QrCode
 } from 'lucide-react';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion } from 'motion/react';
@@ -144,8 +145,8 @@ export default function QrTool() {
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-8 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/40 border border-zinc-200/60 dark:border-zinc-800/60">
       <div className="flex flex-wrap items-center justify-between gap-6 pb-6 border-b border-zinc-200/60 dark:border-zinc-800/60 mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-bold text-xl text-white shadow-sm">
-            QR
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/50 flex items-center justify-center shadow-xs">
+            <QrCode className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">

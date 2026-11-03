@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { SimpleGifEncoder } from '@/lib/gif-encoder';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion } from 'motion/react';
-import { Download, Loader2, Play, Pause } from 'lucide-react';
+import { Download, Loader2, Play, Pause, Type } from 'lucide-react';
 
 export default function BratTool() {
   const [text, setText] = useState<string>('Minimalis\nEstetik Modern');
@@ -313,8 +313,8 @@ export default function BratTool() {
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-8 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/40 border border-zinc-200/60 dark:border-zinc-800/60">
       <div className="flex flex-wrap items-center justify-between gap-6 pb-6 border-b border-zinc-200/60 dark:border-zinc-800/60 mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-bold text-xl text-white shadow-sm">
-            B
+          <div className="w-12 h-12 rounded-2xl bg-lime-50 dark:bg-lime-950/40 border border-lime-200/70 dark:border-lime-800/50 flex items-center justify-center shadow-xs">
+            <Type className="w-6 h-6 text-lime-600 dark:text-lime-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">

@@ -3,22 +3,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Download, 
-  Heart, 
   MessageCircle, 
-  CheckCircle2, 
-  Pin, 
-  Upload, 
   Moon, 
   Sun,
-  Shuffle,
-  ChevronRight
+  Shuffle
 } from 'lucide-react';
 import { saveHistoryItem } from '@/lib/history-service';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 
 export default function FakeTtCommentTool() {
   const [username, setUsername] = useState<string>('ical_official');
-  const [displayName, setDisplayName] = useState<string>('Ical Hack');
+  const [displayName] = useState<string>('Ical Hack');
   const [commentText, setCommentText] = useState<string>(
     'Minimal mandi dulu bang sebelum bikin tutorial 😭🙏🏻 tapi ilmunya mantap sih!'
   );
@@ -299,20 +294,20 @@ export default function FakeTtCommentTool() {
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-10 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/20 border border-zinc-200/80 dark:border-zinc-800/80">
       <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-zinc-200/50 dark:border-zinc-800/50 mb-10">
-        <div className="flex items-center gap-5">
-          <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 font-bold text-2xl text-white">
-            <MessageCircle className="w-8 h-8" />
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/50 flex items-center justify-center shadow-xs">
+            <MessageCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
                 Generator Komentar TikTok
               </h2>
-              <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-widest">
-                Mockup Presisi
+              <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                · Mockup Presisi
               </span>
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">
               Buat tangkapan layar komentar TikTok realistis untuk konten meme dan kreator.
             </p>
           </div>
