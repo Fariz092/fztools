@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, Globe, Smile, Volume2, VolumeX, Pause, Send, CheckCheck, Bell } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 type Sender = 'me' | 'them';
 type MessageType = 'text' | 'image' | 'voice';
@@ -62,7 +63,9 @@ const KEYBOARD_ROWS = [
 ];
 
 const EMOJI_LIST = ['😀','😂','🥺','😍','😭','👍','🔥','✨','🎀','❤️','💖','😎','😡','🥰','💔','🙏'];
-const WAVEFORM_HEIGHTS = [30, 60, 40, 80, 50, 90, 70, 40, 100, 60, 30, 80, 50, 70, 40];
+
+// Waveform baru: lebih banyak dan padat (30 bar)
+const WAVEFORM_HEIGHTS = [30, 50, 20, 80, 40, 90, 60, 30, 70, 100, 40, 60, 20, 80, 50, 40, 90, 30, 70, 50, 20, 80, 40, 60, 90, 30, 70, 50, 80, 40];
 
 export default function ChatStoryTool() {
   const [displayedMessages, setDisplayedMessages] = useState<Message[]>([]);
@@ -302,21 +305,38 @@ export default function ChatStoryTool() {
 
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
-        {/* HEADER GLASSMORPHISM (SANGAT TRANSPARAN & BLUR TEBAL) */}
-        <div className="absolute top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-3xl border-b border-black/10 px-3 py-2.5 flex items-center justify-between drop-shadow-sm">
+        {/* HEADER NATIVE (TANPA GARIS/GARIS BAYANGAN) */}
+        <div className="absolute top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <ChevronLeft className="w-6 h-6 text-black drop-shadow-sm" strokeWidth={2.5} />
-            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-gray-300 shadow-sm">
-               <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
+            <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
+            
+            {/* AVATAR + GREEN DOT */}
+            <div className="relative w-10 h-10 rounded-full bg-gray-300">
+               <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover rounded-full" />
+               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
+
             <div className="flex flex-col">
-              <span className="text-[16px] font-bold text-black leading-tight drop-shadow-sm">MyPrincess💖</span>
-              <span className="text-[12px] font-semibold text-gray-800 leading-tight drop-shadow-sm">
-                {isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
-              </span>
+              <span className="text-[16px] font-bold text-black leading-tight">MyPrincess💖</span>
+              
+              {/* ANIMASI STATUS MENGGUNAKAN FRAMER MOTION */}
+              <div className="h-[16px] overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.span 
+                    key={isRecording ? 'recording' : typingSender === 'them' ? 'typing' : 'online'}
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -10, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    className="text-[12px] font-medium text-gray-500 leading-tight block"
+                  >
+                    {isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-black drop-shadow-sm">
+          <div className="flex items-center gap-4 text-black">
             <Video className="w-6 h-6" strokeWidth={1.5} />
             <Phone className="w-5 h-5" strokeWidth={1.5} />
           </div>
@@ -354,8 +374,14 @@ export default function ChatStoryTool() {
             const isVnPlaying = activeVnId === msg.id;
             
             return (
-              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                <div className={`relative max-w-[85%] rounded-[12px] shadow-sm flex flex-col ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} ${msg.type === 'image' ? 'p-1' : 'px-2 py-1.5'}`}>
+              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2`}>
+                {/* ANIMASI BUBBLE SPRING */}
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0, y: 10 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className={`relative max-w-[85%] rounded-[16px] flex flex-col ${isMe ? 'bg-[#DCF8C6] rounded-tr-[4px]' : 'bg-white rounded-tl-[4px]'} ${msg.type === 'image' ? 'p-1' : 'px-2.5 py-1.5'}`}
+                >
                   
                   {msg.type === 'text' && <span className="text-black text-[15px] font-medium pr-14 leading-snug">{msg.content}</span>}
 
@@ -365,19 +391,26 @@ export default function ChatStoryTool() {
                     </div>
                   )}
 
+                  {/* DESAIN VOICE NOTE BARU (SESUAI REFERENSI) */}
                   {msg.type === 'voice' && (
-                    <div onClick={() => toggleVoiceNote(msg)} className="flex items-center gap-2 pr-12 py-1 cursor-pointer w-[220px]">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-[#128C7E] text-white`}>
-                        {isVnPlaying ? <Pause className="w-4 h-4" fill="currentColor" /> : <Play className="w-4 h-4" fill="currentColor" />}
+                    <div onClick={() => toggleVoiceNote(msg)} className="flex items-center gap-3 pr-10 py-1 cursor-pointer w-full">
+                      {/* Tombol Play Solid */}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-black text-white' : 'bg-black text-white'}`}>
+                        {isVnPlaying ? <Pause className="w-3.5 h-3.5" fill="currentColor" /> : <Play className="w-3.5 h-3.5 ml-0.5" fill="currentColor" />}
                       </div>
-                      <div className="flex items-center gap-0.5 h-6 flex-1 relative overflow-hidden">
-                         {WAVEFORM_HEIGHTS.map((h, i) => (
-                           <div key={i} className={`w-[2px] rounded-full shrink-0 bg-zinc-400`} style={{ height: `${h}%` }}></div>
-                         ))}
-                         <div className="absolute top-0 bottom-0 left-0 bg-white/60 mix-blend-overlay pointer-events-none transition-all duration-100" style={{ width: `${isVnPlaying ? vnProgress : 0}%` }} />
-                      </div>
-                      <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/50 ml-auto">
-                        <img src={isMe ? "https://i.pravatar.cc/150?img=11" : "https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80"} className="w-full h-full object-cover" />
+                      
+                      {/* Waveform Full Width */}
+                      <div className="flex items-center justify-between gap-[2px] h-6 flex-1 relative overflow-hidden">
+                         {WAVEFORM_HEIGHTS.map((h, i) => {
+                           const isPlayed = (i / WAVEFORM_HEIGHTS.length) * 100 <= (isVnPlaying ? vnProgress : 0);
+                           return (
+                             <div 
+                               key={i} 
+                               className={`w-[2px] rounded-full shrink-0 transition-colors ${isPlayed ? 'bg-[#128C7E]' : 'bg-gray-300'}`} 
+                               style={{ height: `${h}%` }}
+                             />
+                           );
+                         })}
                       </div>
                     </div>
                   )}
@@ -386,14 +419,14 @@ export default function ChatStoryTool() {
                     <span className="text-[10px] text-gray-500 font-semibold">{isVnPlaying ? vnDurationText : msg.time}</span>
                     {isMe && (msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> : <CheckCheck className="w-3.5 h-3.5 text-gray-400" />)}
                   </div>
-                </div>
+                </motion.div>
               </div>
             );
           })}
 
           {typingSender === 'them' && (
             <div className="flex justify-start mb-2 animate-in fade-in">
-              <div className="bg-white rounded-xl px-3 py-2 shadow-sm flex items-center gap-1.5">
+              <div className="bg-white rounded-xl px-3 py-2 flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                 <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                 <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
@@ -405,7 +438,7 @@ export default function ChatStoryTool() {
         {/* INPUT CHAT (COMPACT) */}
         <div className="bg-[#F6F6F6] p-1.5 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
           {isRecording ? (
-            <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[36px] border border-gray-300 shadow-sm">
+            <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[36px] border border-gray-300">
               <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
               <span className="text-red-500 font-mono font-bold text-sm">{`0:${recordTime < 10 ? '0' : ''}${recordTime}`}</span>
               <span className="text-gray-500 text-xs font-medium ml-2">Merekam Audio...</span>
@@ -414,7 +447,7 @@ export default function ChatStoryTool() {
             <>
               <div className="w-[36px] h-[36px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
               
-              <div className="flex-1 bg-white rounded-3xl flex items-end px-2 py-1 border border-gray-300 shadow-sm min-h-[36px] relative">
+              <div className="flex-1 bg-white rounded-3xl flex items-end px-2 py-1 border border-gray-300 min-h-[36px] relative">
                 {inputText === '' && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-gray-400 pointer-events-none">Ketik pesan</span>}
                 <textarea 
                   ref={textareaRef} 
@@ -440,25 +473,25 @@ export default function ChatStoryTool() {
         <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {KEYBOARD_ROWS.map((row, rowIndex) => (
             <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
-              {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] shadow-sm flex items-center justify-center"><ChevronUp className="w-5 h-5 text-black" /></div>}
+              {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] flex items-center justify-center"><ChevronUp className="w-5 h-5 text-black" /></div>}
               {row.map(k => {
                 const isActive = activeKey === k;
                 const hasTouch = touches.some(t => t.key === k);
                 return (
-                  <div key={k} className={`relative flex-1 max-w-[34px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center text-[19px] font-bold text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}>
+                  <div key={k} className={`relative flex-1 max-w-[34px] h-[42px] rounded-[5px] flex items-center justify-center text-[19px] font-bold text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}>
                     {k}
                     {hasTouch && <div className="absolute inset-0 bg-black/10 rounded-[5px] animate-ping pointer-events-none" />}
                   </div>
                 );
               })}
-              {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] shadow-sm flex items-center justify-center"><Delete className="w-5 h-5 text-black" /></div>}
+              {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] flex items-center justify-center"><Delete className="w-5 h-5 text-black" /></div>}
             </div>
           ))}
           <div className="flex gap-1.5 justify-center mt-1">
-            <div className="bg-[#ABB2BA] w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] font-bold flex items-center justify-center text-black">123</div>
-            <div className="bg-white w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black"><Smile className="w-6 h-6" /></div>
-            <div className="bg-white flex-1 h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[16px] font-bold flex items-center justify-center text-black">Spasi</div>
-            <div className="bg-[#ABB2BA] w-[70px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] font-bold flex items-center justify-center text-black">Kembali</div>
+            <div className="bg-[#ABB2BA] w-[42px] h-[42px] rounded-[5px] text-[15px] font-bold flex items-center justify-center text-black">123</div>
+            <div className="bg-white w-[42px] h-[42px] rounded-[5px] text-[15px] flex items-center justify-center text-black"><Smile className="w-6 h-6" /></div>
+            <div className="bg-white flex-1 h-[42px] rounded-[5px] text-[16px] font-bold flex items-center justify-center text-black">Spasi</div>
+            <div className="bg-[#ABB2BA] w-[70px] h-[42px] rounded-[5px] text-[15px] font-bold flex items-center justify-center text-black">Kembali</div>
           </div>
           <div className="flex justify-between items-center px-4 mt-1 mb-1">
             <Globe className="w-6 h-6 text-gray-500" strokeWidth={2} />
