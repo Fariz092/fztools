@@ -74,8 +74,6 @@ export default function PrincessRoom({ onFinish, isPlaying, isMuted, progress, s
         ...msg, id: Date.now() + i, status: 'read' as any
       }));
       setDisplayedMessages(history);
-      
-      // FIX LINTER: Bungkus setState pakai setTimeout
       if (progress === STORY_SCRIPT.length) {
         const timer = setTimeout(() => setIsOffline(true), 0);
         return () => clearTimeout(timer);
@@ -131,6 +129,24 @@ export default function PrincessRoom({ onFinish, isPlaying, isMuted, progress, s
     setTimeout(() => setTouches(prev => prev.filter(t => t.id !== id)), 300);
   };
 
+  // FUNGSI MEMUTAR VN (UNTUK AUTO-PLAY SAAT DIKIRIM)
+  const playVoiceNote = (audioSrc: string, msgId: number) => {
+    return new Promise<void>((resolve) => {
+      const audio = new Audio(audioSrc);
+      audio.play().then(() => {
+        setActiveVnId(msgId);
+        const timeUpdate = setInterval(() => {
+          if (audio.duration) {
+            setVnProgress((audio.currentTime / audio.duration) * 100);
+            const mins = Math.floor(audio.currentTime / 60); const secs = Math.floor(audio.currentTime % 60);
+            setVnDurationText(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
+          }
+        }, 100);
+        audio.onended = () => { clearInterval(timeUpdate); setActiveVnId(null); setVnProgress(0); setVnDurationText('0:00'); resolve(); };
+      }).catch(() => setTimeout(() => resolve(), 3000));
+    });
+  };
+
   useEffect(() => {
     if (!isPlaying) { cancelRef.current = true; return; }
     cancelRef.current = false;
@@ -161,20 +177,7 @@ export default function PrincessRoom({ onFinish, isPlaying, isMuted, progress, s
               continueResolver.current = () => { setIsWaitingForContinue(false); resolve(); };
             });
           } else if (msg.type === 'voice') {
-            const vnAudio = new Audio(msg.audioSrc);
-            await new Promise<void>((resolve) => {
-              vnAudio.play().then(() => {
-                setActiveVnId(msgId);
-                const interval = setInterval(() => {
-                  if (vnAudio.duration) {
-                    setVnProgress((vnAudio.currentTime / vnAudio.duration) * 100);
-                    const m = Math.floor(vnAudio.currentTime / 60); const s = Math.floor(vnAudio.currentTime % 60);
-                    setVnDurationText(`${m}:${s < 10 ? '0' : ''}${s}`);
-                  }
-                }, 100);
-                vnAudio.onended = () => { clearInterval(interval); setActiveVnId(null); setVnProgress(0); setVnDurationText('0:00'); resolve(); };
-              }).catch(() => setTimeout(resolve, 3000));
-            });
+            await playVoiceNote(msg.audioSrc!, msgId);
           } else {
             await new Promise(r => setTimeout(r, 1000));
           }
@@ -192,6 +195,9 @@ export default function PrincessRoom({ onFinish, isPlaying, isMuted, progress, s
             setDisplayedMessages(prev => [...prev, newMsg]);
             playSfx('send');
             
+            // FIX: AUTO-PLAY VN PAS COWOK NGIRIM
+            await playVoiceNote(msg.audioSrc!, msgId);
+
             if (i === STORY_SCRIPT.length - 1) {
               await new Promise(r => setTimeout(r, 1500)); 
               setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read', reaction: '❤️' } : m)); 

@@ -13,12 +13,15 @@ export default function ChatStoryTool() {
   const [screen, setScreen] = useState<ScreenView>('princess');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [progress, setProgress] = useState(0);
+  
+  // Progress Terpisah untuk Princess dan Fazrull
+  const [princessProgress, setPrincessProgress] = useState(0);
+  const [fazrullProgress, setFazrullProgress] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const saved = localStorage.getItem('fz_chat_progress');
-      if (saved) setProgress(parseInt(saved));
+      if (saved) setPrincessProgress(parseInt(saved));
     }, 0);
     return () => clearTimeout(timer);
   }, []);
@@ -34,7 +37,8 @@ export default function ChatStoryTool() {
 
   const handleReset = () => {
     setIsPlaying(false);
-    setProgress(0);
+    setPrincessProgress(0);
+    setFazrullProgress(0);
     localStorage.removeItem('fz_chat_progress');
     setScreen('princess');
   };
@@ -51,7 +55,7 @@ export default function ChatStoryTool() {
               </button>
             ) : (
               <button onClick={() => setIsPlaying(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
-                <Play className="w-3.5 h-3.5" /> {progress > 0 ? 'Lanjut' : 'Putar'}
+                <Play className="w-3.5 h-3.5" /> {princessProgress > 0 ? 'Lanjut' : 'Putar'}
               </button>
             )}
             <button onClick={handleReset} className="bg-white text-zinc-900 border border-zinc-300 px-3 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
@@ -59,7 +63,7 @@ export default function ChatStoryTool() {
             </button>
           </div>
           <div className="flex gap-2">
-             <button onClick={() => { localStorage.setItem('fz_chat_progress', progress.toString()); alert('Progres disimpan!'); }} className="bg-emerald-600 text-white px-3 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
+             <button onClick={() => { localStorage.setItem('fz_chat_progress', princessProgress.toString()); alert('Progres disimpan!'); }} className="bg-emerald-600 text-white px-3 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
                <Save className="w-3.5 h-3.5" /> Simpan
              </button>
              <button onClick={() => setIsMuted(!isMuted)} className="bg-zinc-800 text-white p-2 rounded-full shadow-md">
@@ -73,12 +77,16 @@ export default function ChatStoryTool() {
            <input 
              type="range" 
              min="0" 
-             max={STORY_SCRIPT.length} 
-             value={progress} 
-             onChange={(e) => setProgress(parseInt(e.target.value))} 
+             max={screen === 'princess' ? STORY_SCRIPT.length : 2} 
+             value={screen === 'princess' ? princessProgress : fazrullProgress} 
+             onChange={(e) => {
+                const val = parseInt(e.target.value);
+                if (screen === 'princess') setPrincessProgress(val);
+                else setFazrullProgress(val);
+             }} 
              className="flex-1 h-1.5 bg-zinc-300 rounded-lg appearance-none cursor-pointer accent-indigo-600" 
            />
-           <span className="text-[10px] font-bold text-zinc-500">{STORY_SCRIPT.length}</span>
+           <span className="text-[10px] font-bold text-zinc-500">{screen === 'princess' ? STORY_SCRIPT.length : 2}</span>
         </div>
       </div>
 
@@ -88,10 +96,9 @@ export default function ChatStoryTool() {
           <PrincessRoom 
             onFinish={handlePrincessFinish} 
             isPlaying={isPlaying} 
-            setIsPlaying={setIsPlaying} 
             isMuted={isMuted} 
-            progress={progress} 
-            setProgress={setProgress} 
+            progress={princessProgress} 
+            setProgress={setPrincessProgress} 
           />
         )}
 
@@ -103,7 +110,13 @@ export default function ChatStoryTool() {
         )}
 
         {screen === 'fazrull' && (
-          <FazrullRoom onFinish={handleFazrullFinish} />
+          <FazrullRoom 
+            onFinish={handleFazrullFinish}
+            isPlaying={isPlaying}
+            isMuted={isMuted}
+            progress={fazrullProgress}
+            setProgress={setFazrullProgress}
+          />
         )}
 
         <AnimatePresence>
