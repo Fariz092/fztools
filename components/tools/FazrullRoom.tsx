@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, Video, Phone, Plus, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Message, MessageBubble, Keyboard } from './ChatUI';
 
@@ -13,16 +13,33 @@ const FAZRULL_SCRIPT: Omit<Message, 'id'>[] = [
 export default function FazrullRoom({ onBack }: { onBack: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isOffline, setIsOffline] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const hasPlayed = useRef(false);
 
   useEffect(() => {
+    // Cegah double trigger kalau di-render ulang
+    if (hasPlayed.current) return;
+    hasPlayed.current = true;
+
     const play = async () => {
       setMessages([]);
       setIsOffline(false);
       await new Promise(r => setTimeout(r, 1000));
+      
+      // Cowok ngetik (lo)
       setMessages([{ ...FAZRULL_SCRIPT[0], id: Date.now(), status: 'sent' }]);
       await new Promise(r => setTimeout(r, 1500));
+      
+      // Fazrull ngetik
+      setIsTyping(true);
+      await new Promise(r => setTimeout(r, 1500));
+      setIsTyping(false);
+      
+      // Fazrull bales
       setMessages(prev => [...prev, { ...FAZRULL_SCRIPT[1], id: Date.now() + 1, status: 'read' }]);
       await new Promise(r => setTimeout(r, 2000));
+      
+      // Fazrull Offline
       setIsOffline(true);
     };
     play();
@@ -42,12 +59,12 @@ export default function FazrullRoom({ onBack }: { onBack: () => void }) {
             <div className="h-[16px] overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.span 
-                  key={isOffline ? 'offline' : 'online'}
+                  key={isOffline ? 'offline' : isTyping ? 'typing' : 'online'}
                   initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                   className="text-[12px] font-medium text-gray-500 leading-tight block"
                 >
-                  {isOffline ? 'terakhir dilihat 22.31' : 'Online'}
+                  {isOffline ? 'terakhir dilihat 22.31' : isTyping ? 'sedang mengetik...' : 'Online'}
                 </motion.span>
               </AnimatePresence>
             </div>
@@ -66,6 +83,15 @@ export default function FazrullRoom({ onBack }: { onBack: () => void }) {
         {messages.map((msg) => (
           <MessageBubble key={msg.id} msg={msg} isVnPlaying={false} vnProgress={0} vnDurationText="" toggleVoiceNote={() => {}} setActiveImage={() => {}} />
         ))}
+        {isTyping && (
+          <div className="flex justify-start mb-2 animate-in fade-in">
+            <div className="bg-white rounded-xl px-3 py-2 flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-[#F6F6F6] p-1.5 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">

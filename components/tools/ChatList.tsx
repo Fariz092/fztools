@@ -50,7 +50,7 @@ export default function ChatList({ onOpenPrincess, onOpenFazrull }: { onOpenPrin
           </div>
         </div>
 
-        {/* Fazrull (Profil Kosong) */}
+        {/* Fazrull (Profil Kosong + Unread Badge) */}
         <div className="flex items-center px-4 py-3 border-b border-gray-100 cursor-pointer active:bg-gray-50" onClick={onOpenFazrull}>
           <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-3 shrink-0">
              <svg viewBox="0 0 24 24" fill="#8E8E93" className="w-8 h-8 mt-2"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -62,6 +62,8 @@ export default function ChatList({ onOpenPrincess, onOpenFazrull }: { onOpenPrin
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[15px] text-gray-500">ketik dan tahan pada chat untuk opsi</span>
+              {/* BADGE UNREAD */}
+              <div className="w-5 h-5 bg-[#007AFF] rounded-full flex items-center justify-center text-white text-[11px] font-bold">1</div>
             </div>
           </div>
         </div>
