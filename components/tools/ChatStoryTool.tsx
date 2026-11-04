@@ -5,16 +5,16 @@ import { motion, AnimatePresence } from 'motion/react';
 import ChatList from './ChatList';
 import PrincessRoom, { STORY_SCRIPT } from './PrincessRoom';
 import FazrullRoom from './FazrullRoom';
+import LockScreen from './LockScreen';
+import SpamPrincessRoom from './SpamPrincessRoom';
 import { Play, Pause, Save, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
-type ScreenView = 'princess' | 'list' | 'fazrull' | 'ending';
+type ScreenView = 'princess' | 'list' | 'fazrull' | 'ending-night' | 'ending-morning' | 'lockscreen' | 'spam-room';
 
 export default function ChatStoryTool() {
   const [screen, setScreen] = useState<ScreenView>('princess');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  
-  // Progress Terpisah untuk Princess dan Fazrull
   const [princessProgress, setPrincessProgress] = useState(0);
   const [fazrullProgress, setFazrullProgress] = useState(0);
 
@@ -26,13 +26,21 @@ export default function ChatStoryTool() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Alur: Princess -> List -> Fazrull -> Ending Night -> Ending Morning -> Lock Screen
   const handlePrincessFinish = () => {
     setScreen('list');
     setTimeout(() => setScreen('fazrull'), 2000);
   };
 
   const handleFazrullFinish = () => {
-    setScreen('ending');
+    setScreen('ending-night');
+    setTimeout(() => setScreen('ending-morning'), 2500); // Teks malam berubah jadi pagi
+    setTimeout(() => setScreen('lockscreen'), 5000); // Lanjut ke lock screen
+  };
+
+  const handleUnlock = () => {
+    setScreen('list');
+    setTimeout(() => setScreen('spam-room'), 2000); // Otomatis masuk ke room spam
   };
 
   const handleReset = () => {
@@ -46,6 +54,7 @@ export default function ChatStoryTool() {
   return (
     <div className="w-full flex flex-col items-center gap-3 font-sans py-4">
       
+      {/* KONTROL & PROGRESS BAR (DI LUAR) */}
       <div className="w-full max-w-[400px] flex flex-col gap-2 px-2">
         <div className="flex justify-between items-center">
           <div className="flex gap-2">
@@ -90,6 +99,7 @@ export default function ChatStoryTool() {
         </div>
       </div>
 
+      {/* FRAME HP */}
       <div className="w-full max-w-[400px] h-[80dvh] sm:h-[750px] bg-white rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
         {screen === 'princess' && (
@@ -119,25 +129,33 @@ export default function ChatStoryTool() {
           />
         )}
 
+        {screen === 'spam-room' && (
+          <SpamPrincessRoom onBack={() => setScreen('list')} />
+        )}
+
+        {/* LAYAR ENDING & LOCK SCREEN */}
         <AnimatePresence>
-          {screen === 'ending' && (
+          {screen === 'ending-night' && (
             <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center p-6 text-center"
             >
-              <motion.p 
-                initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }}
-                className="text-white text-lg font-medium leading-relaxed mb-4"
-              >
-                gua dan fazrull mabar emel sampe jam 3 pagi
-              </motion.p>
-              <motion.p 
-                initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 2 }}
-                className="text-gray-400 text-sm font-mono tracking-widest"
-              >
-                03.00
-              </motion.p>
+              <p className="text-white text-lg font-medium leading-relaxed mb-4">gua dan fazrull mabar emel sampe jam 3 pagi</p>
+              <p className="text-gray-400 text-sm font-mono tracking-widest">03.00</p>
             </motion.div>
+          )}
+
+          {screen === 'ending-morning' && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 z-[100] bg-black flex items-center justify-center"
+            >
+              <p className="text-white text-4xl font-mono tracking-widest font-bold">09.10</p>
+            </motion.div>
+          )}
+
+          {screen === 'lockscreen' && (
+            <LockScreen onUnlock={handleUnlock} />
           )}
         </AnimatePresence>
       </div>
