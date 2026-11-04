@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, Pause, Bell, Send, CheckCheck } from 'lucide-react';
+import { Video, Phone, Plus, Bell, Send, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Message, MessageBubble, Keyboard } from './ChatUI';
 
@@ -60,31 +60,18 @@ export default function PrincessRoom({ onFinish }: { onFinish: () => void }) {
   const [activeKey, setActiveKey] = useState<string | null>(null);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const hasStarted = useRef(false);
 
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
 
-    const audio = new Audio();
-    voiceNoteAudioRef.current = audio;
-    const handleTimeUpdate = () => {
-      if (audio.duration) {
-        setVnProgress((audio.currentTime / audio.duration) * 100);
-        const mins = Math.floor(audio.currentTime / 60); const secs = Math.floor(audio.currentTime % 60);
-        setVnDurationText(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
-      }
-    };
-    const handleEnded = () => { setActiveVnId(null); setVnProgress(0); setVnDurationText('0:00'); };
-    audio.addEventListener('timeupdate', handleTimeUpdate); audio.addEventListener('ended', handleEnded);
-
     const runSequence = async () => {
       await new Promise(r => setTimeout(r, 1000));
 
       for (let i = 0; i < STORY_SCRIPT.length; i++) {
         const msg = STORY_SCRIPT[i];
-        const msgId = Date.now() + i;
+        const msgId = Date.now() + i; // <-- ID UNIK DIBUAT DISINI
 
         if (msg.sender === 'them') {
           setTypingSender('them');
@@ -103,7 +90,7 @@ export default function PrincessRoom({ onFinish }: { onFinish: () => void }) {
             const vnAudio = new Audio(msg.audioSrc);
             await new Promise<void>((resolve) => {
               vnAudio.play().then(() => {
-                setActiveVnId(msg.id);
+                setActiveVnId(msgId); // <-- FIX: PAKAI msgId
                 const interval = setInterval(() => {
                   if (vnAudio.duration) {
                     setVnProgress((vnAudio.currentTime / vnAudio.duration) * 100);
@@ -193,12 +180,10 @@ export default function PrincessRoom({ onFinish }: { onFinish: () => void }) {
       }
     };
     runSequence();
-    return () => { audio.pause(); audio.removeEventListener('timeupdate', handleTimeUpdate); audio.removeEventListener('ended', handleEnded); };
   }, []);
 
   return (
     <>
-      {/* HEADER GLASSMORPHISM BERSIH */}
       <div className="absolute top-0 left-0 right-0 z-50 bg-white/30 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between border-b border-white/20 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-full bg-gray-300">
