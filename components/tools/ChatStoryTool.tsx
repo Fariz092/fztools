@@ -15,10 +15,12 @@ export default function ChatStoryTool() {
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // LOAD PROGRESS SAAT PERTAMA KALI DIBUKA
   useEffect(() => {
-    const saved = localStorage.getItem('fz_chat_progress');
-    if (saved) setProgress(parseInt(saved));
+    const timer = setTimeout(() => {
+      const saved = localStorage.getItem('fz_chat_progress');
+      if (saved) setProgress(parseInt(saved));
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handlePrincessFinish = () => {
@@ -40,7 +42,6 @@ export default function ChatStoryTool() {
   return (
     <div className="w-full flex flex-col items-center gap-3 font-sans py-4">
       
-      {/* KONTROL & PROGRESS BAR (DI LUAR BINGKAI HP) */}
       <div className="w-full max-w-[400px] flex flex-col gap-2 px-2">
         <div className="flex justify-between items-center">
           <div className="flex gap-2">
@@ -67,7 +68,6 @@ export default function ChatStoryTool() {
           </div>
         </div>
         
-        {/* PROGRESS BAR */}
         <div className="flex items-center gap-2">
            <span className="text-[10px] font-bold text-zinc-500">0</span>
            <input 
@@ -82,7 +82,6 @@ export default function ChatStoryTool() {
         </div>
       </div>
 
-      {/* BINGKAI HP */}
       <div className="w-full max-w-[400px] h-[80dvh] sm:h-[750px] bg-white rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
         {screen === 'princess' && (
@@ -107,7 +106,6 @@ export default function ChatStoryTool() {
           <FazrullRoom onFinish={handleFazrullFinish} />
         )}
 
-        {/* LAYAR ENDING */}
         <AnimatePresence>
           {screen === 'ending' && (
             <motion.div 

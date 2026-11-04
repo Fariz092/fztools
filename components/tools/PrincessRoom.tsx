@@ -67,7 +67,6 @@ export default function PrincessRoom({ onFinish, isPlaying, isMuted, progress, s
   const currentIdxRef = useRef(progress);
   const hasMounted = useRef(false);
 
-  // Sync progress dari luar ke dalam
   useEffect(() => {
     if (progress !== currentIdxRef.current || !hasMounted.current) {
       currentIdxRef.current = progress;
@@ -75,7 +74,12 @@ export default function PrincessRoom({ onFinish, isPlaying, isMuted, progress, s
         ...msg, id: Date.now() + i, status: 'read' as any
       }));
       setDisplayedMessages(history);
-      if (progress === STORY_SCRIPT.length) setIsOffline(true);
+      
+      // FIX LINTER: Bungkus setState pakai setTimeout
+      if (progress === STORY_SCRIPT.length) {
+        const timer = setTimeout(() => setIsOffline(true), 0);
+        return () => clearTimeout(timer);
+      }
       hasMounted.current = true;
     }
   }, [progress]);
