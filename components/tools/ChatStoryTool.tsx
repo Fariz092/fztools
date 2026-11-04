@@ -19,7 +19,7 @@ interface Message {
   audioSrc?: string;
   status?: MessageStatus;
   isTypo?: boolean;
-  reaction?: string; // <-- FITUR REACTION BARU
+  reaction?: string;
 }
 
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
@@ -80,7 +80,7 @@ export default function ChatStoryTool() {
   const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
   const [maxUnlockedIndex, setMaxUnlockedIndex] = useState(0);
   const [isDev, setIsDev] = useState(false);
-  const [isOffline, setIsOffline] = useState(false); // STATE BARU
+  const [isOffline, setIsOffline] = useState(false);
   
   const [isWaitingForContinue, setIsWaitingForContinue] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
@@ -98,6 +98,9 @@ export default function ChatStoryTool() {
   const cancelRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // REF UNTUK MENCEGAH DUPLIKAT
+  const currentIdxRef = useRef(0); 
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -108,6 +111,7 @@ export default function ChatStoryTool() {
       if (savedIndex) {
         const idx = parseInt(savedIndex);
         setCurrentMsgIndex(idx);
+        currentIdxRef.current = idx; // Set ref
         setMaxUnlockedIndex(idx);
         const history = STORY_SCRIPT.slice(0, idx).map((msg, i) => ({
           ...msg, id: Date.now() + i, status: 'read' as MessageStatus
@@ -135,6 +139,7 @@ export default function ChatStoryTool() {
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const idx = parseInt(e.target.value);
     setCurrentMsgIndex(idx);
+    currentIdxRef.current = idx; // Set ref
     setIsPlaying(false);
     cancelRef.current = true;
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
@@ -143,7 +148,7 @@ export default function ChatStoryTool() {
     setTypingSender(null);
     setInputText('');
     setIsWaitingForContinue(false);
-    setIsOffline(idx === STORY_SCRIPT.length); // Set offline kalau di akhir
+    setIsOffline(idx === STORY_SCRIPT.length); 
     
     const history = STORY_SCRIPT.slice(0, idx).map((msg, i) => ({
       ...msg, id: Date.now() + i, status: 'read' as MessageStatus
@@ -253,7 +258,8 @@ export default function ChatStoryTool() {
       setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
       await new Promise(r => setTimeout(r, 500));
 
-      for (let i = currentMsgIndex; i < STORY_SCRIPT.length; i++) {
+      // GUNAKAN currentIdxRef.current BUKAN state currentMsgIndex
+      for (let i = currentIdxRef.current; i < STORY_SCRIPT.length; i++) {
         if (cancelRef.current) return;
         const msg = STORY_SCRIPT[i];
         const msgId = Date.now() + i;
@@ -284,12 +290,11 @@ export default function ChatStoryTool() {
             const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
             setDisplayedMessages(prev => [...prev, newMsg]);
             
-            // JIKA INI PESAN TERAKHIR (REACTION & OFFLINE)
             if (i === STORY_SCRIPT.length - 1) {
-              await new Promise(r => setTimeout(r, 1500)); // Jeda baca
-              setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read', reaction: '❤️' } : m)); // Kasih Reaction
-              await new Promise(r => setTimeout(r, 2000)); // Jeda liat reaction
-              setIsOffline(true); // Ubah jadi Offline
+              await new Promise(r => setTimeout(r, 1500)); 
+              setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read', reaction: '❤️' } : m)); 
+              await new Promise(r => setTimeout(r, 2000)); 
+              setIsOffline(true); 
             } else {
               await new Promise(r => setTimeout(r, 1500));
               setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
@@ -345,7 +350,9 @@ export default function ChatStoryTool() {
           }
         }
         
+        // UPDATE REF DAN STATE (TAPI STATE TIDAK JADI DEPENDENCY)
         if (!cancelRef.current) {
+           currentIdxRef.current = i + 1;
            setCurrentMsgIndex(i + 1);
         }
       }
@@ -354,13 +361,13 @@ export default function ChatStoryTool() {
 
     runSequence();
     return () => { cancelRef.current = true; };
-  }, [isPlaying, isMuted, currentMsgIndex]);
+  }, [isPlaying, isMuted]); // <-- HAPUS currentMsgIndex DARI SINI
 
   const handlePlay = () => { initAudio(); setIsPlaying(true); };
   const handlePause = () => { setIsPlaying(false); cancelRef.current = true; if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause(); };
   const handleReset = () => {
     setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false); setIsOffline(false);
-    setCurrentMsgIndex(0); setMaxUnlockedIndex(0); localStorage.removeItem('fz_chat_progress');
+    setCurrentMsgIndex(0); currentIdxRef.current = 0; setMaxUnlockedIndex(0); localStorage.removeItem('fz_chat_progress');
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
     if (textareaRef.current) textareaRef.current.style.height = '24px';
   };
@@ -392,7 +399,6 @@ export default function ChatStoryTool() {
 
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
-        {/* HEADER DENGAN LOGIKA OFFLINE */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
@@ -480,7 +486,6 @@ export default function ChatStoryTool() {
                     {isMe && (msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> : <CheckCheck className="w-3.5 h-3.5 text-gray-400" />)}
                   </div>
 
-                  {/* FITUR REACTION (HATI) */}
                   {msg.reaction && (
                     <motion.div 
                       initial={{ scale: 0, opacity: 0 }}
