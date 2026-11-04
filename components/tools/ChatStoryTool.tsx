@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, Globe, Smile, Volume2, VolumeX, Pause, Send, CheckCheck, Bell } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, Pause, RotateCcw, ChevronUp, Delete, Globe, Smile, Volume2, VolumeX, Send, CheckCheck, Bell, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { getStoredUserSession } from '@/lib/auth-session';
 
 type Sender = 'me' | 'them';
 type MessageType = 'text' | 'image' | 'voice';
@@ -54,7 +55,6 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'me', type: 'voice', content: "vn: (napas terengah, suara pintu dibanting)", time: '22.26', duration: '0:05', audioSrc: '/voice-cowo2.mp3' },
   { sender: 'them', type: 'voice', content: "vn: (suara napas pelan, ketawa merinding)", time: '22.27', duration: '0:08', audioSrc: '/voice-cewe3.mp3' },
   { sender: 'me', type: 'text', content: "ah elahh, kirainn, tau ahh maless", time: '22.28' },
-  // BAGIAN BARU: VN TERAKHIR
   { sender: 'them', type: 'voice', content: "vn: (suara langkah kaki, ketawa pelan)", time: '22.29', duration: '0:07', audioSrc: '/voice-cewe4.mp3' },
   { sender: 'me', type: 'voice', content: "vn: (suara panik, napas berat)", time: '22.30', duration: '0:06', audioSrc: '/voice-cowo4.mp3' },
 ];
@@ -75,6 +75,12 @@ export default function ChatStoryTool() {
   const [typingSender, setTypingSender] = useState<Sender | null>(null);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  
+  // State Baru
+  const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
+  const [maxUnlockedIndex, setMaxUnlockedIndex] = useState(0);
+  const [isDev, setIsDev] = useState(false);
+  
   const [isWaitingForContinue, setIsWaitingForContinue] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const continueResolver = useRef<(() => void) | null>(null);
@@ -91,6 +97,56 @@ export default function ChatStoryTool() {
   const cancelRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // --- CEK DEV & LOAD PROGRESS ---
+  useEffect(() => {
+    const session = getStoredUserSession();
+    if (session?.username === 'urxynn') setIsDev(true);
+
+    const savedIndex = localStorage.getItem('fz_chat_progress');
+    if (savedIndex) {
+      const idx = parseInt(savedIndex);
+      setCurrentMsgIndex(idx);
+      setMaxUnlockedIndex(idx);
+      // Load history instantly tanpa animasi
+      const history = STORY_SCRIPT.slice(0, idx).map((msg, i) => ({
+        ...msg, id: Date.now() + i, status: 'read' as MessageStatus
+      }));
+      setDisplayedMessages(history);
+    }
+  }, []);
+
+  // Save progress tiap kali index berubah
+  useEffect(() => {
+    if (currentMsgIndex > 0) {
+      localStorage.setItem('fz_chat_progress', currentMsgIndex.toString());
+      setMaxUnlockedIndex(prev => Math.max(prev, currentMsgIndex));
+    }
+  }, [currentMsgIndex]);
+
+  const handleSaveProgress = () => {
+    localStorage.setItem('fz_chat_progress', currentMsgIndex.toString());
+    alert('Progres cerita berhasil disimpan!');
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const idx = parseInt(e.target.value);
+    setCurrentMsgIndex(idx);
+    setIsPlaying(false);
+    cancelRef.current = true;
+    if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
+    setActiveVnId(null);
+    setIsRecording(false);
+    setTypingSender(null);
+    setInputText('');
+    setIsWaitingForContinue(false);
+    
+    // Reconstruct history instan
+    const history = STORY_SCRIPT.slice(0, idx).map((msg, i) => ({
+      ...msg, id: Date.now() + i, status: 'read' as MessageStatus
+    }));
+    setDisplayedMessages(history);
+  };
 
   const initAudio = () => {
     if (typeof window === 'undefined') return;
@@ -191,10 +247,12 @@ export default function ChatStoryTool() {
     cancelRef.current = false;
 
     const runSequence = async () => {
-      setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
-      await new Promise(r => setTimeout(r, 1000));
+      // Jangan reset displayedMessages jika resume dari tengah
+      // setDisplayedMessages([]); 
+      setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
+      await new Promise(r => setTimeout(r, 500));
 
-      for (let i = 0; i < STORY_SCRIPT.length; i++) {
+      for (let i = currentMsgIndex; i < STORY_SCRIPT.length; i++) {
         if (cancelRef.current) return;
         const msg = STORY_SCRIPT[i];
         const msgId = Date.now() + i;
@@ -275,6 +333,11 @@ export default function ChatStoryTool() {
             await new Promise(r => setTimeout(r, 1000));
           }
         }
+        
+        // Update index setiap selesai 1 pesan
+        if (!cancelRef.current) {
+           setCurrentMsgIndex(i + 1);
+        }
       }
       if (!cancelRef.current) setIsPlaying(false);
     };
@@ -284,18 +347,32 @@ export default function ChatStoryTool() {
   }, [isPlaying, isMuted]);
 
   const handlePlay = () => { initAudio(); setIsPlaying(true); };
+  const handlePause = () => { setIsPlaying(false); cancelRef.current = true; if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause(); };
   const handleReset = () => {
     setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
+    setCurrentMsgIndex(0); setMaxUnlockedIndex(0); localStorage.removeItem('fz_chat_progress');
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
     if (textareaRef.current) textareaRef.current.style.height = '24px';
   };
 
   return (
     <div className="w-full flex flex-col items-center gap-3 font-sans">
-      <div className="flex justify-center gap-2 w-full z-50">
-        <button onClick={handlePlay} disabled={isPlaying} className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg">
-          <Play className="w-4 h-4" /> {isPlaying ? 'Memutar...' : 'Putar Cerita'}
+      {/* CONTROLS */}
+      <div className="flex flex-wrap justify-center gap-2 w-full z-50">
+        {isPlaying ? (
+          <button onClick={handlePause} className="bg-amber-500 text-white px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-amber-600 transition-all shadow-lg">
+            <Pause className="w-4 h-4" /> Pause
+          </button>
+        ) : (
+          <button onClick={handlePlay} className="bg-indigo-600 text-white px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg">
+            <Play className="w-4 h-4" /> {currentMsgIndex > 0 ? 'Lanjut' : 'Putar'}
+          </button>
+        )}
+        
+        <button onClick={handleSaveProgress} className="bg-emerald-600 text-white px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-lg">
+          <Save className="w-4 h-4" /> Simpan
         </button>
+
         <button onClick={handleReset} className="bg-white text-zinc-900 px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-zinc-200 transition-all shadow-lg">
           <RotateCcw className="w-4 h-4" /> Reset
         </button>
@@ -304,8 +381,10 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
+      {/* BINGKAI HP */}
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
+        {/* HEADER */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
@@ -337,12 +416,11 @@ export default function ChatStoryTool() {
           </div>
         </div>
 
+        {/* NOTIFIKASI IPHONE */}
         {isWaitingForContinue && (
           <div className="absolute top-4 left-2 right-2 z-[60] animate-in slide-in-from-top-10 duration-500 fade-in">
             <div className="bg-white/90 backdrop-blur-xl border border-gray-200 rounded-2xl p-3 shadow-2xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#D1D1D6] flex items-center justify-center shrink-0">
-                <Bell className="w-5 h-5 text-black" />
-              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#D1D1D6] flex items-center justify-center shrink-0"><Bell className="w-5 h-5 text-black" /></div>
               <div className="flex-1">
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Pemberitahuan Sistem</p>
                 <p className="text-[13px] font-semibold text-black leading-tight mt-0.5">Pesan baru: Foto dari MyPrincess</p>
@@ -352,6 +430,7 @@ export default function ChatStoryTool() {
           </div>
         )}
 
+        {/* AREA CHAT */}
         <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 pt-[70px] relative scroll-smooth bg-[#EFEAE2]" style={{ backgroundImage: 'url("/background-wa.png")', backgroundSize: 'cover' }}>
           <div className="flex justify-center mb-4">
             <span className="bg-[#E2DCD3]/90 text-[#5E5E5E] text-[11px] font-semibold px-3 py-1 rounded-full">4 November 2026</span>
@@ -410,6 +489,22 @@ export default function ChatStoryTool() {
           )}
         </div>
 
+        {/* SCRUBBER BAR (Khusus Dev & Save) */}
+        <div className="bg-[#F6F6F6] px-3 py-1 flex items-center gap-2 border-t border-gray-200 z-30">
+           <span className="text-[10px] font-bold text-gray-500">0</span>
+           <input 
+             type="range" 
+             min="0" 
+             max={STORY_SCRIPT.length} 
+             value={currentMsgIndex} 
+             onChange={handleSeek}
+             disabled={!isDev && currentMsgIndex < maxUnlockedIndex} // Biar user ga bisa skip
+             className="flex-1 h-1.5 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50"
+           />
+           <span className="text-[10px] font-bold text-gray-500">{STORY_SCRIPT.length}</span>
+        </div>
+
+        {/* INPUT CHAT */}
         <div className="bg-[#F6F6F6] p-1.5 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
           {isRecording ? (
             <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[36px] border border-gray-300">
@@ -435,6 +530,7 @@ export default function ChatStoryTool() {
           )}
         </div>
         
+        {/* KEYBOARD */}
         <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {KEYBOARD_ROWS.map((row, rowIndex) => (
             <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
