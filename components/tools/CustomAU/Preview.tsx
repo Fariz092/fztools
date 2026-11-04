@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
 import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Download, CheckCheck } from 'lucide-react';
 import { CustomChat } from './Form';
 import { Keyboard } from '../ChatUI';
@@ -12,21 +11,24 @@ interface PreviewProps {
 }
 
 export default function Preview({ name, avatar, chats, showKeyboard }: PreviewProps) {
-  // REF DIPINDAH KE WRAPPER LUAR (BIAR HEADER & KEYBOARD IKUT)
   const captureRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
     if (!captureRef.current) return;
     setIsDownloading(true);
+    
     try {
+      // DYNAMIC IMPORT: Cegah crash SSR di Next.js
+      const { toPng } = await import('html-to-image');
+      
       const dataUrl = await toPng(captureRef.current, { 
         quality: 1, 
         pixelRatio: 2,
-        backgroundColor: '#EFEAE2', // FIX DARK MODE: Paksa background warna WA
+        backgroundColor: '#EFEAE2',
         style: { 
           transform: 'scale(1)',
-          borderRadius: '0px' // Biar ga ada sudut aneh pas di screenshot
+          borderRadius: '0px' 
         } 
       });
       const link = document.createElement('a');
@@ -51,13 +53,10 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
         {isDownloading ? 'Menyimpan...' : 'Download Area Ini'}
       </button>
 
-      {/* FRAME HP (Hitamnya di luar capture) */}
       <div className="w-full bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden h-[700px]">
         
-        {/* WRAPPER YANG DI CAPTURE (Header, Chat, Input, Keyboard) */}
         <div ref={captureRef} className="flex flex-col h-full w-full bg-[#EFEAE2]">
           
-          {/* HEADER */}
           <div className="bg-white/90 px-3 py-2.5 flex items-center justify-between border-b border-gray-200 shadow-sm z-50 shrink-0">
             <div className="flex items-center gap-3">
               <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
@@ -76,7 +75,6 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
             </div>
           </div>
 
-          {/* AREA CHAT */}
           <div 
             className="flex-1 overflow-y-auto p-3 relative scroll-smooth bg-[#EFEAE2]" 
             style={{ backgroundImage: 'url("/background-wa.png")', backgroundSize: 'cover' }}
@@ -108,7 +106,6 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
             })}
           </div>
 
-          {/* INPUT BAR */}
           <div className="bg-[#F6F6F6] p-1.5 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
             <div className="w-[36px] h-[36px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
             <div className="flex-1 bg-white rounded-3xl flex items-end px-2 py-1 border border-gray-300 min-h-[36px]">
@@ -120,7 +117,6 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
             </div>
           </div>
           
-          {/* KEYBOARD (PAJANGAN) */}
           {showKeyboard && <Keyboard activeKey={null} touches={[]} isEmoji={false} onEmojiClick={() => {}} />}
           
         </div>
