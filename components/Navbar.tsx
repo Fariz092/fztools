@@ -4,13 +4,27 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  User, UserPlus, Menu, X, Home, Wrench, HelpCircle,
-  ShieldCheck, Info, Clock, LogOut, ChevronRight, Layers,
+  User,
+  UserPlus,
+  Menu,
+  X,
+  Home,
+  Wrench,
+  HelpCircle,
+  ShieldCheck,
+  Info,
+  Clock,
+  LogOut,
+  ChevronRight,
+  Layers,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
 import {
-  UserSession, getStoredUserSession, clearUserSession, AUTH_CHANGE_EVENT,
+  UserSession,
+  getStoredUserSession,
+  clearUserSession,
+  AUTH_CHANGE_EVENT,
 } from '@/lib/auth-session';
 import { brutalistToast, brutalistConfirm } from '@/lib/popup-service';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
@@ -25,6 +39,7 @@ interface NavbarProps {
 
 export const TOOLS_CONFIG = [
   { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/' },
+  { id: 'custom-au', name: 'Custom AU', badge: 'Baru', color: 'bg-indigo-50', path: '/custom-au' },
   { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter' },
   { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat' },
   { id: 'iqc', name: 'IQC WhatsApp', badge: 'Teks', color: 'bg-rose-50', path: '/iqc' },
@@ -69,6 +84,7 @@ export default function Navbar({
   };
 
   const getCurrentSectionTitle = () => {
+    if (pathname === '/custom-au') return 'CUSTOM AU';
     if (pathname === '/iqcv2') return 'IQC MEDIA';
     if (pathname === '/iqc' || pathname === '/iqctool') return 'IQC TEKS';
     if (pathname === '/brat') return 'BRAT';
