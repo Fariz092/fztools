@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause, Send, Check, CheckCheck } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause, Send, CheckCheck } from 'lucide-react';
 
 type Sender = 'me' | 'them';
 type MessageType = 'text' | 'image' | 'voice';
@@ -22,7 +22,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Babe, udah tidur?", time: '22.00' },
   { sender: 'me', type: 'text', content: "Belum sayang, kenapa?", time: '22.01' },
   { sender: 'them', type: 'text', content: "Kangen aja hehe. Btw ini pap aku barusan, bagus ga?", time: '22.02' },
-  { sender: 'them', type: 'image', content: "/pap-myprinces.png", time: '22.02' }, // Nanti berhenti di sini
+  { sender: 'them', type: 'image', content: "/pap-myprinces.png", time: '22.02' },
   { sender: 'me', type: 'text', content: "Cantik banget 😍", time: '22.03' },
   { sender: 'them', type: 'text', content: "Hehehe... Kamu lagi di kamar kan?", time: '22.05' },
   { sender: 'me', type: 'text', content: "Iya dong, kok kamu tau?", time: '22.06' },
@@ -33,7 +33,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Kamu takut ya? Hehehe.", time: '22.12' },
   { sender: 'them', type: 'text', content: "Btw, aku tadi liat kamu lagi rebahan di kasur.", time: '22.12' },
   { sender: 'me', type: 'text', content: "Hah? Serius kamu di mana?", time: '22.13' },
-  { sender: 'them', type: 'image', content: "/fotopemandanganjendela.jpeg", time: '22.14' }, // Nanti berhenti di sini
+  { sender: 'them', type: 'image', content: "/fotopemandanganjendela.jpeg", time: '22.14' },
   { sender: 'them', type: 'text', content: "Ini pemandangan dari jendela kamar kamu kan?", time: '22.14' },
   { sender: 'me', type: 'text', content: "Bercanda kamu ya? Aku merinding beneran nih.", time: '22.15' },
   { sender: 'them', type: 'text', content: "Aku serius sayang. Aku udah nungguin kamu dari jam 12 malam loh.", time: '22.16' },
@@ -45,7 +45,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Aku lagi di depan pintu kamar kamu.", time: '22.21' },
   { sender: 'me', type: 'text', content: "Hah? Aku ga denger suara apa-apa.", time: '22.21' },
   { sender: 'them', type: 'text', content: "Aku udah masuk kok. Kamu lagi rebahan kan?", time: '22.22' },
-  { sender: 'them', type: 'image', content: "/fotocowolagirebahan.jpeg", time: '22.22' }, // Nanti berhenti di sini
+  { sender: 'them', type: 'image', content: "/fotocowolagirebahan.jpeg", time: '22.22' },
   { sender: 'them', type: 'text', content: "Jangan bangun. Aku lagi di samping kamu.", time: '22.23' },
   { sender: 'me', type: 'voice', content: "VN: Babe, serius deh...", time: '22.24', duration: '0:09', audioSrc: '/vn-cowo.mp3' },
   { sender: 'them', type: 'voice', content: "VN: Ssstt... jangan berisik sayang...", time: '22.25', duration: '0:10', audioSrc: '/vn-cewe2.mp3' },
@@ -72,19 +72,16 @@ export default function ChatStoryTool() {
   const [isMuted, setIsMuted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(10);
   
-  // State Zoom & Lanjutan
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [isWaitingForContinue, setIsWaitingForContinue] = useState(false);
   const continueResolver = useRef<(() => void) | null>(null);
 
-  // State VN & Recording
   const [activeVnId, setActiveVnId] = useState<number | null>(null);
   const [vnProgress, setVnProgress] = useState(0);
   const [vnDurationText, setVnDurationText] = useState('0:00');
   const [isRecording, setIsRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
   
-  // State Touch Indicator
   const [touches, setTouches] = useState<{id: number, key: string}[]>([]);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -92,7 +89,6 @@ export default function ChatStoryTool() {
   const cancelRef = useRef(false);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- AUDIO SETUP ---
   useEffect(() => {
     const audio = new Audio();
     voiceNoteAudioRef.current = audio;
@@ -132,7 +128,6 @@ export default function ChatStoryTool() {
     });
   };
 
-  // --- LOGIKA UTAMA ---
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -144,7 +139,6 @@ export default function ChatStoryTool() {
     if (chatContainerRef.current) chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
   }, [displayedMessages, typingSender, isRecording, isWaitingForContinue]);
 
-  // Fungsi untuk menunggu user klik "Lanjutkan"
   const waitForContinue = () => {
     setIsWaitingForContinue(true);
     return new Promise<void>((resolve) => {
@@ -155,13 +149,10 @@ export default function ChatStoryTool() {
     });
   };
 
-  // Fungsi animasi touch
   const triggerTouch = (key: string) => {
     const id = Date.now() + Math.random();
     setTouches(prev => [...prev, { id, key }]);
-    setTimeout(() => {
-      setTouches(prev => prev.filter(t => t.id !== id));
-    }, 300);
+    setTimeout(() => setTouches(prev => prev.filter(t => t.id !== id)), 300);
   };
 
   useEffect(() => {
@@ -177,7 +168,6 @@ export default function ChatStoryTool() {
         const msg = STORY_SCRIPT[i];
         const msgId = Date.now() + i;
 
-        // --- PESAN DARI CEWEK ---
         if (msg.sender === 'them') {
           setTypingSender('them');
           await new Promise(r => setTimeout(r, msg.type === 'voice' ? 2000 : 1800)); 
@@ -188,27 +178,18 @@ export default function ChatStoryTool() {
           setDisplayedMessages(prev => [...prev, newMsg]);
           setUnreadCount(prev => prev + 1);
 
-          if (msg.type === 'image') {
-            // Berhenti dan tunggu user lihat gambar
-            await waitForContinue();
-          } else if (msg.type === 'voice') {
-            await autoPlayVoiceNote(newMsg);
-          } else {
-            await new Promise(r => setTimeout(r, 1000));
-          }
-        } 
-        // --- PESAN DARI COWOK ---
-        else {
+          if (msg.type === 'image') await waitForContinue();
+          else if (msg.type === 'voice') await autoPlayVoiceNote(newMsg);
+          else await new Promise(r => setTimeout(r, 1000));
+        } else {
           if (msg.type === 'voice') {
-            // Simulasi Rekam
             setIsRecording(true); 
             const targetSecs = parseInt(msg.duration?.split(':')[1] || '5');
             let currentSec = 0;
             setRecordTime(0);
             
             const recInterval = setInterval(() => {
-              currentSec++;
-              setRecordTime(currentSec);
+              currentSec++; setRecordTime(currentSec);
               if (currentSec >= targetSecs) clearInterval(recInterval);
             }, 1000);
 
@@ -220,13 +201,10 @@ export default function ChatStoryTool() {
             const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
             setDisplayedMessages(prev => [...prev, newMsg]);
             
-            // Read receipt logic
             await new Promise(r => setTimeout(r, 1500));
             setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
-            
             await new Promise(r => setTimeout(r, 1000));
           } else {
-            // Ngetik teks
             setTypingSender('me');
             const text = msg.content;
             for (let j = 0; j <= text.length; j++) {
@@ -241,7 +219,6 @@ export default function ChatStoryTool() {
               }
               
               setInputText(text.slice(0, j));
-              // Kecepatan ngetik dinamis (50-100ms)
               await new Promise(r => setTimeout(r, Math.floor(Math.random() * 50) + 50)); 
             }
             
@@ -255,10 +232,8 @@ export default function ChatStoryTool() {
             setInputText('');
             if (textareaRef.current) textareaRef.current.style.height = 'auto';
             
-            // Read receipt logic (Ceklis abu -> biru)
-            await new Promise(r => setTimeout(r, 2000)); // Jeda baca
+            await new Promise(r => setTimeout(r, 2000));
             setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
-            
             await new Promise(r => setTimeout(r, 1000));
           }
         }
@@ -291,10 +266,8 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
-      {/* BINGKAI HP */}
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
         
-        {/* HEADER - Persis thefake.design */}
         <div className="bg-[#F6F6F6] px-3 py-2 flex items-center justify-between z-40 shrink-0 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
@@ -303,20 +276,17 @@ export default function ChatStoryTool() {
             </div>
             <span className="text-[17px] font-medium text-black">MyPrincess💖</span>
           </div>
-          
           <div className="flex items-center gap-4 text-black">
             <Video className="w-6 h-6" strokeWidth={1.5} />
             <Phone className="w-5 h-5" strokeWidth={1.5} />
           </div>
         </div>
 
-        {/* AREA CHAT */}
         <div 
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto p-3 relative scroll-smooth bg-[#EFEAE2]" 
           style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundSize: 'cover', backgroundBlendMode: 'soft-light' }}
         >
-          {/* Pill Tanggal */}
           <div className="flex justify-center mb-4">
             <span className="bg-[#E2DCD3] text-[#5E5E5E] text-[11px] font-medium px-3 py-1 rounded-full">4 November 2026</span>
           </div>
@@ -329,64 +299,40 @@ export default function ChatStoryTool() {
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 <div className={`relative max-w-[85%] rounded-[12px] shadow-sm flex flex-col ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} ${msg.type === 'image' ? 'p-1' : 'px-2 py-1.5'}`}>
                   
-                  {/* Text Message */}
-                  {msg.type === 'text' && (
-                    <span className="text-black text-[15px] pr-14 leading-snug">{msg.content}</span>
-                  )}
+                  {msg.type === 'text' && <span className="text-black text-[15px] pr-14 leading-snug">{msg.content}</span>}
 
-                  {/* Image Message (Clickable) */}
                   {msg.type === 'image' && (
-                    <div 
-                      className="relative rounded-lg overflow-hidden bg-zinc-200 cursor-pointer"
-                      onClick={() => setActiveImage(msg.content)}
-                    >
+                    <div className="relative rounded-lg overflow-hidden bg-zinc-200 cursor-pointer" onClick={() => setActiveImage(msg.content)}>
                       <img src={msg.content} alt="PAP" className="w-full h-auto max-h-[350px] object-cover" />
-                      <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors" />
                     </div>
                   )}
 
-                  {/* Voice Note Message (Persis Screenshot) */}
                   {msg.type === 'voice' && (
                     <div onClick={() => toggleVoiceNote(msg)} className="flex items-center gap-2 pr-14 py-1 cursor-pointer min-w-[200px]">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-[#128C7E] text-white' : 'bg-[#128C7E] text-white'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-[#128C7E] text-white`}>
                         {isVnPlaying ? <Pause className="w-4 h-4" fill="currentColor" /> : <Play className="w-4 h-4" fill="currentColor" />}
                       </div>
-                      
-                      {/* Waveform + White Pulse Overlay */}
                       <div className="flex items-center gap-0.5 h-6 flex-1 relative overflow-hidden">
                          {WAVEFORM_HEIGHTS.map((h, i) => (
-                           <div key={i} className={`w-[2px] rounded-full shrink-0 ${isMe ? 'bg-zinc-400' : 'bg-zinc-400'}`} style={{ height: `${h}%` }}></div>
+                           <div key={i} className={`w-[2px] rounded-full shrink-0 bg-zinc-400`} style={{ height: `${h}%` }}></div>
                          ))}
-                         {/* Putih transparan bergerak */}
                          <div className="absolute top-0 bottom-0 left-0 bg-white/60 mix-blend-overlay pointer-events-none transition-all duration-100" style={{ width: `${isVnPlaying ? vnProgress : 0}%` }} />
                       </div>
-
-                      {/* Profil Pic di dalam VN */}
                       <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-white/50">
                         <img src={isMe ? "https://i.pravatar.cc/150?img=11" : "https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80"} className="w-full h-full object-cover" />
                       </div>
                     </div>
                   )}
 
-                  {/* Time & Checkmarks (Pojok Kanan Bawah) */}
                   <div className="absolute bottom-1 right-1.5 flex items-center gap-1">
-                    <span className="text-[10px] text-gray-500 font-medium">
-                      {isVnPlaying ? vnDurationText : msg.time}
-                    </span>
-                    {isMe && (
-                      msg.status === 'read' ? (
-                        <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> // Ceklis Biru
-                      ) : (
-                        <CheckCheck className="w-3.5 h-3.5 text-gray-400" /> // Ceklis Abu
-                      )
-                    )}
+                    <span className="text-[10px] text-gray-500 font-medium">{isVnPlaying ? vnDurationText : msg.time}</span>
+                    {isMe && (msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> : <CheckCheck className="w-3.5 h-3.5 text-gray-400" />)}
                   </div>
                 </div>
               </div>
             );
           })}
 
-          {/* Typing Indicator */}
           {typingSender === 'them' && (
             <div className="flex justify-start mb-2 animate-in fade-in">
               <div className="bg-white rounded-xl px-3 py-2 shadow-sm flex items-center gap-1.5">
@@ -397,52 +343,31 @@ export default function ChatStoryTool() {
             </div>
           )}
 
-          {/* Tombol Lanjutkan (Muncul saat gambar diklik) */}
           {isWaitingForContinue && (
             <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-               <button 
-                 onClick={() => continueResolver.current && continueResolver.current()}
-                 className="bg-white text-black px-8 py-3 rounded-full font-bold text-sm shadow-2xl hover:scale-105 transition-transform"
-               >
-                 Lanjutkan Cerita →
-               </button>
+               <button onClick={() => continueResolver.current && continueResolver.current()} className="bg-white text-black px-8 py-3 rounded-full font-bold text-sm shadow-2xl hover:scale-105 transition-transform">Lanjutkan Cerita →</button>
             </div>
           )}
         </div>
 
-        {/* INPUT AREA */}
         <div className="bg-[#F6F6F6] p-2 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
-          
           {isRecording ? (
-             /* UI Merekam VN */
             <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[42px] border border-gray-300 shadow-sm">
               <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
               <span className="text-red-500 font-mono text-sm">{`0:${recordTime < 10 ? '0' : ''}${recordTime}`}</span>
               <span className="text-gray-500 text-sm ml-2">Merekam Audio...</span>
             </div>
           ) : (
-            /* UI Normal */
             <>
-              <div className="w-[42px] h-[42px] flex items-center justify-center shrink-0 text-gray-600">
-                <Plus className="w-6 h-6" strokeWidth={1.5} />
-              </div>
+              <div className="w-[42px] h-[42px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
               <div className="flex-1 bg-white rounded-3xl flex items-end px-3 py-2 border border-gray-300 shadow-sm min-h-[42px] relative">
-                {inputText === '' && (
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-gray-400 pointer-events-none">Ketik pesan</span>
-                )}
+                {inputText === '' && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-gray-400 pointer-events-none">Ketik pesan</span>}
                 <textarea ref={textareaRef} value={inputText} readOnly rows={1} className="flex-1 bg-transparent outline-none text-[15px] text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" />
-                
-                {/* Ikon Mic vs Send */}
                 <div className="flex items-center gap-3 text-[#007AFF] shrink-0 pl-2 pb-0.5">
                   {inputText.trim() === '' ? (
-                    <>
-                      <Camera className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} />
-                      <Mic className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} />
-                    </>
+                    <><Camera className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} /><Mic className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} /></>
                   ) : (
-                    <button className="w-8 h-8 bg-[#00A884] rounded-full flex items-center justify-center ml-1 animate-in zoom-in duration-200">
-                      <Send className="w-4 h-4 text-white -ml-0.5" fill="currentColor" />
-                    </button>
+                    <button className="w-8 h-8 bg-[#00A884] rounded-full flex items-center justify-center ml-1 animate-in zoom-in duration-200"><Send className="w-4 h-4 text-white -ml-0.5" fill="currentColor" /></button>
                   )}
                 </div>
               </div>
@@ -450,42 +375,29 @@ export default function ChatStoryTool() {
           )}
         </div>
         
-        {/* KEYBOARD (iOS Style with Touch Effects) */}
         <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {KEYBOARD_ROWS.map((row, rowIndex) => (
             <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
               {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] shadow-sm flex items-center justify-center"><ChevronUp className="w-5 h-5 text-black" /></div>}
-              
               {row.map(k => {
                 const isActive = activeKey === k;
                 const hasTouch = touches.some(t => t.key === k);
                 return (
-                  <div 
-                    key={k} 
-                    className={`relative flex-1 max-w-[34px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center text-[19px] font-normal text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}
-                  >
+                  <div key={k} className={`relative flex-1 max-w-[34px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center text-[19px] font-normal text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}>
                     {k}
-                    {/* Efek Sentuhan (Touch Indicator) */}
-                    {hasTouch && (
-                       <div className="absolute inset-0 bg-black/10 rounded-[5px] animate-ping pointer-events-none" />
-                    )}
+                    {hasTouch && <div className="absolute inset-0 bg-black/10 rounded-[5px] animate-ping pointer-events-none" />}
                   </div>
                 );
               })}
-
               {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] shadow-sm flex items-center justify-center"><Delete className="w-5 h-5 text-black" /></div>}
             </div>
           ))}
-          
           <div className="flex gap-1.5 justify-center mt-1">
             <div className="bg-[#ABB2BA] w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">123</div>
-            <div className="bg-white w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">
-              <Smile className="w-6 h-6" />
-            </div>
+            <div className="bg-white w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black"><Smile className="w-6 h-6" /></div>
             <div className="bg-white flex-1 h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[16px] flex items-center justify-center text-black">Spasi</div>
             <div className="bg-[#ABB2BA] w-[70px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">Kembali</div>
           </div>
-
           <div className="flex justify-between items-center px-4 mt-1 mb-1">
             <Globe className="w-6 h-6 text-gray-500" strokeWidth={2} />
             <Mic className="w-6 h-6 text-gray-500" strokeWidth={2} />
@@ -493,12 +405,8 @@ export default function ChatStoryTool() {
         </div>
       </div>
 
-      {/* MODAL ZOOM GAMBAR */}
       {activeImage && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200"
-          onClick={() => setActiveImage(null)}
-        >
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setActiveImage(null)}>
           <img src={activeImage} alt="Zoomed" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
           <span className="absolute bottom-10 text-white/70 text-sm font-medium">Ketuk di mana saja untuk menutup</span>
         </div>
