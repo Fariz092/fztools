@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause, Send, CheckCheck } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, Globe, Smile, Volume2, VolumeX, Pause, Send, CheckCheck } from 'lucide-react';
 
 type Sender = 'me' | 'them';
 type MessageType = 'text' | 'image' | 'voice';
@@ -39,7 +39,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Aku serius sayang. Aku udah nungguin kamu dari jam 12 malam loh.", time: '22.16' },
   { sender: 'them', type: 'text', content: "Jangan nengok ke belakang ya.", time: '22.16' },
   { sender: 'them', type: 'text', content: "Aku udah di samping kamu.", time: '22.17' },
-  { sender: 'me', type: 'text', content: "KAMU SERIUS DIMANA? JANGAN BIKIN PANIK", time: '22.18' },
+  { sender: 'me', type: 'text', content: "KAMU SERIUS DIMANA? JANGAN BIKIN PANIK", time: '22.18', isTypo: true }, // TYPO DISINI
   { sender: 'them', type: 'voice', content: "VN: Bercanda babe...", time: '22.19', duration: '0:12', audioSrc: '/voice-note.mp3' },
   { sender: 'me', type: 'text', content: "Parfum Baccarat. Kamu di kamar sebelah mana? Kok kamu tau wangi kamar aku?", time: '22.20' },
   { sender: 'them', type: 'text', content: "Aku lagi di depan pintu kamar kamu.", time: '22.21' },
@@ -70,10 +70,8 @@ export default function ChatStoryTool() {
   const [typingSender, setTypingSender] = useState<Sender | null>(null);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(10);
-  
-  const [activeImage, setActiveImage] = useState<string | null>(null);
   const [isWaitingForContinue, setIsWaitingForContinue] = useState(false);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   const continueResolver = useRef<(() => void) | null>(null);
 
   const [activeVnId, setActiveVnId] = useState<number | null>(null);
@@ -81,13 +79,38 @@ export default function ChatStoryTool() {
   const [vnDurationText, setVnDurationText] = useState('0:00');
   const [isRecording, setIsRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
-  
   const [touches, setTouches] = useState<{id: number, key: string}[]>([]);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const cancelRef = useRef(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // --- SFX AUDIO ---
+  const initAudio = () => {
+    if (typeof window === 'undefined') return;
+    if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+  };
+
+  const playSfx = (type: 'type' | 'send') => {
+    if (isMuted || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+
+    if (type === 'type') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.04);
+    } else if (type === 'send') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+    }
+  };
 
   useEffect(() => {
     const audio = new Audio();
@@ -128,10 +151,14 @@ export default function ChatStoryTool() {
     });
   };
 
+  // --- AUTO RESIZE FIX (Hanya memanjang jika perlu) ---
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      textareaRef.current.style.height = '40px'; // Reset ke tinggi default
+      const scrollH = textareaRef.current.scrollHeight;
+      if (scrollH > 40) {
+        textareaRef.current.style.height = `${scrollH}px`;
+      }
     }
   }, [inputText]);
 
@@ -142,10 +169,7 @@ export default function ChatStoryTool() {
   const waitForContinue = () => {
     setIsWaitingForContinue(true);
     return new Promise<void>((resolve) => {
-      continueResolver.current = () => {
-        setIsWaitingForContinue(false);
-        resolve();
-      };
+      continueResolver.current = () => { setIsWaitingForContinue(false); resolve(); };
     });
   };
 
@@ -160,14 +184,15 @@ export default function ChatStoryTool() {
     cancelRef.current = false;
 
     const runSequence = async () => {
-      setDisplayedMessages([]); setInputText(''); setTypingSender(null); setUnreadCount(10); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
+      setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
       await new Promise(r => setTimeout(r, 1000));
 
       for (let i = 0; i < STORY_SCRIPT.length; i++) {
         if (cancelRef.current) return;
-        const msg = STORY_SCRIPT[i];
+        const msg = STORY_SCRIPT[i] as any; // Casting buat properti 'isTypo'
         const msgId = Date.now() + i;
 
+        // --- PESAN CEWEK ---
         if (msg.sender === 'them') {
           setTypingSender('them');
           await new Promise(r => setTimeout(r, msg.type === 'voice' ? 2000 : 1800)); 
@@ -176,37 +201,33 @@ export default function ChatStoryTool() {
           
           const newMsg = { ...msg, id: msgId };
           setDisplayedMessages(prev => [...prev, newMsg]);
-          setUnreadCount(prev => prev + 1);
 
           if (msg.type === 'image') await waitForContinue();
           else if (msg.type === 'voice') await autoPlayVoiceNote(newMsg);
           else await new Promise(r => setTimeout(r, 1000));
-        } else {
+        } 
+        // --- PESAN COWOK ---
+        else {
           if (msg.type === 'voice') {
             setIsRecording(true); 
             const targetSecs = parseInt(msg.duration?.split(':')[1] || '5');
-            let currentSec = 0;
-            setRecordTime(0);
+            let currentSec = 0; setRecordTime(0);
             
-            const recInterval = setInterval(() => {
-              currentSec++; setRecordTime(currentSec);
-              if (currentSec >= targetSecs) clearInterval(recInterval);
-            }, 1000);
-
+            const recInterval = setInterval(() => { currentSec++; setRecordTime(currentSec); if (currentSec >= targetSecs) clearInterval(recInterval); }, 1000);
             await new Promise(r => setTimeout(r, targetSecs * 1000 + 1000)); 
             if (cancelRef.current) return;
-            
             clearInterval(recInterval); setIsRecording(false);
             
+            // KIRIM VN KE KANAN (FIX BUG)
             const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
             setDisplayedMessages(prev => [...prev, newMsg]);
-            
             await new Promise(r => setTimeout(r, 1500));
             setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
             await new Promise(r => setTimeout(r, 1000));
           } else {
             setTypingSender('me');
             const text = msg.content;
+            
             for (let j = 0; j <= text.length; j++) {
               if (cancelRef.current) return;
               const char = text[j - 1];
@@ -214,23 +235,45 @@ export default function ChatStoryTool() {
               if (char && char !== ' ') {
                 setActiveKey(char.toLowerCase());
                 triggerTouch(char.toLowerCase());
+                playSfx('type'); // SUARA KETIKAN BALIK
               } else {
                 setActiveKey(null);
               }
               
               setInputText(text.slice(0, j));
-              await new Promise(r => setTimeout(r, Math.floor(Math.random() * 50) + 50)); 
+              await new Promise(r => setTimeout(r, Math.floor(Math.random() * 50) + 60)); 
+            }
+
+            // --- ANIMASI TYPO (KHUSUS PESAN PANIK) ---
+            if (msg.isTypo) {
+              await new Promise(r => setTimeout(r, 500));
+              // Hapus beberapa karakter (Simulasi ngehapus)
+              for (let k = 0; k < 3; k++) {
+                setInputText(prev => prev.slice(0, -1));
+                await new Promise(r => setTimeout(r, 150));
+              }
+              await new Promise(r => setTimeout(r, 600));
+              // Ngetik ulang yang bener
+              const typoFix = "NA? JANGAN BIKIN PANIK";
+              for (let k = 0; k < typoFix.length; k++) {
+                setInputText(prev => prev + typoFix[k]);
+                setActiveKey(typoFix[k].toLowerCase());
+                triggerTouch(typoFix[k].toLowerCase());
+                playSfx('type');
+                await new Promise(r => setTimeout(r, 80));
+              }
             }
             
             setActiveKey(null);
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 400));
             if (cancelRef.current) return;
             
             setTypingSender(null);
             const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
             setDisplayedMessages(prev => [...prev, newMsg]);
+            playSfx('send'); // SUARA KIRIM
             setInputText('');
-            if (textareaRef.current) textareaRef.current.style.height = 'auto';
+            if (textareaRef.current) textareaRef.current.style.height = '40px';
             
             await new Promise(r => setTimeout(r, 2000));
             setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
@@ -245,15 +288,15 @@ export default function ChatStoryTool() {
     return () => { cancelRef.current = true; };
   }, [isPlaying, isMuted]);
 
-  const handlePlay = () => setIsPlaying(true);
+  const handlePlay = () => { initAudio(); setIsPlaying(true); };
   const handleReset = () => {
-    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setUnreadCount(10); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
+    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    if (textareaRef.current) textareaRef.current.style.height = '40px';
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-3">
+    <div className="w-full flex flex-col items-center gap-3 font-sans">
       <div className="flex justify-center gap-2 w-full z-50">
         <button onClick={handlePlay} disabled={isPlaying} className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg">
           <Play className="w-4 h-4" /> {isPlaying ? 'Memutar...' : 'Putar Cerita'}
@@ -266,15 +309,21 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
-      <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
+      <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
+        {/* HEADER - STATUS DINAMIS */}
         <div className="bg-[#F6F6F6] px-3 py-2 flex items-center justify-between z-40 shrink-0 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-gray-300">
                <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
             </div>
-            <span className="text-[17px] font-medium text-black">MyPrincess💖</span>
+            <div className="flex flex-col">
+              <span className="text-[16px] font-bold text-black leading-tight">MyPrincess💖</span>
+              <span className="text-[12px] font-semibold text-[#8E8E93] leading-tight">
+                {isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-4 text-black">
             <Video className="w-6 h-6" strokeWidth={1.5} />
@@ -282,13 +331,10 @@ export default function ChatStoryTool() {
           </div>
         </div>
 
-        <div 
-          ref={chatContainerRef}
-          className="flex-1 overflow-y-auto p-3 relative scroll-smooth bg-[#EFEAE2]" 
-          style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundSize: 'cover', backgroundBlendMode: 'soft-light' }}
-        >
+        {/* AREA CHAT */}
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 relative scroll-smooth bg-[#EFEAE2]" style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundSize: 'cover', backgroundBlendMode: 'soft-light' }}>
           <div className="flex justify-center mb-4">
-            <span className="bg-[#E2DCD3] text-[#5E5E5E] text-[11px] font-medium px-3 py-1 rounded-full">4 November 2026</span>
+            <span className="bg-[#E2DCD3] text-[#5E5E5E] text-[11px] font-semibold px-3 py-1 rounded-full">4 November 2026</span>
           </div>
 
           {displayedMessages.map((msg) => {
@@ -299,7 +345,7 @@ export default function ChatStoryTool() {
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 <div className={`relative max-w-[85%] rounded-[12px] shadow-sm flex flex-col ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} ${msg.type === 'image' ? 'p-1' : 'px-2 py-1.5'}`}>
                   
-                  {msg.type === 'text' && <span className="text-black text-[15px] pr-14 leading-snug">{msg.content}</span>}
+                  {msg.type === 'text' && <span className="text-black text-[15px] font-medium pr-14 leading-snug">{msg.content}</span>}
 
                   {msg.type === 'image' && (
                     <div className="relative rounded-lg overflow-hidden bg-zinc-200 cursor-pointer" onClick={() => setActiveImage(msg.content)}>
@@ -325,7 +371,7 @@ export default function ChatStoryTool() {
                   )}
 
                   <div className="absolute bottom-1 right-1.5 flex items-center gap-1">
-                    <span className="text-[10px] text-gray-500 font-medium">{isVnPlaying ? vnDurationText : msg.time}</span>
+                    <span className="text-[10px] text-gray-500 font-semibold">{isVnPlaying ? vnDurationText : msg.time}</span>
                     {isMe && (msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> : <CheckCheck className="w-3.5 h-3.5 text-gray-400" />)}
                   </div>
                 </div>
@@ -350,19 +396,27 @@ export default function ChatStoryTool() {
           )}
         </div>
 
+        {/* INPUT AREA */}
         <div className="bg-[#F6F6F6] p-2 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
           {isRecording ? (
             <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[42px] border border-gray-300 shadow-sm">
               <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-red-500 font-mono text-sm">{`0:${recordTime < 10 ? '0' : ''}${recordTime}`}</span>
-              <span className="text-gray-500 text-sm ml-2">Merekam Audio...</span>
+              <span className="text-red-500 font-mono font-bold text-sm">{`0:${recordTime < 10 ? '0' : ''}${recordTime}`}</span>
+              <span className="text-gray-500 text-sm font-medium ml-2">Merekam Audio...</span>
             </div>
           ) : (
             <>
               <div className="w-[42px] h-[42px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
               <div className="flex-1 bg-white rounded-3xl flex items-end px-3 py-2 border border-gray-300 shadow-sm min-h-[42px] relative">
-                {inputText === '' && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-gray-400 pointer-events-none">Ketik pesan</span>}
-                <textarea ref={textareaRef} value={inputText} readOnly rows={1} className="flex-1 bg-transparent outline-none text-[15px] text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" />
+                {inputText === '' && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[15px] font-medium text-gray-400 pointer-events-none">Ketik pesan</span>}
+                <textarea 
+                  ref={textareaRef} 
+                  value={inputText} 
+                  readOnly 
+                  rows={1} 
+                  className="flex-1 bg-transparent outline-none text-[15px] font-medium text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" 
+                  style={{ height: '40px' }} // Set awal biar gak resize
+                />
                 <div className="flex items-center gap-3 text-[#007AFF] shrink-0 pl-2 pb-0.5">
                   {inputText.trim() === '' ? (
                     <><Camera className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} /><Mic className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} /></>
@@ -375,6 +429,7 @@ export default function ChatStoryTool() {
           )}
         </div>
         
+        {/* KEYBOARD - FONT TEBAL */}
         <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {KEYBOARD_ROWS.map((row, rowIndex) => (
             <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
@@ -383,7 +438,7 @@ export default function ChatStoryTool() {
                 const isActive = activeKey === k;
                 const hasTouch = touches.some(t => t.key === k);
                 return (
-                  <div key={k} className={`relative flex-1 max-w-[34px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center text-[19px] font-normal text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}>
+                  <div key={k} className={`relative flex-1 max-w-[34px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center text-[19px] font-bold text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}>
                     {k}
                     {hasTouch && <div className="absolute inset-0 bg-black/10 rounded-[5px] animate-ping pointer-events-none" />}
                   </div>
@@ -393,10 +448,10 @@ export default function ChatStoryTool() {
             </div>
           ))}
           <div className="flex gap-1.5 justify-center mt-1">
-            <div className="bg-[#ABB2BA] w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">123</div>
+            <div className="bg-[#ABB2BA] w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] font-bold flex items-center justify-center text-black">123</div>
             <div className="bg-white w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black"><Smile className="w-6 h-6" /></div>
-            <div className="bg-white flex-1 h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[16px] flex items-center justify-center text-black">Spasi</div>
-            <div className="bg-[#ABB2BA] w-[70px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">Kembali</div>
+            <div className="bg-white flex-1 h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[16px] font-bold flex items-center justify-center text-black">Spasi</div>
+            <div className="bg-[#ABB2BA] w-[70px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] font-bold flex items-center justify-center text-black">Kembali</div>
           </div>
           <div className="flex justify-between items-center px-4 mt-1 mb-1">
             <Globe className="w-6 h-6 text-gray-500" strokeWidth={2} />
