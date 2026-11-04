@@ -16,6 +16,7 @@ interface Message {
   duration?: string;
   audioSrc?: string;
   status?: MessageStatus;
+  isTypo?: boolean; // <-- INI YANG TADI KELUPAAN GUE TAMBAHIN
 }
 
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
@@ -39,7 +40,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Aku serius sayang. Aku udah nungguin kamu dari jam 12 malam loh.", time: '22.16' },
   { sender: 'them', type: 'text', content: "Jangan nengok ke belakang ya.", time: '22.16' },
   { sender: 'them', type: 'text', content: "Aku udah di samping kamu.", time: '22.17' },
-  { sender: 'me', type: 'text', content: "KAMU SERIUS DIMANA? JANGAN BIKIN PANIK", time: '22.18', isTypo: true }, // TYPO DISINI
+  { sender: 'me', type: 'text', content: "KAMU SERIUS DIMANA? JANGAN BIKIN PANIK", time: '22.18', isTypo: true },
   { sender: 'them', type: 'voice', content: "VN: Bercanda babe...", time: '22.19', duration: '0:12', audioSrc: '/voice-note.mp3' },
   { sender: 'me', type: 'text', content: "Parfum Baccarat. Kamu di kamar sebelah mana? Kok kamu tau wangi kamar aku?", time: '22.20' },
   { sender: 'them', type: 'text', content: "Aku lagi di depan pintu kamar kamu.", time: '22.21' },
@@ -87,7 +88,6 @@ export default function ChatStoryTool() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- SFX AUDIO ---
   const initAudio = () => {
     if (typeof window === 'undefined') return;
     if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -151,10 +151,9 @@ export default function ChatStoryTool() {
     });
   };
 
-  // --- AUTO RESIZE FIX (Hanya memanjang jika perlu) ---
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = '40px'; // Reset ke tinggi default
+      textareaRef.current.style.height = '40px'; 
       const scrollH = textareaRef.current.scrollHeight;
       if (scrollH > 40) {
         textareaRef.current.style.height = `${scrollH}px`;
@@ -189,10 +188,9 @@ export default function ChatStoryTool() {
 
       for (let i = 0; i < STORY_SCRIPT.length; i++) {
         if (cancelRef.current) return;
-        const msg = STORY_SCRIPT[i] as any; // Casting buat properti 'isTypo'
+        const msg = STORY_SCRIPT[i];
         const msgId = Date.now() + i;
 
-        // --- PESAN CEWEK ---
         if (msg.sender === 'them') {
           setTypingSender('them');
           await new Promise(r => setTimeout(r, msg.type === 'voice' ? 2000 : 1800)); 
@@ -205,9 +203,7 @@ export default function ChatStoryTool() {
           if (msg.type === 'image') await waitForContinue();
           else if (msg.type === 'voice') await autoPlayVoiceNote(newMsg);
           else await new Promise(r => setTimeout(r, 1000));
-        } 
-        // --- PESAN COWOK ---
-        else {
+        } else {
           if (msg.type === 'voice') {
             setIsRecording(true); 
             const targetSecs = parseInt(msg.duration?.split(':')[1] || '5');
@@ -218,7 +214,6 @@ export default function ChatStoryTool() {
             if (cancelRef.current) return;
             clearInterval(recInterval); setIsRecording(false);
             
-            // KIRIM VN KE KANAN (FIX BUG)
             const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
             setDisplayedMessages(prev => [...prev, newMsg]);
             await new Promise(r => setTimeout(r, 1500));
@@ -235,7 +230,7 @@ export default function ChatStoryTool() {
               if (char && char !== ' ') {
                 setActiveKey(char.toLowerCase());
                 triggerTouch(char.toLowerCase());
-                playSfx('type'); // SUARA KETIKAN BALIK
+                playSfx('type');
               } else {
                 setActiveKey(null);
               }
@@ -244,16 +239,13 @@ export default function ChatStoryTool() {
               await new Promise(r => setTimeout(r, Math.floor(Math.random() * 50) + 60)); 
             }
 
-            // --- ANIMASI TYPO (KHUSUS PESAN PANIK) ---
             if (msg.isTypo) {
               await new Promise(r => setTimeout(r, 500));
-              // Hapus beberapa karakter (Simulasi ngehapus)
               for (let k = 0; k < 3; k++) {
                 setInputText(prev => prev.slice(0, -1));
                 await new Promise(r => setTimeout(r, 150));
               }
               await new Promise(r => setTimeout(r, 600));
-              // Ngetik ulang yang bener
               const typoFix = "NA? JANGAN BIKIN PANIK";
               for (let k = 0; k < typoFix.length; k++) {
                 setInputText(prev => prev + typoFix[k]);
@@ -271,7 +263,7 @@ export default function ChatStoryTool() {
             setTypingSender(null);
             const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
             setDisplayedMessages(prev => [...prev, newMsg]);
-            playSfx('send'); // SUARA KIRIM
+            playSfx('send');
             setInputText('');
             if (textareaRef.current) textareaRef.current.style.height = '40px';
             
@@ -311,7 +303,6 @@ export default function ChatStoryTool() {
 
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
-        {/* HEADER - STATUS DINAMIS */}
         <div className="bg-[#F6F6F6] px-3 py-2 flex items-center justify-between z-40 shrink-0 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
@@ -331,7 +322,6 @@ export default function ChatStoryTool() {
           </div>
         </div>
 
-        {/* AREA CHAT */}
         <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 relative scroll-smooth bg-[#EFEAE2]" style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundSize: 'cover', backgroundBlendMode: 'soft-light' }}>
           <div className="flex justify-center mb-4">
             <span className="bg-[#E2DCD3] text-[#5E5E5E] text-[11px] font-semibold px-3 py-1 rounded-full">4 November 2026</span>
@@ -396,7 +386,6 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT AREA */}
         <div className="bg-[#F6F6F6] p-2 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
           {isRecording ? (
             <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[42px] border border-gray-300 shadow-sm">
@@ -415,7 +404,7 @@ export default function ChatStoryTool() {
                   readOnly 
                   rows={1} 
                   className="flex-1 bg-transparent outline-none text-[15px] font-medium text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" 
-                  style={{ height: '40px' }} // Set awal biar gak resize
+                  style={{ height: '40px' }}
                 />
                 <div className="flex items-center gap-3 text-[#007AFF] shrink-0 pl-2 pb-0.5">
                   {inputText.trim() === '' ? (
@@ -429,7 +418,6 @@ export default function ChatStoryTool() {
           )}
         </div>
         
-        {/* KEYBOARD - FONT TEBAL */}
         <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {KEYBOARD_ROWS.map((row, rowIndex) => (
             <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
