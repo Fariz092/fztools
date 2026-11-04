@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, Pause, RotateCcw, Save, Bell, Send, CheckCheck } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, Pause, Bell, Send, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { getStoredUserSession } from '@/lib/auth-session';
 import { Message, MessageBubble, Keyboard } from './ChatUI';
 
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
@@ -44,20 +43,12 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'me', type: 'voice', content: "vn: (suara panik, napas berat)", time: '22.30', duration: '0:06', audioSrc: '/voice-cowo4.mp3' },
 ];
 
-export default function PrincessRoom({ onBack }: { onBack: () => void }) {
+export default function PrincessRoom({ onFinish }: { onFinish: () => void }) {
   const [displayedMessages, setDisplayedMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
   const [typingSender, setTypingSender] = useState<'me' | 'them' | null>(null);
-  const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isEmojiKeyboard, setIsEmojiKeyboard] = useState(false);
-  
-  const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
-  const [maxUnlockedIndex, setMaxUnlockedIndex] = useState(0);
-  const [isDev, setIsDev] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordTime, setRecordTime] = useState(0);
   const [isOffline, setIsOffline] = useState(false);
-  
   const [isWaitingForContinue, setIsWaitingForContinue] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const continueResolver = useRef<(() => void) | null>(null);
@@ -65,104 +56,17 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
   const [activeVnId, setActiveVnId] = useState<number | null>(null);
   const [vnProgress, setVnProgress] = useState(0);
   const [vnDurationText, setVnDurationText] = useState('0:00');
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordTime, setRecordTime] = useState(0);
   const [touches, setTouches] = useState<{id: number, key: string}[]>([]);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const cancelRef = useRef(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
-  const currentIdxRef = useRef(0); 
+  const hasStarted = useRef(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const session = getStoredUserSession();
-      if (session?.username === 'urxynn') setIsDev(true);
+    if (hasStarted.current) return;
+    hasStarted.current = true;
 
-      const savedIndex = localStorage.getItem('fz_chat_progress');
-      if (savedIndex) {
-        const idx = parseInt(savedIndex);
-        setCurrentMsgIndex(idx);
-        currentIdxRef.current = idx;
-        setMaxUnlockedIndex(idx);
-        const history = STORY_SCRIPT.slice(0, idx).map((msg, i) => ({
-          ...msg, id: Date.now() + i, status: 'read' as any
-        }));
-        setDisplayedMessages(history);
-        if (idx === STORY_SCRIPT.length) setIsOffline(true);
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // FIX LINTER: Bungkus setState pakai setTimeout
-  useEffect(() => {
-    if (currentMsgIndex > 0) {
-      localStorage.setItem('fz_chat_progress', currentMsgIndex.toString());
-      const timer = setTimeout(() => {
-        setMaxUnlockedIndex(prev => Math.max(prev, currentMsgIndex));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [currentMsgIndex]);
-
-  const handleSaveProgress = () => {
-    localStorage.setItem('fz_chat_progress', currentMsgIndex.toString());
-    alert('Progres cerita berhasil disimpan!');
-  };
-
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const idx = parseInt(e.target.value);
-    setCurrentMsgIndex(idx);
-    currentIdxRef.current = idx;
-    setIsPlaying(false);
-    cancelRef.current = true;
-    if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
-    setActiveVnId(null);
-    setIsRecording(false);
-    setTypingSender(null);
-    setInputText('');
-    setIsWaitingForContinue(false);
-    setIsOffline(idx === STORY_SCRIPT.length); 
-    
-    const history = STORY_SCRIPT.slice(0, idx).map((msg, i) => ({
-      ...msg, id: Date.now() + i, status: 'read' as any
-    }));
-    setDisplayedMessages(history);
-  };
-
-  const initAudio = () => {
-    if (typeof window === 'undefined') return;
-    if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
-  };
-
-  const playSfx = (type: 'type' | 'send' | 'notif') => {
-    if (isMuted || !audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-
-    if (type === 'type') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.04);
-    } else if (type === 'send') {
-      osc.type = 'triangle'; osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
-    } else if (type === 'notif') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime);
-      osc.frequency.setValueAtTime(1600, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
-    }
-  };
-
-  useEffect(() => {
     const audio = new Audio();
     voiceNoteAudioRef.current = audio;
     const handleTimeUpdate = () => {
@@ -174,93 +78,52 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
     };
     const handleEnded = () => { setActiveVnId(null); setVnProgress(0); setVnDurationText('0:00'); };
     audio.addEventListener('timeupdate', handleTimeUpdate); audio.addEventListener('ended', handleEnded);
-    return () => { audio.pause(); audio.removeEventListener('timeupdate', handleTimeUpdate); audio.removeEventListener('ended', handleEnded); };
-  }, []);
-
-  const toggleVoiceNote = (msg: Message) => {
-    const audio = voiceNoteAudioRef.current;
-    if (!audio || !msg.audioSrc) return;
-    if (activeVnId === msg.id) { audio.pause(); setActiveVnId(null); } 
-    else { audio.src = msg.audioSrc; audio.play().catch(e => console.log(e)); setActiveVnId(msg.id); }
-  };
-
-  const autoPlayVoiceNote = (msg: Message) => {
-    return new Promise<void>((resolve) => {
-      const audio = new Audio(msg.audioSrc);
-      audio.play().then(() => {
-        setActiveVnId(msg.id);
-        const timeUpdate = setInterval(() => {
-          if (audio.duration) {
-            setVnProgress((audio.currentTime / audio.duration) * 100);
-            const mins = Math.floor(audio.currentTime / 60); const secs = Math.floor(audio.currentTime % 60);
-            setVnDurationText(`${mins}:${secs < 10 ? '0' : ''}${secs}`);
-          }
-        }, 100);
-        audio.onended = () => { clearInterval(timeUpdate); setActiveVnId(null); setVnProgress(0); setVnDurationText('0:00'); resolve(); };
-      }).catch(() => setTimeout(() => resolve(), 3000));
-    });
-  };
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '24px'; 
-      const scrollH = textareaRef.current.scrollHeight;
-      if (scrollH > 24) textareaRef.current.style.height = `${scrollH}px`;
-    }
-  }, [inputText]);
-
-  useEffect(() => {
-    if (chatContainerRef.current) chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-  }, [displayedMessages, typingSender, isRecording, isWaitingForContinue]);
-
-  const waitForContinue = () => {
-    setIsWaitingForContinue(true);
-    playSfx('notif');
-    return new Promise<void>((resolve) => {
-      continueResolver.current = () => { setIsWaitingForContinue(false); resolve(); };
-    });
-  };
-
-  const triggerTouch = (key: string) => {
-    const id = Date.now() + Math.random();
-    setTouches(prev => [...prev, { id, key }]);
-    setTimeout(() => setTouches(prev => prev.filter(t => t.id !== id)), 300);
-  };
-
-  useEffect(() => {
-    if (!isPlaying) { cancelRef.current = true; if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause(); return; }
-    cancelRef.current = false;
 
     const runSequence = async () => {
-      setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 1000));
 
-      for (let i = currentIdxRef.current; i < STORY_SCRIPT.length; i++) {
-        if (cancelRef.current) return;
+      for (let i = 0; i < STORY_SCRIPT.length; i++) {
         const msg = STORY_SCRIPT[i];
         const msgId = Date.now() + i;
 
         if (msg.sender === 'them') {
           setTypingSender('them');
           await new Promise(r => setTimeout(r, msg.type === 'voice' ? 2000 : 1800)); 
-          if (cancelRef.current) return;
           setTypingSender(null);
           
           const newMsg = { ...msg, id: msgId };
           setDisplayedMessages(prev => [...prev, newMsg]);
 
-          if (msg.type === 'image') await waitForContinue();
-          else if (msg.type === 'voice') await autoPlayVoiceNote(newMsg);
-          else await new Promise(r => setTimeout(r, 1000));
+          if (msg.type === 'image') {
+            setIsWaitingForContinue(true);
+            await new Promise<void>((resolve) => {
+              continueResolver.current = () => { setIsWaitingForContinue(false); resolve(); };
+            });
+          } else if (msg.type === 'voice') {
+            const vnAudio = new Audio(msg.audioSrc);
+            await new Promise<void>((resolve) => {
+              vnAudio.play().then(() => {
+                setActiveVnId(msg.id);
+                const interval = setInterval(() => {
+                  if (vnAudio.duration) {
+                    setVnProgress((vnAudio.currentTime / vnAudio.duration) * 100);
+                    const m = Math.floor(vnAudio.currentTime / 60); const s = Math.floor(vnAudio.currentTime % 60);
+                    setVnDurationText(`${m}:${s < 10 ? '0' : ''}${s}`);
+                  }
+                }, 100);
+                vnAudio.onended = () => { clearInterval(interval); setActiveVnId(null); setVnProgress(0); setVnDurationText('0:00'); resolve(); };
+              }).catch(() => setTimeout(resolve, 3000));
+            });
+          } else {
+            await new Promise(r => setTimeout(r, 1000));
+          }
         } else {
           if (msg.type === 'voice') {
             setIsRecording(true); 
             const targetSecs = parseInt(msg.duration?.split(':')[1] || '5');
             let currentSec = 0; setRecordTime(0);
-            
             const recInterval = setInterval(() => { currentSec++; setRecordTime(currentSec); if (currentSec >= targetSecs) clearInterval(recInterval); }, 1000);
             await new Promise(r => setTimeout(r, targetSecs * 1000 + 1000)); 
-            if (cancelRef.current) return;
             clearInterval(recInterval); setIsRecording(false);
             
             const newMsg = { ...msg, id: msgId, status: 'sent' as any };
@@ -269,56 +132,56 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
             if (i === STORY_SCRIPT.length - 1) {
               await new Promise(r => setTimeout(r, 1500)); 
               setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read', reaction: '❤️' } : m)); 
-              await new Promise(r => setTimeout(r, 2000)); 
+              await new Promise(r => setTimeout(r, 2500)); 
               setIsOffline(true); 
+              await new Promise(r => setTimeout(r, 2000)); 
+              onFinish(); // SELESAI, KEMBALI KE LIST
             } else {
               await new Promise(r => setTimeout(r, 1500));
               setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
               await new Promise(r => setTimeout(r, 1000));
             }
-
           } else {
             setTypingSender('me');
             const text = msg.content;
-            
             for (let j = 0; j <= text.length; j++) {
-              if (cancelRef.current) return;
               const char = text[j - 1];
               if (char && char !== ' ') {
                 setActiveKey(char.toLowerCase());
-                triggerTouch(char.toLowerCase());
-                playSfx('type');
+                const id = Date.now() + Math.random();
+                setTouches(prev => [...prev, { id, key: char.toLowerCase() }]);
+                setTimeout(() => setTouches(prev => prev.filter(t => t.id !== id)), 300);
               } else {
                 setActiveKey(null);
               }
-              setInputText(text.slice(0, j));
+              setDisplayedMessages(prev => {
+                if (prev.length === 0 || prev[prev.length - 1].id !== msgId) {
+                  return [...prev, { ...msg, id: msgId, content: text.slice(0, j), status: 'sent' }];
+                }
+                return prev.map(m => m.id === msgId ? { ...m, content: text.slice(0, j) } : m);
+              });
               await new Promise(r => setTimeout(r, Math.floor(Math.random() * 40) + 50)); 
             }
 
             if (msg.isTypo) {
               await new Promise(r => setTimeout(r, 500));
-              for (let k = 0; k < 3; k++) { setInputText(prev => prev.slice(0, -1)); await new Promise(r => setTimeout(r, 150)); }
+              for (let k = 0; k < 3; k++) { 
+                setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: m.content.slice(0, -1) } : m));
+                await new Promise(r => setTimeout(r, 150)); 
+              }
               await new Promise(r => setTimeout(r, 600));
               const typoFix = "na? jangan bikin panik";
               for (let k = 0; k < typoFix.length; k++) {
-                setInputText(prev => prev + typoFix[k]);
+                setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: m.content + typoFix[k] } : m));
                 setActiveKey(typoFix[k].toLowerCase());
-                triggerTouch(typoFix[k].toLowerCase());
-                playSfx('type');
                 await new Promise(r => setTimeout(r, 80));
               }
             }
             
             setActiveKey(null);
             await new Promise(r => setTimeout(r, 400));
-            if (cancelRef.current) return;
-            
             setTypingSender(null);
-            const newMsg = { ...msg, id: msgId, status: 'sent' as any };
-            setDisplayedMessages(prev => [...prev, newMsg]);
-            playSfx('send');
-            setInputText('');
-            if (textareaRef.current) textareaRef.current.style.height = '24px';
+            setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'sent' } : m));
             
             await new Promise(r => setTimeout(r, 2000));
             setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
@@ -326,46 +189,18 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
           }
         }
         
-        if (!cancelRef.current) {
-           currentIdxRef.current = i + 1;
-           setCurrentMsgIndex(i + 1);
-        }
+        if (chatContainerRef.current) chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
       }
-      if (!cancelRef.current) setIsPlaying(false);
     };
-
     runSequence();
-    return () => { cancelRef.current = true; };
-  }, [isPlaying, isMuted]);
-
-  const handlePlay = () => { initAudio(); setIsPlaying(true); };
-  const handlePause = () => { setIsPlaying(false); cancelRef.current = true; if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause(); };
-  
-  const handleReset = () => {
-    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false); setIsOffline(false);
-    setCurrentMsgIndex(0); currentIdxRef.current = 0; setMaxUnlockedIndex(0); localStorage.removeItem('fz_chat_progress');
-    if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
-    if (textareaRef.current) textareaRef.current.style.height = '24px';
-  };
+    return () => { audio.pause(); audio.removeEventListener('timeupdate', handleTimeUpdate); audio.removeEventListener('ended', handleEnded); };
+  }, []);
 
   return (
     <>
-      <div className="flex flex-wrap justify-center gap-2 w-full z-50 mb-2">
-        {isPlaying ? (
-          <button onClick={handlePause} className="bg-amber-500 text-white px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg"><Pause className="w-4 h-4" /> Pause</button>
-        ) : (
-          <button onClick={handlePlay} className="bg-indigo-600 text-white px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg"><Play className="w-4 h-4" /> {currentMsgIndex > 0 ? 'Lanjut' : 'Putar'}</button>
-        )}
-        <button onClick={handleSaveProgress} className="bg-emerald-600 text-white px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg"><Save className="w-4 h-4" /> Simpan</button>
-        <button onClick={handleReset} className="bg-white text-zinc-900 px-4 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg"><RotateCcw className="w-4 h-4" /> Reset</button>
-        <button onClick={() => setIsMuted(!isMuted)} className="bg-zinc-800 text-white p-2.5 rounded-full shadow-lg">
-          {isMuted ? <span className="text-xs">Unmute</span> : <span className="text-xs">Mute</span>}
-        </button>
-      </div>
-
-      <div className="absolute top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between">
+      {/* HEADER GLASSMORPHISM BERSIH */}
+      <div className="absolute top-0 left-0 right-0 z-50 bg-white/30 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between border-b border-white/20 shadow-sm">
         <div className="flex items-center gap-3">
-          <button onClick={onBack}><ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} /></button>
           <div className="relative w-10 h-10 rounded-full bg-gray-300">
              <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover rounded-full" />
              {!isOffline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full transition-all duration-300"></div>}
@@ -378,7 +213,7 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
                   key={isOffline ? 'offline' : isRecording ? 'recording' : typingSender === 'them' ? 'typing' : 'online'}
                   initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="text-[12px] font-medium text-gray-500 leading-tight block"
+                  className="text-[12px] font-medium text-gray-600 leading-tight block"
                 >
                   {isOffline ? 'terakhir dilihat 22.31' : isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
                 </motion.span>
@@ -410,7 +245,7 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
           <span className="bg-[#E2DCD3]/90 text-[#5E5E5E] text-[11px] font-semibold px-3 py-1 rounded-full">4 November 2026</span>
         </div>
         {displayedMessages.map((msg) => (
-          <MessageBubble key={msg.id} msg={msg} isVnPlaying={activeVnId === msg.id} vnProgress={vnProgress} vnDurationText={vnDurationText} toggleVoiceNote={toggleVoiceNote} setActiveImage={setActiveImage} />
+          <MessageBubble key={msg.id} msg={msg} isVnPlaying={activeVnId === msg.id} vnProgress={vnProgress} vnDurationText={vnDurationText} toggleVoiceNote={() => {}} setActiveImage={setActiveImage} />
         ))}
         {typingSender === 'them' && (
           <div className="flex justify-start mb-2 animate-in fade-in">
@@ -423,38 +258,14 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
         )}
       </div>
 
-      <div className="bg-[#F6F6F6] px-3 py-1 flex items-center gap-2 border-t border-gray-200 z-30">
-         <span className="text-[10px] font-bold text-gray-500">0</span>
-         <input type="range" min="0" max={STORY_SCRIPT.length} value={currentMsgIndex} onChange={handleSeek} disabled={!isDev && currentMsgIndex < maxUnlockedIndex} className="flex-1 h-1.5 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50" />
-         <span className="text-[10px] font-bold text-gray-500">{STORY_SCRIPT.length}</span>
-      </div>
-
       <div className="bg-[#F6F6F6] p-1.5 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
-        {isRecording ? (
-          <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[36px] border border-gray-300">
-            <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-red-500 font-mono font-bold text-sm">{`0:${recordTime < 10 ? '0' : ''}${recordTime}`}</span>
-            <span className="text-gray-500 text-xs font-medium ml-2">Merekam Audio...</span>
-          </div>
-        ) : (
-          <>
-            <div className="w-[36px] h-[36px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
-            <div className="flex-1 bg-white rounded-3xl flex items-end px-2 py-1 border border-gray-300 min-h-[36px] relative">
-              {inputText === '' && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-gray-400 pointer-events-none">Ketik pesan</span>}
-              <textarea ref={textareaRef} value={inputText} readOnly rows={1} className="flex-1 bg-transparent outline-none text-[14px] font-medium text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10 py-1" style={{ height: '24px' }} />
-              <div className="flex items-center gap-2 shrink-0 pl-2 pb-1">
-                {inputText.trim() === '' ? (
-                  <><Camera className="w-[20px] h-[20px] text-gray-500" strokeWidth={1.5} /><Mic className="w-[20px] h-[20px] text-gray-500" strokeWidth={1.5} /></>
-                ) : (
-                  <button className="w-7 h-7 bg-[#00A884] rounded-full flex items-center justify-center animate-in zoom-in duration-200"><Send className="w-3.5 h-3.5 text-white -ml-0.5" fill="currentColor" /></button>
-                )}
-              </div>
-            </div>
-          </>
-        )}
+        <div className="w-[36px] h-[36px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
+        <div className="flex-1 bg-white rounded-3xl flex items-end px-2 py-1 border border-gray-300 min-h-[36px]">
+          <span className="text-[14px] font-medium text-gray-400 py-1 pl-1">Ketik pesan</span>
+        </div>
       </div>
       
-      <Keyboard activeKey={activeKey} touches={touches} isEmoji={isEmojiKeyboard} onEmojiClick={() => setIsEmojiKeyboard(!isEmojiKeyboard)} />
+      <Keyboard activeKey={activeKey} touches={touches} isEmoji={false} onEmojiClick={() => {}} />
 
       {activeImage && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4" onClick={() => setActiveImage(null)}>

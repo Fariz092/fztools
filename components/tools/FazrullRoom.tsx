@@ -10,46 +10,37 @@ const FAZRULL_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "gaskeunnn loginnkann!!", time: '22.31' },
 ];
 
-export default function FazrullRoom({ onBack }: { onBack: () => void }) {
+export default function FazrullRoom({ onFinish }: { onFinish: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isOffline, setIsOffline] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const hasPlayed = useRef(false);
 
   useEffect(() => {
-    // Cegah double trigger kalau di-render ulang
     if (hasPlayed.current) return;
     hasPlayed.current = true;
 
     const play = async () => {
-      setMessages([]);
-      setIsOffline(false);
       await new Promise(r => setTimeout(r, 1000));
-      
-      // Cowok ngetik (lo)
       setMessages([{ ...FAZRULL_SCRIPT[0], id: Date.now(), status: 'sent' }]);
       await new Promise(r => setTimeout(r, 1500));
-      
-      // Fazrull ngetik
       setIsTyping(true);
       await new Promise(r => setTimeout(r, 1500));
       setIsTyping(false);
-      
-      // Fazrull bales
       setMessages(prev => [...prev, { ...FAZRULL_SCRIPT[1], id: Date.now() + 1, status: 'read' }]);
       await new Promise(r => setTimeout(r, 2000));
-      
-      // Fazrull Offline
       setIsOffline(true);
+      await new Promise(r => setTimeout(r, 2000));
+      onFinish(); // SELESAI, LANJUT KE LAYAR ENDING
     };
     play();
   }, []);
 
   return (
     <>
-      <div className="absolute top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between border-b border-gray-200">
+      {/* HEADER GLASSMORPHISM FAZRULL */}
+      <div className="absolute top-0 left-0 right-0 z-50 bg-white/30 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between border-b border-white/20 shadow-sm">
         <div className="flex items-center gap-3">
-          <button onClick={onBack}><ChevronLeft className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} /></button>
           <div className="relative w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
              <svg viewBox="0 0 24 24" fill="#8E8E93" className="w-7 h-7 mt-2"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
              {!isOffline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full transition-all duration-300"></div>}
@@ -62,7 +53,7 @@ export default function FazrullRoom({ onBack }: { onBack: () => void }) {
                   key={isOffline ? 'offline' : isTyping ? 'typing' : 'online'}
                   initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="text-[12px] font-medium text-gray-500 leading-tight block"
+                  className="text-[12px] font-medium text-gray-600 leading-tight block"
                 >
                   {isOffline ? 'terakhir dilihat 22.31' : isTyping ? 'sedang mengetik...' : 'Online'}
                 </motion.span>
@@ -70,7 +61,7 @@ export default function FazrullRoom({ onBack }: { onBack: () => void }) {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-[#007AFF]">
+        <div className="flex items-center gap-4 text-black">
           <Video className="w-6 h-6" strokeWidth={1.5} />
           <Phone className="w-5 h-5" strokeWidth={1.5} />
         </div>
@@ -100,7 +91,9 @@ export default function FazrullRoom({ onBack }: { onBack: () => void }) {
           <span className="text-[14px] font-medium text-gray-400 py-1 pl-1">Ketik pesan</span>
         </div>
       </div>
-      <Keyboard activeKey={null} touches={[]} onEmojiClick={() => {}} isEmoji={false} />
+      
+      {/* KEYBOARD DISAMAKAN */}
+      <Keyboard activeKey={null} touches={[]} isEmoji={false} onEmojiClick={() => {}} />
     </>
   );
 }
