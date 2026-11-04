@@ -54,6 +54,9 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'me', type: 'voice', content: "vn: (napas terengah, suara pintu dibanting)", time: '22.26', duration: '0:05', audioSrc: '/voice-cowo2.mp3' },
   { sender: 'them', type: 'voice', content: "vn: (suara napas pelan, ketawa merinding)", time: '22.27', duration: '0:08', audioSrc: '/voice-cewe3.mp3' },
   { sender: 'me', type: 'text', content: "ah elahh, kirainn, tau ahh maless", time: '22.28' },
+  // BAGIAN BARU: VN TERAKHIR
+  { sender: 'them', type: 'voice', content: "vn: (suara langkah kaki, ketawa pelan)", time: '22.29', duration: '0:07', audioSrc: '/voice-cewe4.mp3' },
+  { sender: 'me', type: 'voice', content: "vn: (suara panik, napas berat)", time: '22.30', duration: '0:06', audioSrc: '/voice-cowo4.mp3' },
 ];
 
 const KEYBOARD_ROWS = [
@@ -63,8 +66,6 @@ const KEYBOARD_ROWS = [
 ];
 
 const EMOJI_LIST = ['😀','😂','🥺','😍','😭','👍','🔥','✨','🎀','❤️','💖','😎','😡','🥰','💔','🙏'];
-
-// Waveform baru: lebih banyak dan padat (30 bar)
 const WAVEFORM_HEIGHTS = [30, 50, 20, 80, 40, 90, 60, 30, 70, 100, 40, 60, 20, 80, 50, 40, 90, 30, 70, 50, 20, 80, 40, 60, 90, 30, 70, 50, 80, 40];
 
 export default function ChatStoryTool() {
@@ -305,21 +306,15 @@ export default function ChatStoryTool() {
 
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
-        {/* HEADER NATIVE (TANPA GARIS/GARIS BAYANGAN) */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
-            
-            {/* AVATAR + GREEN DOT */}
             <div className="relative w-10 h-10 rounded-full bg-gray-300">
                <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover rounded-full" />
                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
-
             <div className="flex flex-col">
               <span className="text-[16px] font-bold text-black leading-tight">MyPrincess💖</span>
-              
-              {/* ANIMASI STATUS MENGGUNAKAN FRAMER MOTION */}
               <div className="h-[16px] overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.span 
@@ -342,7 +337,6 @@ export default function ChatStoryTool() {
           </div>
         </div>
 
-        {/* NOTIFIKASI ALA IPHONE */}
         {isWaitingForContinue && (
           <div className="absolute top-4 left-2 right-2 z-[60] animate-in slide-in-from-top-10 duration-500 fade-in">
             <div className="bg-white/90 backdrop-blur-xl border border-gray-200 rounded-2xl p-3 shadow-2xl flex items-center gap-3">
@@ -353,17 +347,11 @@ export default function ChatStoryTool() {
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Pemberitahuan Sistem</p>
                 <p className="text-[13px] font-semibold text-black leading-tight mt-0.5">Pesan baru: Foto dari MyPrincess</p>
               </div>
-              <button 
-                onClick={() => continueResolver.current && continueResolver.current()}
-                className="bg-[#007AFF] text-white text-xs font-bold px-4 py-2 rounded-full active:scale-95 transition-transform shrink-0"
-              >
-                Lanjut
-              </button>
+              <button onClick={() => continueResolver.current && continueResolver.current()} className="bg-[#007AFF] text-white text-xs font-bold px-4 py-2 rounded-full active:scale-95 transition-transform shrink-0">Lanjut</button>
             </div>
           </div>
         )}
 
-        {/* AREA CHAT */}
         <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 pt-[70px] relative scroll-smooth bg-[#EFEAE2]" style={{ backgroundImage: 'url("/background-wa.png")', backgroundSize: 'cover' }}>
           <div className="flex justify-center mb-4">
             <span className="bg-[#E2DCD3]/90 text-[#5E5E5E] text-[11px] font-semibold px-3 py-1 rounded-full">4 November 2026</span>
@@ -375,46 +363,33 @@ export default function ChatStoryTool() {
             
             return (
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2`}>
-                {/* ANIMASI BUBBLE SPRING */}
                 <motion.div 
                   initial={{ scale: 0.8, opacity: 0, y: 10 }}
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   className={`relative max-w-[85%] rounded-[16px] flex flex-col ${isMe ? 'bg-[#DCF8C6] rounded-tr-[4px]' : 'bg-white rounded-tl-[4px]'} ${msg.type === 'image' ? 'p-1' : 'px-2.5 py-1.5'}`}
                 >
-                  
                   {msg.type === 'text' && <span className="text-black text-[15px] font-medium pr-14 leading-snug">{msg.content}</span>}
-
                   {msg.type === 'image' && (
                     <div className="relative rounded-lg overflow-hidden bg-zinc-200 cursor-pointer" onClick={() => setActiveImage(msg.content)}>
                       <img src={msg.content} alt="PAP" className="w-full h-auto max-h-[350px] object-cover" />
                     </div>
                   )}
-
-                  {/* DESAIN VOICE NOTE BARU (SESUAI REFERENSI) */}
                   {msg.type === 'voice' && (
                     <div onClick={() => toggleVoiceNote(msg)} className="flex items-center gap-3 pr-10 py-1 cursor-pointer w-full">
-                      {/* Tombol Play Solid */}
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-black text-white' : 'bg-black text-white'}`}>
                         {isVnPlaying ? <Pause className="w-3.5 h-3.5" fill="currentColor" /> : <Play className="w-3.5 h-3.5 ml-0.5" fill="currentColor" />}
                       </div>
-                      
-                      {/* Waveform Full Width */}
                       <div className="flex items-center justify-between gap-[2px] h-6 flex-1 relative overflow-hidden">
                          {WAVEFORM_HEIGHTS.map((h, i) => {
                            const isPlayed = (i / WAVEFORM_HEIGHTS.length) * 100 <= (isVnPlaying ? vnProgress : 0);
                            return (
-                             <div 
-                               key={i} 
-                               className={`w-[2px] rounded-full shrink-0 transition-colors ${isPlayed ? 'bg-[#128C7E]' : 'bg-gray-300'}`} 
-                               style={{ height: `${h}%` }}
-                             />
+                             <div key={i} className={`w-[2px] rounded-full shrink-0 transition-colors ${isPlayed ? 'bg-[#128C7E]' : 'bg-gray-300'}`} style={{ height: `${h}%` }} />
                            );
                          })}
                       </div>
                     </div>
                   )}
-
                   <div className="absolute bottom-1 right-1.5 flex items-center gap-1">
                     <span className="text-[10px] text-gray-500 font-semibold">{isVnPlaying ? vnDurationText : msg.time}</span>
                     {isMe && (msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> : <CheckCheck className="w-3.5 h-3.5 text-gray-400" />)}
@@ -435,7 +410,6 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT CHAT (COMPACT) */}
         <div className="bg-[#F6F6F6] p-1.5 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
           {isRecording ? (
             <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[36px] border border-gray-300">
@@ -446,17 +420,9 @@ export default function ChatStoryTool() {
           ) : (
             <>
               <div className="w-[36px] h-[36px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
-              
               <div className="flex-1 bg-white rounded-3xl flex items-end px-2 py-1 border border-gray-300 min-h-[36px] relative">
                 {inputText === '' && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-gray-400 pointer-events-none">Ketik pesan</span>}
-                <textarea 
-                  ref={textareaRef} 
-                  value={inputText} 
-                  readOnly 
-                  rows={1} 
-                  className="flex-1 bg-transparent outline-none text-[14px] font-medium text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10 py-1" 
-                  style={{ height: '24px' }} 
-                />
+                <textarea ref={textareaRef} value={inputText} readOnly rows={1} className="flex-1 bg-transparent outline-none text-[14px] font-medium text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10 py-1" style={{ height: '24px' }} />
                 <div className="flex items-center gap-2 shrink-0 pl-2 pb-1">
                   {inputText.trim() === '' ? (
                     <><Camera className="w-[20px] h-[20px] text-gray-500" strokeWidth={1.5} /><Mic className="w-[20px] h-[20px] text-gray-500" strokeWidth={1.5} /></>
@@ -469,7 +435,6 @@ export default function ChatStoryTool() {
           )}
         </div>
         
-        {/* KEYBOARD */}
         <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {KEYBOARD_ROWS.map((row, rowIndex) => (
             <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
