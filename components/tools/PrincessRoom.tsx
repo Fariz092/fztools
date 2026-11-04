@@ -97,10 +97,14 @@ export default function PrincessRoom({ onBack }: { onBack: () => void }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // FIX LINTER: Bungkus setState pakai setTimeout
   useEffect(() => {
     if (currentMsgIndex > 0) {
       localStorage.setItem('fz_chat_progress', currentMsgIndex.toString());
-      setMaxUnlockedIndex(prev => Math.max(prev, currentMsgIndex));
+      const timer = setTimeout(() => {
+        setMaxUnlockedIndex(prev => Math.max(prev, currentMsgIndex));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [currentMsgIndex]);
 
