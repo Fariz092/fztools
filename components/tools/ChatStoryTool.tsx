@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause, Send } from 'lucide-react';
+import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Play, RotateCcw, ChevronUp, Delete, FileText, Globe, Smile, Volume2, VolumeX, Pause, Send, Check, CheckCheck } from 'lucide-react';
 
 type Sender = 'me' | 'them';
 type MessageType = 'text' | 'image' | 'voice';
+type MessageStatus = 'sent' | 'read';
 
 interface Message {
   id: number;
@@ -14,14 +15,14 @@ interface Message {
   time: string;
   duration?: string;
   audioSrc?: string;
+  status?: MessageStatus;
 }
 
-// Alur Cerita Lengkap: My Princess
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Babe, udah tidur?", time: '22.00' },
   { sender: 'me', type: 'text', content: "Belum sayang, kenapa?", time: '22.01' },
   { sender: 'them', type: 'text', content: "Kangen aja hehe. Btw ini pap aku barusan, bagus ga?", time: '22.02' },
-  { sender: 'them', type: 'image', content: "/pap-myprinces.png", time: '22.02' },
+  { sender: 'them', type: 'image', content: "/pap-myprinces.png", time: '22.02' }, // Nanti berhenti di sini
   { sender: 'me', type: 'text', content: "Cantik banget 😍", time: '22.03' },
   { sender: 'them', type: 'text', content: "Hehehe... Kamu lagi di kamar kan?", time: '22.05' },
   { sender: 'me', type: 'text', content: "Iya dong, kok kamu tau?", time: '22.06' },
@@ -32,7 +33,7 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Kamu takut ya? Hehehe.", time: '22.12' },
   { sender: 'them', type: 'text', content: "Btw, aku tadi liat kamu lagi rebahan di kasur.", time: '22.12' },
   { sender: 'me', type: 'text', content: "Hah? Serius kamu di mana?", time: '22.13' },
-  { sender: 'them', type: 'image', content: "/fotopemandanganjendela.jpeg", time: '22.14' },
+  { sender: 'them', type: 'image', content: "/fotopemandanganjendela.jpeg", time: '22.14' }, // Nanti berhenti di sini
   { sender: 'them', type: 'text', content: "Ini pemandangan dari jendela kamar kamu kan?", time: '22.14' },
   { sender: 'me', type: 'text', content: "Bercanda kamu ya? Aku merinding beneran nih.", time: '22.15' },
   { sender: 'them', type: 'text', content: "Aku serius sayang. Aku udah nungguin kamu dari jam 12 malam loh.", time: '22.16' },
@@ -44,12 +45,13 @@ const STORY_SCRIPT: Omit<Message, 'id'>[] = [
   { sender: 'them', type: 'text', content: "Aku lagi di depan pintu kamar kamu.", time: '22.21' },
   { sender: 'me', type: 'text', content: "Hah? Aku ga denger suara apa-apa.", time: '22.21' },
   { sender: 'them', type: 'text', content: "Aku udah masuk kok. Kamu lagi rebahan kan?", time: '22.22' },
-  { sender: 'them', type: 'image', content: "/fotocowolagirebahan.jpeg", time: '22.22' },
+  { sender: 'them', type: 'image', content: "/fotocowolagirebahan.jpeg", time: '22.22' }, // Nanti berhenti di sini
   { sender: 'them', type: 'text', content: "Jangan bangun. Aku lagi di samping kamu.", time: '22.23' },
   { sender: 'me', type: 'voice', content: "VN: Babe, serius deh...", time: '22.24', duration: '0:09', audioSrc: '/vn-cowo.mp3' },
   { sender: 'them', type: 'voice', content: "VN: Ssstt... jangan berisik sayang...", time: '22.25', duration: '0:10', audioSrc: '/vn-cewe2.mp3' },
   { sender: 'me', type: 'voice', content: "VN: (Napas terengah, suara pintu dibanting)", time: '22.26', duration: '0:05', audioSrc: '/voice-cowo2.mp3' },
   { sender: 'them', type: 'voice', content: "VN: (Suara napas pelan, ketawa merinding)", time: '22.27', duration: '0:08', audioSrc: '/voice-cewe3.mp3' },
+  { sender: 'me', type: 'text', content: "ah elahh, kirainn, tau ahh maless", time: '22.28' },
 ];
 
 const KEYBOARD_ROWS = [
@@ -69,52 +71,28 @@ export default function ChatStoryTool() {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(10);
-  const [isEmojiKeyboard, setIsEmojiKeyboard] = useState(false);
   
+  // State Zoom & Lanjutan
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [isWaitingForContinue, setIsWaitingForContinue] = useState(false);
+  const continueResolver = useRef<(() => void) | null>(null);
+
+  // State VN & Recording
   const [activeVnId, setActiveVnId] = useState<number | null>(null);
   const [vnProgress, setVnProgress] = useState(0);
   const [vnDurationText, setVnDurationText] = useState('0:00');
   const [isRecording, setIsRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
-  const [previewVn, setPreviewVn] = useState<Message | null>(null);
-  const [previewPlaying, setPreviewPlaying] = useState(false);
-  const [previewProgress, setPreviewProgress] = useState(0);
+  
+  // State Touch Indicator
+  const [touches, setTouches] = useState<{id: number, key: string}[]>([]);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const cancelRef = useRef(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const initAudio = () => {
-    if (typeof window === 'undefined') return;
-    if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
-  };
-
-  const playSfx = (type: 'type' | 'send' | 'receive') => {
-    if (isMuted || !audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    if (type === 'type') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.04);
-    } else if (type === 'send') {
-      osc.type = 'triangle'; osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
-    } else if (type === 'receive') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime); osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.2);
-    }
-  };
-
+  // --- AUDIO SETUP ---
   useEffect(() => {
     const audio = new Audio();
     voiceNoteAudioRef.current = audio;
@@ -154,6 +132,7 @@ export default function ChatStoryTool() {
     });
   };
 
+  // --- LOGIKA UTAMA ---
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -163,74 +142,123 @@ export default function ChatStoryTool() {
 
   useEffect(() => {
     if (chatContainerRef.current) chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-  }, [displayedMessages, typingSender, isRecording, previewVn]);
+  }, [displayedMessages, typingSender, isRecording, isWaitingForContinue]);
+
+  // Fungsi untuk menunggu user klik "Lanjutkan"
+  const waitForContinue = () => {
+    setIsWaitingForContinue(true);
+    return new Promise<void>((resolve) => {
+      continueResolver.current = () => {
+        setIsWaitingForContinue(false);
+        resolve();
+      };
+    });
+  };
+
+  // Fungsi animasi touch
+  const triggerTouch = (key: string) => {
+    const id = Date.now() + Math.random();
+    setTouches(prev => [...prev, { id, key }]);
+    setTimeout(() => {
+      setTouches(prev => prev.filter(t => t.id !== id));
+    }, 300);
+  };
 
   useEffect(() => {
     if (!isPlaying) { cancelRef.current = true; if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause(); return; }
     cancelRef.current = false;
 
     const runSequence = async () => {
-      setDisplayedMessages([]); setInputText(''); setTypingSender(null); setUnreadCount(10); setIsEmojiKeyboard(false); setActiveVnId(null); setIsRecording(false); setPreviewVn(null);
+      setDisplayedMessages([]); setInputText(''); setTypingSender(null); setUnreadCount(10); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
       await new Promise(r => setTimeout(r, 1000));
 
       for (let i = 0; i < STORY_SCRIPT.length; i++) {
         if (cancelRef.current) return;
         const msg = STORY_SCRIPT[i];
+        const msgId = Date.now() + i;
+
+        // --- PESAN DARI CEWEK ---
         if (msg.sender === 'them') {
           setTypingSender('them');
-          await new Promise(r => setTimeout(r, msg.type === 'image' ? 2500 : msg.type === 'voice' ? 2000 : 1500)); 
+          await new Promise(r => setTimeout(r, msg.type === 'voice' ? 2000 : 1800)); 
           if (cancelRef.current) return;
           setTypingSender(null);
-          const newMsg = { ...msg, id: Date.now() + i };
+          
+          const newMsg = { ...msg, id: msgId };
           setDisplayedMessages(prev => [...prev, newMsg]);
           setUnreadCount(prev => prev + 1);
-          playSfx('receive');
-          if (msg.type === 'voice') await autoPlayVoiceNote(newMsg);
-          else await new Promise(r => setTimeout(r, 1000));
-        } else {
+
+          if (msg.type === 'image') {
+            // Berhenti dan tunggu user lihat gambar
+            await waitForContinue();
+          } else if (msg.type === 'voice') {
+            await autoPlayVoiceNote(newMsg);
+          } else {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        } 
+        // --- PESAN DARI COWOK ---
+        else {
           if (msg.type === 'voice') {
-            setIsRecording(true); setRecordTime(0);
-            const recInterval = setInterval(() => setRecordTime(p => p + 1), 1000);
-            await new Promise(r => setTimeout(r, 4000)); 
+            // Simulasi Rekam
+            setIsRecording(true); 
+            const targetSecs = parseInt(msg.duration?.split(':')[1] || '5');
+            let currentSec = 0;
+            setRecordTime(0);
+            
+            const recInterval = setInterval(() => {
+              currentSec++;
+              setRecordTime(currentSec);
+              if (currentSec >= targetSecs) clearInterval(recInterval);
+            }, 1000);
+
+            await new Promise(r => setTimeout(r, targetSecs * 1000 + 1000)); 
             if (cancelRef.current) return;
+            
             clearInterval(recInterval); setIsRecording(false);
-            const previewMsg = { ...msg, id: Date.now() + i };
-            setPreviewVn(previewMsg);
-            await new Promise(r => setTimeout(r, 500)); 
-            if (cancelRef.current) return;
-            setPreviewPlaying(true);
-            const audioPreview = new Audio(msg.audioSrc);
-            audioPreview.play().then(() => {
-              const prevInterval = setInterval(() => { if (audioPreview.duration) setPreviewProgress((audioPreview.currentTime / audioPreview.duration) * 100); }, 100);
-              audioPreview.onended = () => { clearInterval(prevInterval); setPreviewPlaying(false); setPreviewProgress(0); };
-            }).catch(() => setTimeout(() => setPreviewPlaying(false), 3000));
-            await new Promise(r => setTimeout(r, 6000)); 
-            if (cancelRef.current) return;
-            setPreviewVn(null);
-            setDisplayedMessages(prev => [...prev, previewMsg]);
-            playSfx('send');
+            
+            const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
+            setDisplayedMessages(prev => [...prev, newMsg]);
+            
+            // Read receipt logic
+            await new Promise(r => setTimeout(r, 1500));
+            setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
+            
             await new Promise(r => setTimeout(r, 1000));
           } else {
+            // Ngetik teks
             setTypingSender('me');
             const text = msg.content;
             for (let j = 0; j <= text.length; j++) {
               if (cancelRef.current) return;
               const char = text[j - 1];
-              if (char && /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2700}-\u{27BF}]/u.test(char)) setIsEmojiKeyboard(true);
-              else if (char === ' ') setIsEmojiKeyboard(false);
-              if (char && char !== ' ') { setActiveKey(char.toLowerCase()); playSfx('type'); } 
-              else setActiveKey(null);
+              
+              if (char && char !== ' ') {
+                setActiveKey(char.toLowerCase());
+                triggerTouch(char.toLowerCase());
+              } else {
+                setActiveKey(null);
+              }
+              
               setInputText(text.slice(0, j));
-              await new Promise(r => setTimeout(r, 70)); 
+              // Kecepatan ngetik dinamis (50-100ms)
+              await new Promise(r => setTimeout(r, Math.floor(Math.random() * 50) + 50)); 
             }
-            setIsEmojiKeyboard(false); setActiveKey(null);
-            await new Promise(r => setTimeout(r, 400));
+            
+            setActiveKey(null);
+            await new Promise(r => setTimeout(r, 500));
             if (cancelRef.current) return;
+            
             setTypingSender(null);
-            setDisplayedMessages(prev => [...prev, { ...msg, id: Date.now() + i }]);
-            playSfx('send');
+            const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
+            setDisplayedMessages(prev => [...prev, newMsg]);
             setInputText('');
             if (textareaRef.current) textareaRef.current.style.height = 'auto';
+            
+            // Read receipt logic (Ceklis abu -> biru)
+            await new Promise(r => setTimeout(r, 2000)); // Jeda baca
+            setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
+            
             await new Promise(r => setTimeout(r, 1000));
           }
         }
@@ -242,13 +270,12 @@ export default function ChatStoryTool() {
     return () => { cancelRef.current = true; };
   }, [isPlaying, isMuted]);
 
-  const handlePlay = () => { initAudio(); setIsPlaying(true); };
+  const handlePlay = () => setIsPlaying(true);
   const handleReset = () => {
-    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setUnreadCount(10); setIsEmojiKeyboard(false); setActiveVnId(null); setIsRecording(false); setPreviewVn(null);
+    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setUnreadCount(10); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
-  const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${(seconds % 60) < 10 ? '0' : ''}${seconds % 60}`;
 
   return (
     <div className="w-full flex flex-col items-center gap-3">
@@ -264,170 +291,218 @@ export default function ChatStoryTool() {
         </button>
       </div>
 
-      <div className="w-full max-w-[380px] h-[85dvh] sm:h-[750px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
+      {/* BINGKAI HP */}
+      <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden font-sans">
         
-        <div className="bg-[#F6F6F6] border-b border-[#D1D1D6] px-2 py-1.5 flex items-center justify-between z-40 shrink-0">
-          <div className="flex items-center">
-            <ChevronLeft className="w-7 h-7 text-[#007AFF] -ml-1" strokeWidth={2.5} />
-            <span className="text-[#007AFF] text-[17px] font-normal mr-2">{unreadCount}</span>
-            
-            <div className="w-[38px] h-[38px] bg-[#D1D1D6] rounded-full overflow-hidden flex items-center justify-center">
+        {/* HEADER - Persis thefake.design */}
+        <div className="bg-[#F6F6F6] px-3 py-2 flex items-center justify-between z-40 shrink-0 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
+            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-gray-300">
                <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
             </div>
-            
-            <div className="flex flex-col ml-2">
-              <div className="flex items-center gap-1">
-                <span className="text-[16px] font-semibold text-black leading-tight">MyPrincess💖</span>
-              </div>
-              <span className="text-[12px] text-[#8E8E93] leading-tight">
-                {typingSender === 'them' ? 'sedang mengetik...' : 'online'}
-              </span>
-            </div>
+            <span className="text-[17px] font-medium text-black">MyPrincess💖</span>
           </div>
           
-          <div className="flex items-center gap-4 text-[#007AFF] pr-1">
-            <Video className="w-[26px] h-[26px]" strokeWidth={1.5} />
-            <Phone className="w-[22px] h-[22px]" strokeWidth={2} />
+          <div className="flex items-center gap-4 text-black">
+            <Video className="w-6 h-6" strokeWidth={1.5} />
+            <Phone className="w-5 h-5" strokeWidth={1.5} />
           </div>
         </div>
 
+        {/* AREA CHAT */}
         <div 
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto p-3 space-y-1.5 relative scroll-smooth" 
+          className="flex-1 overflow-y-auto p-3 relative scroll-smooth bg-[#EFEAE2]" 
           style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundSize: 'cover', backgroundBlendMode: 'soft-light' }}
         >
+          {/* Pill Tanggal */}
+          <div className="flex justify-center mb-4">
+            <span className="bg-[#E2DCD3] text-[#5E5E5E] text-[11px] font-medium px-3 py-1 rounded-full">4 November 2026</span>
+          </div>
+
           {displayedMessages.map((msg) => {
             const isMe = msg.sender === 'me';
             const isVnPlaying = activeVnId === msg.id;
+            
             return (
-              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}>
-                <div className={`relative max-w-[85%] rounded-[16px] shadow-sm flex flex-col ${isMe ? 'bg-[#DCF8C6] rounded-tr-[4px]' : 'bg-white rounded-tl-[4px]'} ${msg.type === 'image' ? 'p-1' : 'px-2.5 py-1'}`}>
+              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                <div className={`relative max-w-[85%] rounded-[12px] shadow-sm flex flex-col ${isMe ? 'bg-[#DCF8C6]' : 'bg-white'} ${msg.type === 'image' ? 'p-1' : 'px-2 py-1.5'}`}>
                   
-                  {isMe ? (
-                    <div className="absolute top-0 -right-[6px] w-2 h-3"><svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z"></path><path fill="#DCF8C6" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z"></path></svg></div>
-                  ) : (
-                    <div className="absolute top-0 -left-[6px] w-2 h-3"><svg viewBox="0 0 8 13" width="8" height="13"><path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" transform="scale(-1, 1) translate(-8, 0)"></path><path fill="#FFFFFF" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z" transform="scale(-1, 1) translate(-8, 0)"></path></svg></div>
+                  {/* Text Message */}
+                  {msg.type === 'text' && (
+                    <span className="text-black text-[15px] pr-14 leading-snug">{msg.content}</span>
                   )}
 
-                  {msg.type === 'text' && <span className="text-black text-[14.5px] pr-12 leading-snug">{msg.content}</span>}
+                  {/* Image Message (Clickable) */}
                   {msg.type === 'image' && (
-                    <div className="relative rounded-xl overflow-hidden bg-zinc-200">
+                    <div 
+                      className="relative rounded-lg overflow-hidden bg-zinc-200 cursor-pointer"
+                      onClick={() => setActiveImage(msg.content)}
+                    >
                       <img src={msg.content} alt="PAP" className="w-full h-auto max-h-[350px] object-cover" />
+                      <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors" />
                     </div>
                   )}
+
+                  {/* Voice Note Message (Persis Screenshot) */}
                   {msg.type === 'voice' && (
-                    <div onClick={() => toggleVoiceNote(msg)} className="flex items-center gap-2 pr-12 py-1 cursor-pointer min-w-[180px]">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-[#25D366]/20' : 'bg-[#007AFF]/10'}`}>
-                        {isVnPlaying ? <Pause className={`w-4 h-4 ${isMe ? 'text-[#128C7E]' : 'text-[#007AFF]'}`} fill="currentColor" /> : <Play className={`w-4 h-4 ${isMe ? 'text-[#128C7E]' : 'text-[#007AFF]'}`} fill="currentColor" />}
+                    <div onClick={() => toggleVoiceNote(msg)} className="flex items-center gap-2 pr-14 py-1 cursor-pointer min-w-[200px]">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isMe ? 'bg-[#128C7E] text-white' : 'bg-[#128C7E] text-white'}`}>
+                        {isVnPlaying ? <Pause className="w-4 h-4" fill="currentColor" /> : <Play className="w-4 h-4" fill="currentColor" />}
                       </div>
+                      
+                      {/* Waveform + White Pulse Overlay */}
                       <div className="flex items-center gap-0.5 h-6 flex-1 relative overflow-hidden">
-                         {WAVEFORM_HEIGHTS.map((h, i) => <div key={i} className={`w-[2px] rounded-full shrink-0 ${isMe ? 'bg-zinc-500' : 'bg-zinc-400'}`} style={{ height: `${h}%` }}></div>)}
-                         <div className="absolute top-0 bottom-0 left-0 bg-black/10 pointer-events-none" style={{ width: `${isVnPlaying ? vnProgress : 0}%` }} />
+                         {WAVEFORM_HEIGHTS.map((h, i) => (
+                           <div key={i} className={`w-[2px] rounded-full shrink-0 ${isMe ? 'bg-zinc-400' : 'bg-zinc-400'}`} style={{ height: `${h}%` }}></div>
+                         ))}
+                         {/* Putih transparan bergerak */}
+                         <div className="absolute top-0 bottom-0 left-0 bg-white/60 mix-blend-overlay pointer-events-none transition-all duration-100" style={{ width: `${isVnPlaying ? vnProgress : 0}%` }} />
                       </div>
-                      <span className="text-[10px] text-[#8E8E93] w-8 shrink-0 mt-2 text-right">{isVnPlaying ? vnDurationText : msg.duration}</span>
+
+                      {/* Profil Pic di dalam VN */}
+                      <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-white/50">
+                        <img src={isMe ? "https://i.pravatar.cc/150?img=11" : "https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80"} className="w-full h-full object-cover" />
+                      </div>
                     </div>
                   )}
-                  <div className={`absolute bottom-1 right-2 flex items-center gap-1 ${msg.type === 'image' ? 'bg-black/40 px-1.5 py-0.5 rounded-full backdrop-blur-sm' : ''}`}>
-                    <span className={`text-[10px] font-medium ${msg.type === 'image' ? 'text-white' : 'text-[#8E8E93]'}`}>{msg.time}</span>
+
+                  {/* Time & Checkmarks (Pojok Kanan Bawah) */}
+                  <div className="absolute bottom-1 right-1.5 flex items-center gap-1">
+                    <span className="text-[10px] text-gray-500 font-medium">
+                      {isVnPlaying ? vnDurationText : msg.time}
+                    </span>
                     {isMe && (
-                      <svg viewBox="0 0 16 11" width="14" height="10">
-                        <path fill="#53BDEB" d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.405-2.272a.463.463 0 0 0-.336-.146.47.47 0 0 0-.343.146l-.311.31a.445.445 0 0 0-.14.337c0 .136.047.25.14.343l2.996 2.996a.724.724 0 0 0 .501.203.697.697 0 0 0 .546-.266l6.646-8.417a.497.497 0 0 0 .108-.299.441.441 0 0 0-.167-.374l-.333-.261zm-1.06 0a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-1.152-1.087-.311.31a.445.445 0 0 0-.14.337c0 .136.047.25.14.343l1.744 1.744a.724.724 0 0 0 .501.203.697.697 0 0 0 .546-.266l6.646-8.417a.497.497 0 0 0 .108-.299.441.441 0 0 0-.167-.374l-.333-.261z"/>
-                      </svg>
+                      msg.status === 'read' ? (
+                        <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> // Ceklis Biru
+                      ) : (
+                        <CheckCheck className="w-3.5 h-3.5 text-gray-400" /> // Ceklis Abu
+                      )
                     )}
                   </div>
                 </div>
               </div>
             );
           })}
+
+          {/* Typing Indicator */}
           {typingSender === 'them' && (
-            <div className="flex justify-start animate-in fade-in">
-              <div className="bg-white rounded-[16px] rounded-tl-[4px] px-3 py-2 shadow-sm flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-[#8E8E93] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-1.5 h-1.5 bg-[#8E8E93] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-1.5 h-1.5 bg-[#8E8E93] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="flex justify-start mb-2 animate-in fade-in">
+              <div className="bg-white rounded-xl px-3 py-2 shadow-sm flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
+            </div>
+          )}
+
+          {/* Tombol Lanjutkan (Muncul saat gambar diklik) */}
+          {isWaitingForContinue && (
+            <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+               <button 
+                 onClick={() => continueResolver.current && continueResolver.current()}
+                 className="bg-white text-black px-8 py-3 rounded-full font-bold text-sm shadow-2xl hover:scale-105 transition-transform"
+               >
+                 Lanjutkan Cerita →
+               </button>
             </div>
           )}
         </div>
 
-        <div className="bg-[#F6F6F6] border-t border-[#D1D1D6] p-1.5 flex items-end gap-2 z-30 shrink-0 min-h-[52px]">
+        {/* INPUT AREA */}
+        <div className="bg-[#F6F6F6] p-2 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
+          
           {isRecording ? (
-            <div className="flex-1 flex items-center gap-2 px-2 h-[36px]">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-red-500 font-mono text-sm">{formatTime(recordTime)}</span>
-              <span className="text-zinc-400 text-sm ml-2">Merekam Audio...</span>
-            </div>
-          ) : previewVn ? (
-            <div className="flex-1 flex items-center gap-2 bg-white rounded-[18px] px-2 py-1.5 border border-[#D1D1D6] min-h-[36px]">
-              <div className="w-6 h-6 bg-[#25D366]/20 rounded-full flex items-center justify-center shrink-0">
-                {previewPlaying ? <Pause className="w-3 h-3 text-[#128C7E]" fill="currentColor" /> : <Play className="w-3 h-3 text-[#128C7E]" fill="currentColor" />}
-              </div>
-              <div className="flex items-center gap-0.5 h-4 flex-1 relative overflow-hidden">
-                 {WAVEFORM_HEIGHTS.map((h, i) => <div key={i} className="w-[2px] bg-zinc-400 rounded-full shrink-0" style={{ height: `${h}%` }}></div>)}
-                 <div className="absolute top-0 bottom-0 left-0 bg-black/10 pointer-events-none" style={{ width: `${previewPlaying ? previewProgress : 0}%` }} />
-              </div>
-              <span className="text-[10px] text-[#8E8E93] w-8 shrink-0 text-right">{previewVn.duration}</span>
-              <button className="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center shrink-0 ml-1 animate-in zoom-in duration-300">
-                <Send className="w-4 h-4 text-white -ml-0.5" fill="currentColor" />
-              </button>
+             /* UI Merekam VN */
+            <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[42px] border border-gray-300 shadow-sm">
+              <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-red-500 font-mono text-sm">{`0:${recordTime < 10 ? '0' : ''}${recordTime}`}</span>
+              <span className="text-gray-500 text-sm ml-2">Merekam Audio...</span>
             </div>
           ) : (
+            /* UI Normal */
             <>
-              <div className="w-9 h-9 flex items-center justify-center shrink-0 mb-0.5">
-                <Plus className="w-6 h-6 text-[#007AFF]" strokeWidth={2.5} />
+              <div className="w-[42px] h-[42px] flex items-center justify-center shrink-0 text-gray-600">
+                <Plus className="w-6 h-6" strokeWidth={1.5} />
               </div>
-              <div className="flex-1 bg-white rounded-[18px] flex items-end px-2 py-1.5 border border-[#D1D1D6] min-h-[36px] relative">
+              <div className="flex-1 bg-white rounded-3xl flex items-end px-3 py-2 border border-gray-300 shadow-sm min-h-[42px] relative">
                 {inputText === '' && (
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[15px] text-zinc-400 pointer-events-none">Ketikkan sesuatu...</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-gray-400 pointer-events-none">Ketik pesan</span>
                 )}
-                <textarea ref={textareaRef} value={inputText} readOnly rows={1} className="flex-1 bg-transparent outline-none text-[15px] text-black placeholder-zinc-400 resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" />
-                <div className="flex items-center gap-3 text-[#007AFF] pl-2 shrink-0 pb-0.5">
-                  <FileText className="w-[22px] h-[22px]" strokeWidth={1.5} />
-                  <Camera className="w-[22px] h-[22px]" strokeWidth={1.5} />
-                  <Mic className="w-[22px] h-[22px]" strokeWidth={1.5} />
+                <textarea ref={textareaRef} value={inputText} readOnly rows={1} className="flex-1 bg-transparent outline-none text-[15px] text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" />
+                
+                {/* Ikon Mic vs Send */}
+                <div className="flex items-center gap-3 text-[#007AFF] shrink-0 pl-2 pb-0.5">
+                  {inputText.trim() === '' ? (
+                    <>
+                      <Camera className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} />
+                      <Mic className="w-[22px] h-[22px] text-gray-600" strokeWidth={1.5} />
+                    </>
+                  ) : (
+                    <button className="w-8 h-8 bg-[#00A884] rounded-full flex items-center justify-center ml-1 animate-in zoom-in duration-200">
+                      <Send className="w-4 h-4 text-white -ml-0.5" fill="currentColor" />
+                    </button>
+                  )}
                 </div>
               </div>
             </>
           )}
         </div>
-
-        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-pulse shrink-0" />
         
-        <div className="bg-[#D1D5DB] h-[250px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
-          {isEmojiKeyboard ? (
-             <div className="flex-1 grid grid-cols-8 gap-1 px-1 content-start pb-2">
-               {EMOJI_LIST.map((emoji, idx) => <div key={idx} className="flex items-center justify-center text-2xl h-10 active:bg-black/10 rounded-lg cursor-pointer">{emoji}</div>)}
-             </div>
-          ) : (
-            <>
-              {KEYBOARD_ROWS.map((row, rowIndex) => (
-                <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
-                  {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-10 rounded-[5px] shadow-sm flex items-center justify-center"><ChevronUp className="w-5 h-5 text-black" /></div>}
-                  {row.map(k => {
-                    const isActive = activeKey === k;
-                    return (
-                      <div key={k} className={`flex-1 max-w-[34px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center text-[19px] font-normal text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}>{k}</div>
-                    );
-                  })}
-                  {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-10 rounded-[5px] shadow-sm flex items-center justify-center"><Delete className="w-5 h-5 text-black" /></div>}
-                </div>
-              ))}
-            </>
-          )}
+        {/* KEYBOARD (iOS Style with Touch Effects) */}
+        <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
+          {KEYBOARD_ROWS.map((row, rowIndex) => (
+            <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
+              {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] shadow-sm flex items-center justify-center"><ChevronUp className="w-5 h-5 text-black" /></div>}
+              
+              {row.map(k => {
+                const isActive = activeKey === k;
+                const hasTouch = touches.some(t => t.key === k);
+                return (
+                  <div 
+                    key={k} 
+                    className={`relative flex-1 max-w-[34px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center text-[19px] font-normal text-black transition-colors ${isActive ? 'bg-[#ABB2BA]' : 'bg-white'}`}
+                  >
+                    {k}
+                    {/* Efek Sentuhan (Touch Indicator) */}
+                    {hasTouch && (
+                       <div className="absolute inset-0 bg-black/10 rounded-[5px] animate-ping pointer-events-none" />
+                    )}
+                  </div>
+                );
+              })}
+
+              {rowIndex === 2 && <div className="bg-[#ABB2BA] w-10 h-[42px] rounded-[5px] shadow-sm flex items-center justify-center"><Delete className="w-5 h-5 text-black" /></div>}
+            </div>
+          ))}
+          
           <div className="flex gap-1.5 justify-center mt-1">
             <div className="bg-[#ABB2BA] w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">123</div>
-            <div onClick={() => setIsEmojiKeyboard(!isEmojiKeyboard)} className="bg-white w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black cursor-pointer active:bg-zinc-200">
-              {isEmojiKeyboard ? <span className="text-sm font-bold">ABC</span> : <Smile className="w-6 h-6" />}
+            <div className="bg-white w-[42px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">
+              <Smile className="w-6 h-6" />
             </div>
             <div className="bg-white flex-1 h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[16px] flex items-center justify-center text-black">Spasi</div>
             <div className="bg-[#ABB2BA] w-[70px] h-[42px] rounded-[5px] shadow-[0_1px_0_0_rgba(0,0,0,0.3)] text-[15px] flex items-center justify-center text-black">Kembali</div>
           </div>
+
           <div className="flex justify-between items-center px-4 mt-1 mb-1">
-            <Globe className="w-6 h-6 text-[#8E8E93]" strokeWidth={2} />
-            <Mic className="w-6 h-6 text-[#8E8E93]" strokeWidth={2} />
+            <Globe className="w-6 h-6 text-gray-500" strokeWidth={2} />
+            <Mic className="w-6 h-6 text-gray-500" strokeWidth={2} />
           </div>
         </div>
       </div>
+
+      {/* MODAL ZOOM GAMBAR */}
+      {activeImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setActiveImage(null)}
+        >
+          <img src={activeImage} alt="Zoomed" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+          <span className="absolute bottom-10 text-white/70 text-sm font-medium">Ketuk di mana saja untuk menutup</span>
+        </div>
+      )}
     </div>
   );
 }
