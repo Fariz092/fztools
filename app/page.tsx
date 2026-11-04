@@ -13,7 +13,7 @@ import SarcasticMemeTool from '@/components/tools/SarcasticMemeTool';
 import TiktokDownloaderTool from '@/components/tools/TiktokDownloaderTool';
 import SubnetCalculator from '@/components/tools/SubnetCalculator';
 import { testConnection } from '@/lib/firebase';
-import { ArrowRight, Zap, ShieldCheck, Layers, Search, MessageCircle, Network } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
 
@@ -122,7 +122,7 @@ export default function HomePage() {
                       <div>
                         <div className="flex items-center justify-between mb-5">
                           <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center text-zinc-700 dark:text-zinc-200 group-hover:scale-110 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all">
-                            {t.id === 'chat-story' ? <MessageCircle className="w-4 h-4" /> : t.id === 'subnet' ? <Network className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                            {t.id === 'subnet' ? <Network className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
                           </div>
                           <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{t.id}</span>
                         </div>
@@ -132,7 +132,6 @@ export default function HomePage() {
                           {t.id === 'brat' && 'Buat teks dan animasi GIF bergaya viral Charli XCX brat dengan kustomisasi presisi.'}
                           {t.id === 'iqc' && 'Kartu kutipan pesan WhatsApp gaya iPhone dengan efek blur glassmorphism yang estetik.'}
                           {t.id === 'iqcv2' && 'Generator kartu media iOS dengan pemotongan foto otomatis dan menu konteks interaktif.'}
-                          {t.id === 'chat-story' && 'Buat simulasi percakapan WhatsApp iOS untuk konten AU TikTok. Ketik sendiri atau putar animasi otomatis.'}
                           {t.id === 'subnet' && 'Kalkulator subnet IP (IPv4) untuk menghitung Network ID, Broadcast, dan Host Range secara instan.'}
                           {t.id === 'qr' && 'Buat kode QR modern untuk URL, teks, atau WiFi dengan desain poster yang bersih dan minimalis.'}
                           {t.id === 'fakett' && 'Mockup komentar TikTok realistis dengan foto profil kustom dan metrik interaksi viral.'}

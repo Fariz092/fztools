@@ -44,7 +44,6 @@ export const TOOLS_CONFIG = [
   { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat' },
   { id: 'iqc', name: 'IQC WhatsApp', badge: 'Teks', color: 'bg-rose-50', path: '/iqc' },
   { id: 'iqcv2', name: 'IQC V2 Media', badge: 'Foto', color: 'bg-emerald-50', path: '/iqcv2' },
-  { id: 'chat-story', name: 'AU Chat Story', badge: 'Baru', color: 'bg-fuchsia-50', path: '/chat-story' },
   { id: 'qr', name: 'Generator QR', badge: 'Bersih', color: 'bg-cyan-50', path: '/qr' },
   { id: 'fakett', name: 'TikTok Comment', badge: 'Mockup', color: 'bg-amber-50', path: '/fakett' },
   { id: 'meme', name: 'Meme Indonesia', badge: 'Populer', color: 'bg-orange-50', path: '/meme' },
@@ -84,6 +83,7 @@ export default function Navbar({
   };
 
   const getCurrentSectionTitle = () => {
+    if (pathname === '/subnet') return 'SUBNET';
     if (pathname === '/iqcv2') return 'IQC MEDIA';
     if (pathname === '/iqc' || pathname === '/iqctool') return 'IQC TEKS';
     if (pathname === '/brat') return 'BRAT';
@@ -91,7 +91,6 @@ export default function Navbar({
     if (pathname === '/fakett') return 'TIKTOK';
     if (pathname === '/meme') return 'MEME';
     if (pathname === '/sarcastic') return 'SARKAS AI';
-    if (pathname === '/chat-story') return 'AU STORY';
     if (pathname === '/qr') return 'QR';
     if (pathname === '/tiktok') return 'DOWNLOADER';
     if (pathname === '/daftar') return 'DAFTAR';
