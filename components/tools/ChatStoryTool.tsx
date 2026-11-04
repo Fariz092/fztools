@@ -88,7 +88,6 @@ export default function ChatStoryTool() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- SFX AUDIO (Type, Send, Notif iPhone) ---
   const initAudio = () => {
     if (typeof window === 'undefined') return;
     if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -111,7 +110,6 @@ export default function ChatStoryTool() {
       gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
       osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
     } else if (type === 'notif') {
-      // Suara "Ting" iPhone (dua nada)
       osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime);
       osc.frequency.setValueAtTime(1600, ctx.currentTime + 0.1);
       gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
@@ -160,9 +158,9 @@ export default function ChatStoryTool() {
 
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = '36px'; // Set awal lebih kecil
+      textareaRef.current.style.height = '28px'; 
       const scrollH = textareaRef.current.scrollHeight;
-      if (scrollH > 36) textareaRef.current.style.height = `${scrollH}px`;
+      if (scrollH > 28) textareaRef.current.style.height = `${scrollH}px`;
     }
   }, [inputText]);
 
@@ -172,7 +170,7 @@ export default function ChatStoryTool() {
 
   const waitForContinue = () => {
     setIsWaitingForContinue(true);
-    playSfx('notif'); // Bunyi "Ting" saat nunggu
+    playSfx('notif');
     return new Promise<void>((resolve) => {
       continueResolver.current = () => { setIsWaitingForContinue(false); resolve(); };
     });
@@ -266,7 +264,7 @@ export default function ChatStoryTool() {
             setDisplayedMessages(prev => [...prev, newMsg]);
             playSfx('send');
             setInputText('');
-            if (textareaRef.current) textareaRef.current.style.height = '36px';
+            if (textareaRef.current) textareaRef.current.style.height = '28px';
             
             await new Promise(r => setTimeout(r, 2000));
             setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
@@ -285,7 +283,7 @@ export default function ChatStoryTool() {
   const handleReset = () => {
     setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
-    if (textareaRef.current) textareaRef.current.style.height = '36px';
+    if (textareaRef.current) textareaRef.current.style.height = '28px';
   };
 
   return (
@@ -304,6 +302,26 @@ export default function ChatStoryTool() {
 
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
+        {/* HEADER GLASSMORPHISM (Absolute, transparan blur) */}
+        <div className="absolute top-0 left-0 right-0 z-50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-zinc-800/50 px-3 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <ChevronLeft className="w-6 h-6 text-black dark:text-white" strokeWidth={2.5} />
+            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-gray-300">
+               <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[16px] font-bold text-black dark:text-white leading-tight">MyPrincess💖</span>
+              <span className="text-[12px] font-semibold text-gray-600 dark:text-gray-300 leading-tight">
+                {isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 text-black dark:text-white">
+            <Video className="w-6 h-6" strokeWidth={1.5} />
+            <Phone className="w-5 h-5" strokeWidth={1.5} />
+          </div>
+        </div>
+
         {/* NOTIFIKASI ALA IPHONE */}
         {isWaitingForContinue && (
           <div className="absolute top-4 left-2 right-2 z-[60] animate-in slide-in-from-top-10 duration-500 fade-in">
@@ -325,27 +343,8 @@ export default function ChatStoryTool() {
           </div>
         )}
 
-        <div className="bg-[#F6F6F6] px-3 py-2 flex items-center justify-between z-40 shrink-0 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
-            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-gray-300">
-               <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[16px] font-bold text-black leading-tight">MyPrincess💖</span>
-              <span className="text-[12px] font-semibold text-[#8E8E93] leading-tight">
-                {isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-black">
-            <Video className="w-6 h-6" strokeWidth={1.5} />
-            <Phone className="w-5 h-5" strokeWidth={1.5} />
-          </div>
-        </div>
-
-        {/* BACKGROUND WA BARU */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 relative scroll-smooth bg-[#EFEAE2]" style={{ backgroundImage: 'url("/background-wa.png")', backgroundSize: 'cover' }}>
+        {/* AREA CHAT (Padding Top ditambahin biar ga ketutupan Header) */}
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 pt-[70px] relative scroll-smooth bg-[#EFEAE2]" style={{ backgroundImage: 'url("/background-wa.png")', backgroundSize: 'cover' }}>
           <div className="flex justify-center mb-4">
             <span className="bg-[#E2DCD3]/90 text-[#5E5E5E] text-[11px] font-semibold px-3 py-1 rounded-full">4 November 2026</span>
           </div>
@@ -366,7 +365,6 @@ export default function ChatStoryTool() {
                     </div>
                   )}
 
-                  {/* DESAIN VN BARU (W-FULL) */}
                   {msg.type === 'voice' && (
                     <div onClick={() => toggleVoiceNote(msg)} className="flex items-center gap-2 pr-12 py-1 cursor-pointer w-[220px]">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-[#128C7E] text-white`}>
@@ -404,32 +402,33 @@ export default function ChatStoryTool() {
           )}
         </div>
 
-        {/* INPUT CHAT BARU (LEBIH KECIL) */}
+        {/* INPUT CHAT (SIZE KECIL DAN RAPAT) */}
         <div className="bg-[#F6F6F6] p-1.5 flex items-end gap-2 z-30 shrink-0 border-t border-gray-200">
           {isRecording ? (
-            <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[36px] border border-gray-300 shadow-sm">
+            <div className="flex-1 flex items-center gap-2 bg-white rounded-3xl px-4 h-[38px] border border-gray-300 shadow-sm">
               <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
               <span className="text-red-500 font-mono font-bold text-sm">{`0:${recordTime < 10 ? '0' : ''}${recordTime}`}</span>
               <span className="text-gray-500 text-xs font-medium ml-2">Merekam Audio...</span>
             </div>
           ) : (
             <>
-              <div className="w-[36px] h-[36px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
-              <div className="flex-1 bg-white rounded-3xl flex items-end px-3 py-1.5 border border-gray-300 shadow-sm min-h-[36px] relative">
+              <div className="w-[38px] h-[38px] flex items-center justify-center shrink-0 text-gray-600"><Plus className="w-6 h-6" strokeWidth={1.5} /></div>
+              
+              <div className="flex-1 bg-white rounded-3xl flex items-end px-2 py-1 border border-gray-300 shadow-sm min-h-[38px] relative">
                 {inputText === '' && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-gray-400 pointer-events-none">Ketik pesan</span>}
                 <textarea 
                   ref={textareaRef} 
                   value={inputText} 
                   readOnly 
                   rows={1} 
-                  className="flex-1 bg-transparent outline-none text-[14px] font-medium text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10" 
-                  style={{ height: '36px' }} // Tinggi awal lebih kecil
+                  className="flex-1 bg-transparent outline-none text-[14px] font-medium text-black resize-none max-h-[80px] overflow-y-auto leading-tight relative z-10 py-1.5" 
+                  style={{ height: '28px' }} 
                 />
-                <div className="flex items-center gap-3 text-[#007AFF] shrink-0 pl-2 pb-0.5">
+                <div className="flex items-center gap-2 shrink-0 pl-2 pb-1.5">
                   {inputText.trim() === '' ? (
-                    <><Camera className="w-[20px] h-[20px] text-gray-600" strokeWidth={1.5} /><Mic className="w-[20px] h-[20px] text-gray-600" strokeWidth={1.5} /></>
+                    <><Camera className="w-[20px] h-[20px] text-gray-500" strokeWidth={1.5} /><Mic className="w-[20px] h-[20px] text-gray-500" strokeWidth={1.5} /></>
                   ) : (
-                    <button className="w-7 h-7 bg-[#00A884] rounded-full flex items-center justify-center ml-1 animate-in zoom-in duration-200"><Send className="w-3.5 h-3.5 text-white -ml-0.5" fill="currentColor" /></button>
+                    <button className="w-7 h-7 bg-[#00A884] rounded-full flex items-center justify-center animate-in zoom-in duration-200"><Send className="w-3.5 h-3.5 text-white -ml-0.5" fill="currentColor" /></button>
                   )}
                 </div>
               </div>
@@ -437,6 +436,7 @@ export default function ChatStoryTool() {
           )}
         </div>
         
+        {/* KEYBOARD */}
         <div className="bg-[#D1D5DB] h-[260px] px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] flex flex-col justify-between shrink-0 z-30">
           {KEYBOARD_ROWS.map((row, rowIndex) => (
             <div key={rowIndex} className={`flex gap-1.5 justify-center ${rowIndex === 1 ? 'px-4' : ''}`}>
@@ -467,7 +467,6 @@ export default function ChatStoryTool() {
         </div>
       </div>
 
-      {/* MODAL ZOOM GAMBAR */}
       {activeImage && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setActiveImage(null)}>
           <img src={activeImage} alt="Zoomed" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
