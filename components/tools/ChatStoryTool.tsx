@@ -19,6 +19,7 @@ interface Message {
   audioSrc?: string;
   status?: MessageStatus;
   isTypo?: boolean;
+  reaction?: string; // <-- FITUR REACTION BARU
 }
 
 const STORY_SCRIPT: Omit<Message, 'id'>[] = [
@@ -79,6 +80,7 @@ export default function ChatStoryTool() {
   const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
   const [maxUnlockedIndex, setMaxUnlockedIndex] = useState(0);
   const [isDev, setIsDev] = useState(false);
+  const [isOffline, setIsOffline] = useState(false); // STATE BARU
   
   const [isWaitingForContinue, setIsWaitingForContinue] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
@@ -97,7 +99,6 @@ export default function ChatStoryTool() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const voiceNoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- CEK DEV & LOAD PROGRESS (FIX LINTER) ---
   useEffect(() => {
     const timer = setTimeout(() => {
       const session = getStoredUserSession();
@@ -112,12 +113,12 @@ export default function ChatStoryTool() {
           ...msg, id: Date.now() + i, status: 'read' as MessageStatus
         }));
         setDisplayedMessages(history);
+        if (idx === STORY_SCRIPT.length) setIsOffline(true);
       }
     }, 0);
     return () => clearTimeout(timer);
   }, []);
 
-  // Save progress tiap kali index berubah (FIX LINTER)
   useEffect(() => {
     if (currentMsgIndex > 0) {
       localStorage.setItem('fz_chat_progress', currentMsgIndex.toString());
@@ -142,6 +143,7 @@ export default function ChatStoryTool() {
     setTypingSender(null);
     setInputText('');
     setIsWaitingForContinue(false);
+    setIsOffline(idx === STORY_SCRIPT.length); // Set offline kalau di akhir
     
     const history = STORY_SCRIPT.slice(0, idx).map((msg, i) => ({
       ...msg, id: Date.now() + i, status: 'read' as MessageStatus
@@ -281,9 +283,19 @@ export default function ChatStoryTool() {
             
             const newMsg = { ...msg, id: msgId, status: 'sent' as MessageStatus };
             setDisplayedMessages(prev => [...prev, newMsg]);
-            await new Promise(r => setTimeout(r, 1500));
-            setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
-            await new Promise(r => setTimeout(r, 1000));
+            
+            // JIKA INI PESAN TERAKHIR (REACTION & OFFLINE)
+            if (i === STORY_SCRIPT.length - 1) {
+              await new Promise(r => setTimeout(r, 1500)); // Jeda baca
+              setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read', reaction: '❤️' } : m)); // Kasih Reaction
+              await new Promise(r => setTimeout(r, 2000)); // Jeda liat reaction
+              setIsOffline(true); // Ubah jadi Offline
+            } else {
+              await new Promise(r => setTimeout(r, 1500));
+              setDisplayedMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'read' } : m));
+              await new Promise(r => setTimeout(r, 1000));
+            }
+
           } else {
             setTypingSender('me');
             const text = msg.content;
@@ -342,12 +354,12 @@ export default function ChatStoryTool() {
 
     runSequence();
     return () => { cancelRef.current = true; };
-  }, [isPlaying, isMuted, currentMsgIndex]); // <-- currentMsgIndex masuk dependency
+  }, [isPlaying, isMuted, currentMsgIndex]);
 
   const handlePlay = () => { initAudio(); setIsPlaying(true); };
   const handlePause = () => { setIsPlaying(false); cancelRef.current = true; if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause(); };
   const handleReset = () => {
-    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false);
+    setIsPlaying(false); setDisplayedMessages([]); setInputText(''); setTypingSender(null); setActiveVnId(null); setIsRecording(false); setActiveImage(null); setIsWaitingForContinue(false); setIsOffline(false);
     setCurrentMsgIndex(0); setMaxUnlockedIndex(0); localStorage.removeItem('fz_chat_progress');
     if (voiceNoteAudioRef.current) voiceNoteAudioRef.current.pause();
     if (textareaRef.current) textareaRef.current.style.height = '24px';
@@ -380,26 +392,27 @@ export default function ChatStoryTool() {
 
       <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-[#EFEAE2] rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
+        {/* HEADER DENGAN LOGIKA OFFLINE */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-white/20 backdrop-blur-3xl px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
             <div className="relative w-10 h-10 rounded-full bg-gray-300">
                <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover rounded-full" />
-               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+               {!isOffline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full transition-all duration-300"></div>}
             </div>
             <div className="flex flex-col">
               <span className="text-[16px] font-bold text-black leading-tight">MyPrincess💖</span>
               <div className="h-[16px] overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.span 
-                    key={isRecording ? 'recording' : typingSender === 'them' ? 'typing' : 'online'}
+                    key={isOffline ? 'offline' : isRecording ? 'recording' : typingSender === 'them' ? 'typing' : 'online'}
                     initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -10, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className="text-[12px] font-medium text-gray-500 leading-tight block"
                   >
-                    {isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
+                    {isOffline ? 'terakhir dilihat 22.31' : isRecording ? 'Merekam Audio...' : typingSender === 'them' ? 'sedang mengetik...' : 'Online'}
                   </motion.span>
                 </AnimatePresence>
               </div>
@@ -434,7 +447,7 @@ export default function ChatStoryTool() {
             const isVnPlaying = activeVnId === msg.id;
             
             return (
-              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2`}>
+              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
                 <motion.div 
                   initial={{ scale: 0.8, opacity: 0, y: 10 }}
                   animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -466,6 +479,18 @@ export default function ChatStoryTool() {
                     <span className="text-[10px] text-gray-500 font-semibold">{isVnPlaying ? vnDurationText : msg.time}</span>
                     {isMe && (msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" /> : <CheckCheck className="w-3.5 h-3.5 text-gray-400" />)}
                   </div>
+
+                  {/* FITUR REACTION (HATI) */}
+                  {msg.reaction && (
+                    <motion.div 
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      className={`absolute -bottom-3 bg-white border border-gray-200 rounded-full px-1.5 py-0.5 shadow-sm text-[12px] z-20 ${isMe ? '-left-2' : '-right-2'}`}
+                    >
+                      {msg.reaction}
+                    </motion.div>
+                  )}
                 </motion.div>
               </div>
             );
