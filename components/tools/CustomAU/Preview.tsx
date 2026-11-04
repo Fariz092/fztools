@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useRef, useState } from 'react';
+import { toPng } from 'html-to-image';
 import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Download, CheckCheck } from 'lucide-react';
 import { CustomChat } from './Form';
 import { Keyboard } from '../ChatUI';
@@ -19,9 +22,6 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
     setIsDownloading(true);
     
     try {
-      // DYNAMIC IMPORT: Cegah crash SSR di Next.js
-      const { toPng } = await import('html-to-image');
-      
       const dataUrl = await toPng(captureRef.current, { 
         quality: 1, 
         pixelRatio: 2,
@@ -36,7 +36,7 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      alert('Gagal mendownload gambar. Coba lagi.');
+      alert('Gagal mendownload gambar. Pastikan gambar profil tidak error.');
       console.error(err);
     }
     setIsDownloading(false);
@@ -61,7 +61,7 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
             <div className="flex items-center gap-3">
               <ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} />
               <div className="relative w-10 h-10 rounded-full bg-gray-300">
-                {avatar ? <img src={avatar} alt="Avatar" className="w-full h-full object-cover rounded-full" /> : <div className="w-full h-full bg-gray-300 rounded-full" />}
+                {avatar ? <img src={avatar} alt="Avatar" className="w-full h-full object-cover rounded-full" crossOrigin="anonymous" /> : <div className="w-full h-full bg-gray-300 rounded-full" />}
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
               <div className="flex flex-col">

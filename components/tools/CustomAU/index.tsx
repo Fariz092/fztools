@@ -1,6 +1,15 @@
+'use client';
+
 import React, { useState } from 'react';
-import Form, { CustomChat } from './Form';
-import Preview from './Preview';
+import dynamic from 'next/dynamic';
+import { CustomChat } from './Form';
+
+// DYNAMIC IMPORT: Cegah SSR crash pada komponen yang butuh 'window' (html-to-image)
+const Form = dynamic(() => import('./Form'), { ssr: false });
+const Preview = dynamic(() => import('./Preview'), { 
+  ssr: false,
+  loading: () => <div className="w-full h-[700px] bg-zinc-100 animate-pulse rounded-3xl" />
+});
 
 export default function CustomAUMaker() {
   const [name, setName] = useState('MyPrincess💖');
@@ -15,7 +24,7 @@ export default function CustomAUMaker() {
     <div className="w-full max-w-5xl mx-auto py-6 px-4 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
       <div className="w-full">
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-zinc-900 mb-2">Custom AU Maker</h1>
+          <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">Custom AU Maker</h1>
           <p className="text-sm text-zinc-500">Buat cerita fake chat sendiri. Isi form di bawah, lalu download bagian chat yang kamu mau!</p>
         </div>
         <Form 
