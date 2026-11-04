@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
 import { ChevronLeft, Video, Phone, Plus, Camera, Mic, Download, CheckCheck } from 'lucide-react';
 import { CustomChat } from './Form';
 import { Keyboard } from '../ChatUI';
@@ -22,22 +21,24 @@ export default function Preview({ name, avatar, chats, showKeyboard }: PreviewPr
     setIsDownloading(true);
     
     try {
-      const dataUrl = await toPng(captureRef.current, { 
-        quality: 1, 
-        pixelRatio: 2,
-        backgroundColor: '#EFEAE2',
-        style: { 
-          transform: 'scale(1)',
-          borderRadius: '0px' 
-        } 
+      // DYNAMIC IMPORT SNAPDOM (Cegah SSR Crash total)
+      const { snapdom } = await import('@zumer/snapdom');
+      
+      // Tangkap elemennya
+      const img = await snapdom.toPng(captureRef.current, { 
+        scale: 2, // Kualitas HD
+        backgroundColor: '#EFEAE2', // Paksa background cerah
       });
+
+      // Download otomatis
       const link = document.createElement('a');
       link.download = `custom-au-${Date.now()}.png`;
-      link.href = dataUrl;
+      link.href = img.src;
       link.click();
+      
     } catch (err) {
-      alert('Gagal mendownload gambar. Pastikan gambar profil tidak error.');
-      console.error(err);
+      console.error('SnapDOM Error:', err);
+      alert('Gagal mendownload gambar. Cek console untuk detail.');
     }
     setIsDownloading(false);
   };
