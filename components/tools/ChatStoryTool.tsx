@@ -17,6 +17,7 @@ export default function ChatStoryTool() {
   const [isMuted, setIsMuted] = useState(false);
   const [princessProgress, setPrincessProgress] = useState(0);
   const [fazrullProgress, setFazrullProgress] = useState(0);
+  const [isMorning, setIsMorning] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,7 +27,6 @@ export default function ChatStoryTool() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Alur: Princess -> List -> Fazrull -> Ending Night -> Ending Morning -> Lock Screen
   const handlePrincessFinish = () => {
     setScreen('list');
     setTimeout(() => setScreen('fazrull'), 2000);
@@ -34,19 +34,21 @@ export default function ChatStoryTool() {
 
   const handleFazrullFinish = () => {
     setScreen('ending-night');
-    setTimeout(() => setScreen('ending-morning'), 2500); // Teks malam berubah jadi pagi
-    setTimeout(() => setScreen('lockscreen'), 5000); // Lanjut ke lock screen
+    setTimeout(() => setScreen('ending-morning'), 2500);
+    setTimeout(() => setScreen('lockscreen'), 5000);
   };
 
   const handleUnlock = () => {
+    setIsMorning(true);
     setScreen('list');
-    setTimeout(() => setScreen('spam-room'), 2000); // Otomatis masuk ke room spam
+    setTimeout(() => setScreen('spam-room'), 2000);
   };
 
   const handleReset = () => {
     setIsPlaying(false);
     setPrincessProgress(0);
     setFazrullProgress(0);
+    setIsMorning(false);
     localStorage.removeItem('fz_chat_progress');
     setScreen('princess');
   };
@@ -54,7 +56,6 @@ export default function ChatStoryTool() {
   return (
     <div className="w-full flex flex-col items-center gap-3 font-sans py-4">
       
-      {/* KONTROL & PROGRESS BAR (DI LUAR) */}
       <div className="w-full max-w-[400px] flex flex-col gap-2 px-2">
         <div className="flex justify-between items-center">
           <div className="flex gap-2">
@@ -99,7 +100,6 @@ export default function ChatStoryTool() {
         </div>
       </div>
 
-      {/* FRAME HP */}
       <div className="w-full max-w-[400px] h-[80dvh] sm:h-[750px] bg-white rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
         
         {screen === 'princess' && (
@@ -114,8 +114,20 @@ export default function ChatStoryTool() {
 
         {screen === 'list' && (
           <ChatList 
-            onOpenPrincess={() => { setScreen('princess'); setIsPlaying(true); }} 
-            onOpenFazrull={() => { setScreen('fazrull'); }} 
+            onOpenPrincess={() => {
+              if (isMorning) setScreen('spam-room');
+              else { setScreen('princess'); if (princessProgress < STORY_SCRIPT.length) setIsPlaying(true); }
+            }}
+            onOpenFazrull={() => {
+              setScreen('fazrull');
+              if (fazrullProgress < 2) setIsPlaying(true);
+            }}
+            princessPreview={isMorning ? "p" : (princessProgress > 0 ? "terakhir dilihat 22.31" : "ketik dan tahan pada chat untuk opsi")}
+            fazrullPreview={fazrullProgress > 0 ? "gaskeunnn loginnkann!!" : "ketik dan tahan pada chat untuk opsi"}
+            princessTime={isMorning ? "07.05" : "22.31"}
+            fazrullTime={fazrullProgress > 0 ? "22.31" : "22.31"}
+            princessUnread={isMorning}
+            fazrullUnread={fazrullProgress === 0}
           />
         )}
 
@@ -133,23 +145,16 @@ export default function ChatStoryTool() {
           <SpamPrincessRoom onBack={() => setScreen('list')} />
         )}
 
-        {/* LAYAR ENDING & LOCK SCREEN */}
         <AnimatePresence>
           {screen === 'ending-night' && (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center p-6 text-center"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center p-6 text-center">
               <p className="text-white text-lg font-medium leading-relaxed mb-4">gua dan fazrull mabar emel sampe jam 3 pagi</p>
               <p className="text-gray-400 text-sm font-mono tracking-widest">03.00</p>
             </motion.div>
           )}
 
           {screen === 'ending-morning' && (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 z-[100] bg-black flex items-center justify-center"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[100] bg-black flex items-center justify-center">
               <p className="text-white text-4xl font-mono tracking-widest font-bold">09.10</p>
             </motion.div>
           )}

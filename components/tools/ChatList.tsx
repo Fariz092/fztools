@@ -3,7 +3,17 @@
 import React from 'react';
 import { Search, Edit, MessageSquare, PhoneCall, Settings, Camera as CameraIcon } from 'lucide-react';
 
-export default function ChatList({ onOpenPrincess, onOpenFazrull }: { onOpenPrincess: () => void, onOpenFazrull: () => void }) {
+export default function ChatList({
+  onOpenPrincess,
+  onOpenFazrull,
+  princessPreview = "ketik dan tahan pada chat untuk opsi",
+  fazrullPreview = "ketik dan tahan pada chat untuk opsi",
+  princessTime = "22.31",
+  fazrullTime = "22.31",
+  princessUnread = false,
+  fazrullUnread = true,
+  princessAvatar = "https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+}: any) {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="bg-white px-4 pt-4 pb-2 flex justify-between items-center">
@@ -37,20 +47,21 @@ export default function ChatList({ onOpenPrincess, onOpenFazrull }: { onOpenPrin
         {/* MyPrincess */}
         <div className="flex items-center px-4 py-3 border-b border-gray-100 cursor-pointer active:bg-gray-50" onClick={onOpenPrincess}>
           <div className="relative w-12 h-12 rounded-full bg-gray-300 mr-3">
-             <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover rounded-full" />
+             <img src={princessAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
           </div>
           <div className="flex-1 border-b border-gray-100 pb-3 pt-1">
             <div className="flex justify-between items-center mb-1">
               <span className="text-[17px] font-semibold text-black">MyPrincess💖</span>
-              <span className="text-[15px] text-gray-500">22.31</span>
+              <span className="text-[15px] text-gray-500">{princessTime}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[15px] text-gray-500 line-clamp-1">terakhir dilihat 22.31</span>
+              <span className="text-[15px] text-gray-500 line-clamp-1">{princessPreview}</span>
+              {princessUnread && <div className="w-5 h-5 bg-[#007AFF] rounded-full flex items-center justify-center text-white text-[11px] font-bold">1</div>}
             </div>
           </div>
         </div>
 
-        {/* Fazrull (Profil Kosong + Unread Badge) */}
+        {/* Fazrull */}
         <div className="flex items-center px-4 py-3 border-b border-gray-100 cursor-pointer active:bg-gray-50" onClick={onOpenFazrull}>
           <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-3 shrink-0">
              <svg viewBox="0 0 24 24" fill="#8E8E93" className="w-8 h-8 mt-2"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -58,12 +69,11 @@ export default function ChatList({ onOpenPrincess, onOpenFazrull }: { onOpenPrin
           <div className="flex-1 border-b border-gray-100 pb-3 pt-1">
             <div className="flex justify-between items-center mb-1">
               <span className="text-[17px] font-semibold text-black">Fazrull</span>
-              <span className="text-[15px] text-gray-500">22.31</span>
+              <span className="text-[15px] text-gray-500">{fazrullTime}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[15px] text-gray-500">ketik dan tahan pada chat untuk opsi</span>
-              {/* BADGE UNREAD */}
-              <div className="w-5 h-5 bg-[#007AFF] rounded-full flex items-center justify-center text-white text-[11px] font-bold">1</div>
+              <span className="text-[15px] text-gray-500 line-clamp-1">{fazrullPreview}</span>
+              {fazrullUnread && <div className="w-5 h-5 bg-[#007AFF] rounded-full flex items-center justify-center text-white text-[11px] font-bold">1</div>}
             </div>
           </div>
         </div>
