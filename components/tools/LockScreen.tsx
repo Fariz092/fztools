@@ -84,9 +84,9 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
       </div>
 
       {/* Indikator Swipe */}
-      <div className="absolute bottom-24 left-0 right-0 z-10 flex flex-col items-center gap-2 text-white/50 animate-pulse">
-        <Lock className="w-4 h-4" />
-        <span className="text-[10px] font-medium tracking-wide">Swipe up to unlock</span>
+      <div className="absolute bottom-24 left-0 right-0 z-10 flex flex-col items-center gap-2 text-white/70 animate-pulse">
+        <Lock className="w-5 h-5 mb-1" />
+        <span className="text-[12px] font-bold tracking-wide">swipe ke atas untuk membuka chat</span>
       </div>
     </motion.div>
   );

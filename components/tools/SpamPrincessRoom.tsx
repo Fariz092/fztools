@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, Video, Phone, Plus, Camera, Mic } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Message, MessageBubble, Keyboard } from './ChatUI';
 
 const SPAM_SCRIPT: Omit<Message, 'id'>[] = [
@@ -17,14 +16,10 @@ const SPAM_SCRIPT: Omit<Message, 'id'>[] = [
 ];
 
 export default function SpamPrincessRoom({ onBack }: { onBack: () => void }) {
-  const [displayedMessages, setDisplayedMessages] = useState<Message[]>([]);
-  const [isOffline, setIsOffline] = useState(true);
-
-  useEffect(() => {
-    // Langsung tampilkan semua pesan spam
-    const history = SPAM_SCRIPT.map((msg, i) => ({ ...msg, id: Date.now() + i }));
-    setDisplayedMessages(history);
-  }, []);
+  // LAZY INITIALIZATION: Langsung isi state tanpa useEffect
+  const [displayedMessages] = useState<Message[]>(() => 
+    SPAM_SCRIPT.map((msg, i) => ({ ...msg, id: Date.now() + i }))
+  );
 
   return (
     <>
@@ -33,7 +28,6 @@ export default function SpamPrincessRoom({ onBack }: { onBack: () => void }) {
           <button onClick={onBack}><ChevronLeft className="w-6 h-6 text-black" strokeWidth={2.5} /></button>
           <div className="relative w-10 h-10 rounded-full bg-gray-300">
              <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Avatar" className="w-full h-full object-cover rounded-full" />
-             {/* Titik hijau hilang karena offline */}
           </div>
           <div className="flex flex-col">
             <span className="text-[16px] font-bold text-black leading-tight">MyPrincess💖</span>
