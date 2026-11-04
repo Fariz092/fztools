@@ -1,23 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ChatList from './ChatList';
-import PrincessRoom from './PrincessRoom';
+import PrincessRoom, { STORY_SCRIPT } from './PrincessRoom';
 import FazrullRoom from './FazrullRoom';
+import { Play, Pause, Save, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
-type ScreenView = 'list' | 'princess' | 'fazrull' | 'ending';
+type ScreenView = 'princess' | 'list' | 'fazrull' | 'ending';
 
 export default function ChatStoryTool() {
   const [screen, setScreen] = useState<ScreenView>('princess');
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showControls, setShowControls] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  const startSequence = () => {
-    setShowControls(false);
-    setScreen('princess');
-    setIsPlaying(true);
-  };
+  // LOAD PROGRESS SAAT PERTAMA KALI DIBUKA
+  useEffect(() => {
+    const saved = localStorage.getItem('fz_chat_progress');
+    if (saved) setProgress(parseInt(saved));
+  }, []);
 
   const handlePrincessFinish = () => {
     setScreen('list');
@@ -28,28 +30,77 @@ export default function ChatStoryTool() {
     setScreen('ending');
   };
 
-  return (
-    <div className="w-full flex flex-col items-center gap-4 font-sans">
-      
-      {/* TOMBOL KONTROL (DI LUAR HP) */}
-      {showControls && !isPlaying && (
-        <button onClick={startSequence} className="bg-indigo-600 text-white px-8 py-3 rounded-full text-sm font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"/></svg> Mulai Auto-Play
-        </button>
-      )}
+  const handleReset = () => {
+    setIsPlaying(false);
+    setProgress(0);
+    localStorage.removeItem('fz_chat_progress');
+    setScreen('princess');
+  };
 
-      {/* FRAME HP */}
-      <div className="w-full max-w-[400px] h-[85dvh] sm:h-[800px] bg-white rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
+  return (
+    <div className="w-full flex flex-col items-center gap-3 font-sans py-4">
+      
+      {/* KONTROL & PROGRESS BAR (DI LUAR BINGKAI HP) */}
+      <div className="w-full max-w-[400px] flex flex-col gap-2 px-2">
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2">
+            {isPlaying ? (
+              <button onClick={() => setIsPlaying(false)} className="bg-amber-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
+                <Pause className="w-3.5 h-3.5" /> Pause
+              </button>
+            ) : (
+              <button onClick={() => setIsPlaying(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
+                <Play className="w-3.5 h-3.5" /> {progress > 0 ? 'Lanjut' : 'Putar'}
+              </button>
+            )}
+            <button onClick={handleReset} className="bg-white text-zinc-900 border border-zinc-300 px-3 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
+              <RotateCcw className="w-3.5 h-3.5" /> Reset
+            </button>
+          </div>
+          <div className="flex gap-2">
+             <button onClick={() => { localStorage.setItem('fz_chat_progress', progress.toString()); alert('Progres disimpan!'); }} className="bg-emerald-600 text-white px-3 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md">
+               <Save className="w-3.5 h-3.5" /> Simpan
+             </button>
+             <button onClick={() => setIsMuted(!isMuted)} className="bg-zinc-800 text-white p-2 rounded-full shadow-md">
+               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+             </button>
+          </div>
+        </div>
         
-        {screen === 'list' && (
-          <ChatList 
-            onOpenPrincess={() => {}} 
-            onOpenFazrull={() => {}} 
+        {/* PROGRESS BAR */}
+        <div className="flex items-center gap-2">
+           <span className="text-[10px] font-bold text-zinc-500">0</span>
+           <input 
+             type="range" 
+             min="0" 
+             max={STORY_SCRIPT.length} 
+             value={progress} 
+             onChange={(e) => setProgress(parseInt(e.target.value))} 
+             className="flex-1 h-1.5 bg-zinc-300 rounded-lg appearance-none cursor-pointer accent-indigo-600" 
+           />
+           <span className="text-[10px] font-bold text-zinc-500">{STORY_SCRIPT.length}</span>
+        </div>
+      </div>
+
+      {/* BINGKAI HP */}
+      <div className="w-full max-w-[400px] h-[80dvh] sm:h-[750px] bg-white rounded-[2.5rem] border-[8px] border-zinc-900 shadow-2xl relative flex flex-col overflow-hidden">
+        
+        {screen === 'princess' && (
+          <PrincessRoom 
+            onFinish={handlePrincessFinish} 
+            isPlaying={isPlaying} 
+            setIsPlaying={setIsPlaying} 
+            isMuted={isMuted} 
+            progress={progress} 
+            setProgress={setProgress} 
           />
         )}
 
-        {screen === 'princess' && (
-          <PrincessRoom onFinish={handlePrincessFinish} />
+        {screen === 'list' && (
+          <ChatList 
+            onOpenPrincess={() => { setScreen('princess'); setIsPlaying(true); }} 
+            onOpenFazrull={() => { setScreen('fazrull'); }} 
+          />
         )}
 
         {screen === 'fazrull' && (
