@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Network, Calculator, ArrowRight } from 'lucide-react';
 
 // Helper: Konversi IP ke Integer
@@ -8,52 +8,53 @@ const ipToInt = (ip: string) => ip.split('.').reduce((int, oct) => (int << 8) + 
 // Helper: Konversi Integer ke IP
 const intToIp = (int: number) => [(int >>> 24) & 255, (int >>> 16) & 255, (int >>> 8) & 255, int & 255].join('.');
 
+// Fungsi murni buat kalkulasi (ditaruh di luar komponen biar bersih)
+const calculateSubnet = (ip: string, cidr: number) => {
+  const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  
+  if (!ipRegex.test(ip)) return { error: 'Format IP Address tidak valid! (Contoh: 192.168.1.1)' };
+  if (cidr < 0 || cidr > 32) return { error: 'CIDR harus di antara 0 dan 32.' };
+
+  const ipInt = ipToInt(ip);
+  const maskInt = cidr === 0 ? 0 : (0xFFFFFFFF << (32 - cidr)) >>> 0;
+  const networkInt = (ipInt & maskInt) >>> 0;
+  const broadcastInt = (networkInt | (~maskInt)) >>> 0;
+  const wildcardInt = (~maskInt) >>> 0;
+  const totalHosts = cidr === 32 ? 1 : cidr === 31 ? 2 : (1 << (32 - cidr)) - 2;
+  
+  const firstHostInt = totalHosts > 0 ? networkInt + 1 : networkInt;
+  const lastHostInt = totalHosts > 0 ? broadcastInt - 1 : broadcastInt;
+
+  return {
+    network: intToIp(networkInt),
+    broadcast: intToIp(broadcastInt),
+    mask: intToIp(maskInt),
+    wildcard: intToIp(wildcardInt),
+    firstHost: intToIp(firstHostInt),
+    lastHost: intToIp(lastHostInt),
+    totalHosts: totalHosts < 0 ? 0 : totalHosts,
+    cidr: cidr
+  };
+};
+
 export default function SubnetCalculator() {
   const [ip, setIp] = useState('192.168.1.10');
   const [cidr, setCidr] = useState(24);
-  const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+  
+  // LANGSUNG HITUNG SAAT PERTAMA KALI DIBUKA (Tanpa useEffect)
+  const [result, setResult] = useState<any>(() => calculateSubnet('192.168.1.10', 24));
 
-  // Fungsi Kalkulasi
-  const calculate = () => {
-    setError('');
-    // Validasi IP
-    const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    if (!ipRegex.test(ip)) {
-      setError('Format IP Address tidak valid! (Contoh: 192.168.1.1)');
-      return;
+  const handleCalculate = () => {
+    const res = calculateSubnet(ip, cidr);
+    if (res.error) {
+      setError(res.error);
+      setResult(null);
+    } else {
+      setError('');
+      setResult(res);
     }
-    if (cidr < 0 || cidr > 32) {
-      setError('CIDR harus di antara 0 dan 32.');
-      return;
-    }
-
-    const ipInt = ipToInt(ip);
-    const maskInt = cidr === 0 ? 0 : (0xFFFFFFFF << (32 - cidr)) >>> 0;
-    const networkInt = (ipInt & maskInt) >>> 0;
-    const broadcastInt = (networkInt | (~maskInt)) >>> 0;
-    const wildcardInt = (~maskInt) >>> 0;
-    const totalHosts = cidr === 32 ? 1 : cidr === 31 ? 2 : (1 << (32 - cidr)) - 2;
-    
-    const firstHostInt = totalHosts > 0 ? networkInt + 1 : networkInt;
-    const lastHostInt = totalHosts > 0 ? broadcastInt - 1 : broadcastInt;
-
-    setResult({
-      network: intToIp(networkInt),
-      broadcast: intToIp(broadcastInt),
-      mask: intToIp(maskInt),
-      wildcard: intToIp(wildcardInt),
-      firstHost: intToIp(firstHostInt),
-      lastHost: intToIp(lastHostInt),
-      totalHosts: totalHosts < 0 ? 0 : totalHosts,
-      cidr: cidr
-    });
   };
-
-  // Hitung otomatis saat pertama kali dibuka
-  useEffect(() => {
-    calculate();
-  }, []);
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -92,7 +93,7 @@ export default function SubnetCalculator() {
             />
           </div>
           <button 
-            onClick={calculate}
+            onClick={handleCalculate}
             className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
           >
             <Calculator className="w-4 h-4" /> Hitung
