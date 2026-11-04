@@ -39,6 +39,7 @@ interface NavbarProps {
 
 export const TOOLS_CONFIG = [
   { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/' },
+  { id: 'subnet', name: 'Subnet Calculator', badge: 'TJKT', color: 'bg-cyan-50', path: '/subnet' },
   { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter' },
   { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat' },
   { id: 'iqc', name: 'IQC WhatsApp', badge: 'Teks', color: 'bg-rose-50', path: '/iqc' },
