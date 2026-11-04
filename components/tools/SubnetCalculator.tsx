@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Network, Calculator, ArrowRight } from 'lucide-react';
+import { Network, Calculator, ArrowRight, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 // Helper: Konversi IP ke Integer
 const ipToInt = (ip: string) => ip.split('.').reduce((int, oct) => (int << 8) + parseInt(oct, 10), 0) >>> 0;
 // Helper: Konversi Integer ke IP
 const intToIp = (int: number) => [(int >>> 24) & 255, (int >>> 16) & 255, (int >>> 8) & 255, int & 255].join('.');
 
-// Fungsi murni buat kalkulasi (ditaruh di luar komponen biar bersih)
+// Fungsi murni buat kalkulasi
 const calculateSubnet = (ip: string, cidr: number) => {
   const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   
@@ -41,19 +42,25 @@ export default function SubnetCalculator() {
   const [ip, setIp] = useState('192.168.1.10');
   const [cidr, setCidr] = useState(24);
   const [error, setError] = useState('');
+  const [isCalculating, setIsCalculating] = useState(false);
   
-  // LANGSUNG HITUNG SAAT PERTAMA KALI DIBUKA (Tanpa useEffect)
   const [result, setResult] = useState<any>(() => calculateSubnet('192.168.1.10', 24));
 
   const handleCalculate = () => {
-    const res = calculateSubnet(ip, cidr);
-    if (res.error) {
-      setError(res.error);
-      setResult(null);
-    } else {
-      setError('');
-      setResult(res);
-    }
+    setIsCalculating(true);
+    setError('');
+    
+    // Pura-pura loading bentar biar berasa "ngitung"
+    setTimeout(() => {
+      const res = calculateSubnet(ip, cidr);
+      if (res.error) {
+        setError(res.error);
+        setResult(null);
+      } else {
+        setResult(res);
+      }
+      setIsCalculating(false);
+    }, 600);
   };
 
   return (
@@ -94,9 +101,14 @@ export default function SubnetCalculator() {
           </div>
           <button 
             onClick={handleCalculate}
-            className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+            disabled={isCalculating}
+            className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 min-w-[120px]"
           >
-            <Calculator className="w-4 h-4" /> Hitung
+            {isCalculating ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Menghitung...</>
+            ) : (
+              <><Calculator className="w-4 h-4" /> Hitung</>
+            )}
           </button>
         </div>
 
@@ -104,45 +116,52 @@ export default function SubnetCalculator() {
       </div>
 
       {/* RESULT SECTION */}
-      {result && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
-          <div className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Network Address</p>
-            <p className="text-xl font-mono font-bold text-indigo-600 dark:text-indigo-400">{result.network} / {result.cidr}</p>
-          </div>
+      <AnimatePresence mode="wait">
+        {result && !error && (
+          <motion.div 
+            key={result.network + result.cidr}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Network Address</p>
+              <p className="text-xl font-mono font-bold text-indigo-600 dark:text-indigo-400">{result.network} / {result.cidr}</p>
+            </motion.div>
 
-          <div className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Broadcast Address</p>
-            <p className="text-xl font-mono font-bold text-rose-600 dark:text-rose-400">{result.broadcast}</p>
-          </div>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Broadcast Address</p>
+              <p className="text-xl font-mono font-bold text-rose-600 dark:text-rose-400">{result.broadcast}</p>
+            </motion.div>
 
-          <div className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Subnet Mask</p>
-            <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white">{result.mask}</p>
-          </div>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Subnet Mask</p>
+              <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white">{result.mask}</p>
+            </motion.div>
 
-          <div className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Wildcard Mask</p>
-            <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white">{result.wildcard}</p>
-          </div>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Wildcard Mask</p>
+              <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white">{result.wildcard}</p>
+            </motion.div>
 
-          <div className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 sm:col-span-2 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/50 dark:to-zinc-900/10">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Usable Host Range</p>
-            <div className="flex items-center gap-2 text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400">
-              <span>{result.firstHost}</span>
-              <ArrowRight className="w-4 h-4 text-zinc-400" />
-              <span>{result.lastHost}</span>
-            </div>
-          </div>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 sm:col-span-2 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/50 dark:to-zinc-900/10">
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Usable Host Range</p>
+              <div className="flex items-center gap-2 text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                <span>{result.firstHost}</span>
+                <ArrowRight className="w-4 h-4 text-zinc-400" />
+                <span>{result.lastHost}</span>
+              </div>
+            </motion.div>
 
-          <div className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 sm:col-span-2">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Total Usable Hosts</p>
-            <p className="text-3xl font-bold text-zinc-900 dark:text-white">{result.totalHosts.toLocaleString()} <span className="text-sm font-medium text-zinc-500">Host</span></p>
-          </div>
-
-        </div>
-      )}
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.35 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 sm:col-span-2">
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Total Usable Hosts</p>
+              <p className="text-3xl font-bold text-zinc-900 dark:text-white">{result.totalHosts.toLocaleString()} <span className="text-sm font-medium text-zinc-500">Host</span></p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
