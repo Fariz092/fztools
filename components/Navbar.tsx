@@ -217,6 +217,7 @@ export default function Navbar({
 
                 <div className="space-y-1">
                   <p className="px-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-2">Navigasi Utama</p>
+                  <Link href="/fake-call" className="flex items-center gap-3 p-3 rounded-xl bg-red-500 text-white font-bold text-xs">TES123</Link>
                   <Link href="/" onClick={() => setIsSidebarOpen(false)} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
                     <div className="flex items-center gap-3">
                       <Home className={`w-4 h-4 transition-colors ${pathname === '/' ? 'text-indigo-500' : 'group-hover:text-indigo-500'}`} />
