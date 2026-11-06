@@ -210,10 +210,10 @@ export default function IqcTool() {
     const bubbleY = 800; 
     const bubbleYBottom = bubbleY + bubbleH;
 
-    // 5. REACTION PILL
+    // 5. REACTION PILL (EMOJI BERJARAK)
     const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏', '😭'];
-    const emojiCellW = 48;
-    const plusButtonW = 48;
+    const emojiCellW = 56; // Lebih lebar biar berjarak
+    const plusButtonW = 56;
     const pillPaddingX = 16;
     const pillW = pillPaddingX * 2 + emojis.length * emojiCellW + plusButtonW;
     const pillH = 80;
@@ -250,8 +250,8 @@ export default function IqcTool() {
     ctx.fillText('+', plusCenterX, emojiCenterY + 1);
     ctx.restore();
 
-    // 6. BUBBLE CHAT UTAMA
-    const r = 22;
+    // 6. BUBBLE CHAT UTAMA (SUDUT LEBIH BULAT)
+    const r = 28; // Radius ditambah
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
     ctx.shadowBlur = 25;
@@ -290,22 +290,31 @@ export default function IqcTool() {
     drawBlueTicks(ctx, timeEndX + 6, bubbleY + bubbleH - 22);
     ctx.restore();
 
-    // 7. CONTEXT MENU
+    // 7. CONTEXT MENU (GLASS EFFECT + LEBIH RAMPING)
     const menuW = 480;
-    const menuRowH = 76;
+    const menuRowH = 64; // Dirampingkan (sebelumnya 76)
     const menuItems = 6;
     const menuH = menuRowH * menuItems;
     const gapBubbleMenu = 24;
     const menuY = bubbleYBottom + gapBubbleMenu;
     const menuX = bubbleX;
 
+    // Draw Glass Menu Background
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
-    ctx.shadowBlur = 25;
-    ctx.shadowOffsetY = 8;
-    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 24);
-    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
+    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 28); // Radius lebih bulat
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)'; // Semi transparan
     ctx.fill();
+    ctx.restore();
+
+    // Draw Glass Border
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.lineWidth = 1.5;
+    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 28);
+    ctx.stroke();
     ctx.restore();
 
     const menuList = [
@@ -341,7 +350,7 @@ export default function IqcTool() {
       if (item.icon === 'ellipsis') drawIconEllipsis(ctx, iconX, iconY, item.color);
 
       ctx.fillStyle = item.color;
-      ctx.font = `400 28px ${sfFontFamily}`;
+      ctx.font = `400 26px ${sfFontFamily}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(item.label, menuX + 80, rowY + menuRowH / 2);
@@ -488,16 +497,15 @@ export default function IqcTool() {
           </div>
         </div>
 
+        {/* KOLOM KANAN: PREVIEW CANVAS PENUH */}
         <div className="lg:col-span-7 flex flex-col gap-6">
-          <div className="rounded-3xl bg-zinc-950 p-6 sm:p-8 shadow-2xl shadow-black/20 flex flex-col items-center justify-center min-h-[600px] border border-zinc-800 relative group/canvas">
-            <div className="absolute top-4 left-6 flex items-center gap-3">
+          <div className="w-full max-w-[420px] mx-auto rounded-[2.5rem] bg-zinc-950 p-2 shadow-2xl border border-zinc-800 relative">
+            <div className="absolute top-4 left-6 flex items-center gap-3 z-10">
               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Pratinjau</span>
               <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
             </div>
-            <div className="w-full max-w-[340px] transform scale-75 xs:scale-90 sm:scale-100 transition-transform duration-500 origin-center hover:scale-[1.02]">
-              <div className="relative rounded-2xl shadow-2xl bg-white overflow-hidden aspect-[9/16]">
-                <canvas ref={canvasRef} className="w-full h-full object-cover" />
-              </div>
+            <div className="relative w-full rounded-[2rem] overflow-hidden aspect-[9/16]">
+              <canvas ref={canvasRef} className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
