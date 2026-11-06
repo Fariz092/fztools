@@ -34,7 +34,7 @@ export default function BratPage() {
             Brat<br />Generator<span className="text-lime-500">.</span>
           </h1>
           <p className="text-base md:text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
-            Ubah teks biasa menjadi gambar estetik gaya "brat" ala Charli XCX. Kustomisasi warna, font, dan ukuran sesuka hati.
+            Ubah teks biasa menjadi gambar estetik gaya brat ala Charli XCX. Kustomisasi warna, font, dan ukuran sesuka hati.
           </p>
         </div>
 
