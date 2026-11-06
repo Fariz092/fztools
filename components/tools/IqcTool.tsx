@@ -75,11 +75,6 @@ export default function IqcTool() {
   const [timeText, setTimeText] = useState<string>('18.30');
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
-
-  useEffect(() => {
-    setImagesLoaded(true); // Anggap langsung loaded karena kita pake gradient
-  }, []);
 
   const renderCard = () => {
     const canvas = canvasRef.current;
@@ -95,10 +90,9 @@ export default function IqcTool() {
     const sfFontFamily = '"SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
     // 1. BACKGROUND (SOFT PINK/WARM BOKEH)
-    ctx.fillStyle = '#FCF5F7'; // Warna dasar soft pink
+    ctx.fillStyle = '#FCF5F7'; 
     ctx.fillRect(0, 0, w, h);
 
-    // Efek Bokeh Blur
     const bokehColors = ['rgba(255, 218, 224, 0.4)', 'rgba(255, 240, 245, 0.6)', 'rgba(250, 230, 235, 0.5)'];
     for (let i = 0; i < 5; i++) {
       ctx.beginPath();
@@ -129,7 +123,7 @@ export default function IqcTool() {
     ctx.fillText(dateText, dateX + dateW / 2, dateY + 19);
     ctx.restore();
 
-    // 3. DUMMY BUBBLES (BACKGROUND CHAT)
+    // 3. DUMMY BUBBLES
     const drawDummyBubble = (x: number, y: number, text: string, time: string, isIncoming: boolean) => {
       ctx.save();
       ctx.font = `400 28px ${sfFontFamily}`;
@@ -158,18 +152,15 @@ export default function IqcTool() {
       ctx.fillText(time, x + bW - 14, y + bH - 10);
     };
 
-    // Chat Atas
     drawDummyBubble(86, 180, 'kamu lagi dimana sayang?', '18.25', true);
     drawDummyBubble(w - 86 - 360, 260, 'ini baru mau otw pulang kok', '18.27', false);
     drawDummyBubble(86, 340, 'yaudah hati-hati di jalan yaa', '18.28', true);
     drawDummyBubble(w - 86 - 320, 420, 'siap meluncur pulang', '18.29', false);
-
-    // Chat Bawah
     drawDummyBubble(86, 1560, 'nanti malam telfonan yaa', '18.31', true);
     drawDummyBubble(w - 86 - 280, 1640, 'iyaa sayang aman', '18.32', false);
     drawDummyBubble(86, 1720, 'jangan lupa makan', '18.33', true);
 
-    // 4. BLUR BACKGROUND (FOKUS KE TENGAH)
+    // 4. BLUR BACKGROUND
     const bgSnapshot = document.createElement('canvas');
     bgSnapshot.width = w; bgSnapshot.height = h;
     const snapCtx = bgSnapshot.getContext('2d');
@@ -182,7 +173,6 @@ export default function IqcTool() {
       ctx.filter = 'none';
       ctx.restore();
     }
-    // Dimming tipis
     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
     ctx.fillRect(0, 0, w, h);
 
@@ -217,11 +207,10 @@ export default function IqcTool() {
     const bubbleW = Math.min(bubbleMaxW, bubbleContentW);
     const bubbleH = textLines.length * lineHeight + 40;
 
-    // POSISI ELEMEN
     const bubbleY = 800; 
     const bubbleYBottom = bubbleY + bubbleH;
 
-    // 5. REACTION PILL (BERDIRI SENDIRI, LEBAR FIX)
+    // 5. REACTION PILL
     const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏', '😭'];
     const emojiCellW = 48;
     const plusButtonW = 48;
@@ -232,7 +221,6 @@ export default function IqcTool() {
     const pillY = bubbleY - pillH - gapPillBubble;
     const pillX = bubbleX;
 
-    // Draw Pill (Putih Solid)
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
     ctx.shadowBlur = 30;
@@ -242,7 +230,6 @@ export default function IqcTool() {
     ctx.fill();
     ctx.restore();
 
-    // Draw Emojis
     ctx.save();
     ctx.fillStyle = '#000000';
     ctx.font = '42px "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif';
@@ -254,7 +241,6 @@ export default function IqcTool() {
       ctx.fillText(em, ex, emojiCenterY + 2);
     });
 
-    // Draw Plus Button
     const plusCenterX = pillX + pillPaddingX + emojis.length * emojiCellW + plusButtonW / 2;
     const plusRadius = 18;
     ctx.fillStyle = '#F2F4F7';
@@ -264,7 +250,7 @@ export default function IqcTool() {
     ctx.fillText('+', plusCenterX, emojiCenterY + 1);
     ctx.restore();
 
-    // 6. BUBBLE CHAT UTAMA (PUTIH SOLID)
+    // 6. BUBBLE CHAT UTAMA
     const r = 22;
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
@@ -286,7 +272,6 @@ export default function IqcTool() {
     ctx.fill();
     ctx.restore();
 
-    // Draw Text Bubble
     let contentStartY = bubbleY + 20;
     const textPaddingX = bubbleX + 26;
     ctx.save();
@@ -305,7 +290,7 @@ export default function IqcTool() {
     drawBlueTicks(ctx, timeEndX + 6, bubbleY + bubbleH - 22);
     ctx.restore();
 
-    // 7. CONTEXT MENU (BERDIRI SENDIRI, IKON KIRI)
+    // 7. CONTEXT MENU
     const menuW = 480;
     const menuRowH = 76;
     const menuItems = 6;
@@ -328,29 +313,24 @@ export default function IqcTool() {
       { label: 'Teruskan', icon: 'forward', color: '#111B21' },
       { label: 'Salin', icon: 'copy', color: '#111B21' },
       { label: 'Beri bintang', icon: 'star', color: '#111B21' },
-      { label: 'Hapus', icon: 'trash', color: '#E91E63' }, // Merah/Pink
+      { label: 'Hapus', icon: 'trash', color: '#E91E63' },
       { label: 'Lainnya...', icon: 'ellipsis', color: '#111B21' }
     ];
 
     menuList.forEach((item, idx) => {
       const rowY = menuY + idx * menuRowH;
       
-      // Garis pembatas (kecuali item pertama dan terakhir)
-      if (idx > 0 && idx < menuList.length - 1 && idx !== menuList.length - 1) {
-        // Tambahkan garis sebelum "Lainnya..."
-        if (idx === 5) {
-           ctx.save();
-           ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
-           ctx.lineWidth = 1;
-           ctx.beginPath();
-           ctx.moveTo(menuX + 24, rowY);
-           ctx.lineTo(menuX + menuW - 24, rowY);
-           ctx.stroke();
-           ctx.restore();
-        }
+      if (idx === 5) {
+         ctx.save();
+         ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
+         ctx.lineWidth = 1;
+         ctx.beginPath();
+         ctx.moveTo(menuX + 24, rowY);
+         ctx.lineTo(menuX + menuW - 24, rowY);
+         ctx.stroke();
+         ctx.restore();
       }
 
-      // Ikon di Kiri
       const iconX = menuX + 30;
       const iconY = rowY + (menuRowH - 24) / 2;
       if (item.icon === 'reply') drawIconReply(ctx, iconX, iconY, item.color);
@@ -360,7 +340,6 @@ export default function IqcTool() {
       if (item.icon === 'trash') drawIconTrash(ctx, iconX, iconY, item.color);
       if (item.icon === 'ellipsis') drawIconEllipsis(ctx, iconX, iconY, item.color);
 
-      // Teks di Kanan
       ctx.fillStyle = item.color;
       ctx.font = `400 28px ${sfFontFamily}`;
       ctx.textAlign = 'left';
@@ -376,7 +355,7 @@ export default function IqcTool() {
       renderCard();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [senderName, quoteText, timeText, imagesLoaded]);
+  }, [senderName, quoteText, timeText]);
 
   const handleDownload = async () => {
     const canvas = canvasRef.current;
@@ -438,7 +417,6 @@ export default function IqcTool() {
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-10 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/20 border border-zinc-200/80 dark:border-zinc-800/80">
       
-      {/* HEADER FORM */}
       <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-zinc-100 dark:border-zinc-900 mb-10">
         <div className="flex items-center gap-5">
           <div className="w-14 h-14 bg-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/20 font-bold text-2xl text-white">IQ</div>
@@ -453,7 +431,6 @@ export default function IqcTool() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* KOLOM KIRI: INPUT */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -511,7 +488,6 @@ export default function IqcTool() {
           </div>
         </div>
 
-        {/* KOLOM KANAN: PREVIEW CANVAS */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="rounded-3xl bg-zinc-950 p-6 sm:p-8 shadow-2xl shadow-black/20 flex flex-col items-center justify-center min-h-[600px] border border-zinc-800 relative group/canvas">
             <div className="absolute top-4 left-6 flex items-center gap-3">
