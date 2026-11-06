@@ -28,6 +28,7 @@ import {
 } from '@/lib/auth-session';
 import { brutalistToast, brutalistConfirm } from '@/lib/popup-service';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { LiquidGlassPill } from '@/components/ui/liquid-glass-pill';
 
 interface NavbarProps {
   activeTab?: string;
@@ -104,56 +105,58 @@ export default function Navbar({
   return (
     <>
       <header className="sticky top-3 sm:top-5 z-50 px-3 sm:px-6 w-full flex justify-center pointer-events-none">
-        <div className="pointer-events-auto navbar-blur rounded-full py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6 max-w-2xl w-full">
-          <Link href="/" className="flex items-center gap-2.5 group cursor-pointer select-none" title="Beranda FZTOOLS">
-            <div className="relative w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-transform shadow-xs group-hover:scale-105 bg-white shrink-0">
-              <Image src="/assets/aistudio/Alice_ac18f5a2.jpeg" alt="FZ Logo" fill className="object-cover" referrerPolicy="no-referrer" />
+        <LiquidGlassPill className="pointer-events-auto max-w-2xl w-full">
+          <div className="py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6">
+            <Link href="/" className="flex items-center gap-2.5 group cursor-pointer select-none" title="Beranda FZTOOLS">
+              <div className="relative w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-transform shadow-xs group-hover:scale-105 bg-white shrink-0">
+                <Image src="/assets/aistudio/Alice_ac18f5a2.jpeg" alt="FZ Logo" fill className="object-cover" referrerPolicy="no-referrer" />
+              </div>
+              <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-white group-hover:text-indigo-500 transition-colors">FZTOOLS</span>
+            </Link>
+
+            <div className="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full glass-circle text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+              <span className="tracking-widest uppercase">{getCurrentSectionTitle()}</span>
             </div>
-            <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-white group-hover:text-indigo-500 transition-colors">FZTOOLS</span>
-          </Link>
 
-          <div className="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full glass-circle text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-            <span className="tracking-widest uppercase">{getCurrentSectionTitle()}</span>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <ThemeSwitcher />
-            {userSession ? (
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link href="/akun" className="flex items-center gap-2 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15" title={`Akun: @${userSession.username}`}>
-                  <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
-                    <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
-                      {(userSession as any).avatarUrl ? (
-                        <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" />
-                      ) : (
-                        userSession.initials
-                      )}
+            <div className="flex items-center gap-2.5">
+              <ThemeSwitcher />
+              {userSession ? (
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Link href="/akun" className="flex items-center gap-2 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15" title={`Akun: @${userSession.username}`}>
+                    <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
+                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
+                        {(userSession as any).avatarUrl ? (
+                          <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                          userSession.initials
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-[10px] font-bold max-w-[65px] truncate">@{userSession.username}</span>
-                </Link>
-              </motion.div>
-            ) : (
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link href="/daftar" className="flex items-center gap-1.5 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15">
-                  <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
-                    <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white">
-                      <UserPlus className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-bold max-w-[65px] truncate">@{userSession.username}</span>
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Link href="/daftar" className="flex items-center gap-1.5 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15">
+                    <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
+                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white">
+                        <UserPlus className="w-3.5 h-3.5" />
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Join</span>
-                </Link>
-              </motion.div>
-            )}
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Join</span>
+                  </Link>
+                </motion.div>
+              )}
 
-            <motion.button onClick={() => setIsSidebarOpen(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="p-2 rounded-full glass-circle text-zinc-900 dark:text-white transition-all cursor-pointer" aria-label="Buka Menu">
-              <Menu className="w-4 h-4" strokeWidth={2} />
-            </motion.button>
+              <motion.button onClick={() => setIsSidebarOpen(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="p-2 rounded-full glass-circle text-zinc-900 dark:text-white transition-all cursor-pointer" aria-label="Buka Menu">
+                <Menu className="w-4 h-4" strokeWidth={2} />
+              </motion.button>
+            </div>
           </div>
-        </div>
+        </LiquidGlassPill>
       </header>
 
       <AnimatePresence>
