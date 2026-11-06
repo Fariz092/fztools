@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Network, Calculator, ArrowRight, Loader2 } from 'lucide-react';
+import { Network, Calculator, ArrowRight, Loader2, Binary, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Helper: Konversi IP ke Integer
 const ipToInt = (ip: string) => ip.split('.').reduce((int, oct) => (int << 8) + parseInt(oct, 10), 0) >>> 0;
 // Helper: Konversi Integer ke IP
 const intToIp = (int: number) => [(int >>> 24) & 255, (int >>> 16) & 255, (int >>> 8) & 255, int & 255].join('.');
+// Helper: Konversi Integer ke Binary string (32-bit)
+const intToBinary = (int: number) => int.toString(2).padStart(32, '0').match(/.{1,8}/g)?.join('.') || '';
 
 // Fungsi murni buat kalkulasi
 const calculateSubnet = (ip: string, cidr: number) => {
@@ -34,7 +36,10 @@ const calculateSubnet = (ip: string, cidr: number) => {
     firstHost: intToIp(firstHostInt),
     lastHost: intToIp(lastHostInt),
     totalHosts: totalHosts < 0 ? 0 : totalHosts,
-    cidr: cidr
+    cidr: cidr,
+    binaryIp: intToBinary(ipInt),
+    binaryMask: intToBinary(maskInt),
+    binaryNetwork: intToBinary(networkInt),
   };
 };
 
@@ -50,7 +55,6 @@ export default function SubnetCalculator() {
     setIsCalculating(true);
     setError('');
     
-    // Pura-pura loading bentar biar berasa "ngitung"
     setTimeout(() => {
       const res = calculateSubnet(ip, cidr);
       if (res.error) {
@@ -64,55 +68,72 @@ export default function SubnetCalculator() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
       
-      {/* INPUT SECTION */}
-      <div className="modern-glass-card p-6 rounded-3xl border border-zinc-200/50 dark:border-zinc-800/50">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-            <Network className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">IP Subnet Calculator</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Hitung Network ID, Broadcast, dan Host Range secara instan.</p>
-          </div>
+      {/* HEADER SECTION */}
+      <div className="flex items-center gap-4 border-b border-zinc-800 pb-6">
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+          <Network className="w-8 h-8 text-emerald-400" />
         </div>
+        <div>
+          <h2 className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: 'var(--font-mono)' }}>
+            IP_Subnet_Calc<span className="text-emerald-500 animate-pulse">_</span>
+          </h2>
+          <p className="text-xs text-zinc-400 font-mono">[ IPv4 Network Addressing Tool v1.0 ]</p>
+        </div>
+      </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-end">
+      {/* INPUT SECTION */}
+      <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
+        {/* Efek Grid Halus di background */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1 w-full">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">IP Address</label>
+            <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.2em] mb-2 block font-mono">
+              &gt; Input_IP_Address
+            </label>
             <input 
               type="text" 
               value={ip} 
               onChange={(e) => setIp(e.target.value)}
-              className="w-full glass-input px-4 py-3 rounded-xl text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              className="w-full bg-black/50 border border-zinc-700 focus:border-emerald-500 rounded-lg px-4 py-3 text-lg font-mono text-white outline-none transition-colors placeholder:text-zinc-600"
               placeholder="192.168.1.1"
             />
           </div>
-          <div className="w-full sm:w-32">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">CIDR ( / )</label>
-            <input 
-              type="number" 
-              min="0" max="32"
-              value={cidr} 
-              onChange={(e) => setCidr(parseInt(e.target.value) || 0)}
-              className="w-full glass-input px-4 py-3 rounded-xl text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-            />
+          <div className="w-full md:w-32">
+            <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.2em] mb-2 block font-mono">
+              &gt; CIDR
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono">/</span>
+              <input 
+                type="number" 
+                min="0" max="32"
+                value={cidr} 
+                onChange={(e) => setCidr(parseInt(e.target.value) || 0)}
+                className="w-full bg-black/50 border border-zinc-700 focus:border-emerald-500 rounded-lg pl-8 pr-4 py-3 text-lg font-mono text-white outline-none transition-colors"
+              />
+            </div>
           </div>
           <button 
             onClick={handleCalculate}
             disabled={isCalculating}
-            className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 min-w-[120px]"
+            className="w-full md:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-black font-bold font-mono text-sm rounded-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2"
           >
             {isCalculating ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Menghitung...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> EXEC...</>
             ) : (
-              <><Calculator className="w-4 h-4" /> Hitung</>
+              <><Calculator className="w-4 h-4" /> CALCULATE</>
             )}
           </button>
         </div>
 
-        {error && <p className="mt-4 text-xs font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/30 p-3 rounded-lg">{error}</p>}
+        {error && (
+          <div className="mt-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs font-mono">
+            [!] ERROR: {error}
+          </div>
+        )}
       </div>
 
       {/* RESULT SECTION */}
@@ -124,41 +145,72 @@ export default function SubnetCalculator() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            className="space-y-4"
           >
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Network Address</p>
-              <p className="text-xl font-mono font-bold text-indigo-600 dark:text-indigo-400">{result.network} / {result.cidr}</p>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Broadcast Address</p>
-              <p className="text-xl font-mono font-bold text-rose-600 dark:text-rose-400">{result.broadcast}</p>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Subnet Mask</p>
-              <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white">{result.mask}</p>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Wildcard Mask</p>
-              <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white">{result.wildcard}</p>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 sm:col-span-2 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/50 dark:to-zinc-900/10">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Usable Host Range</p>
-              <div className="flex items-center gap-2 text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                <span>{result.firstHost}</span>
-                <ArrowRight className="w-4 h-4 text-zinc-400" />
-                <span>{result.lastHost}</span>
+            {/* BINARY REPRESENTATION */}
+            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="bg-black/40 border border-zinc-800 rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Binary className="w-4 h-4 text-emerald-500" />
+                <h3 className="text-xs font-bold text-zinc-300 font-mono uppercase tracking-widest">Binary Representation</h3>
+              </div>
+              <div className="space-y-2 font-mono text-sm overflow-x-auto whitespace-nowrap pb-2">
+                <div className="flex text-zinc-400">
+                  <span className="w-24 text-emerald-500/70">IP      :</span>
+                  <span>{result.binaryIp}</span>
+                </div>
+                <div className="flex text-zinc-400">
+                  <span className="w-24 text-emerald-500/70">MASK    :</span>
+                  <span className="text-cyan-400">{result.binaryMask}</span>
+                </div>
+                <div className="flex text-white">
+                  <span className="w-24 text-emerald-500/70">NETWORK :</span>
+                  <span className="text-emerald-400">{result.binaryNetwork}</span>
+                </div>
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.35 }} className="modern-glass-card p-5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 sm:col-span-2">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Total Usable Hosts</p>
-              <p className="text-3xl font-bold text-zinc-900 dark:text-white">{result.totalHosts.toLocaleString()} <span className="text-sm font-medium text-zinc-500">Host</span></p>
-            </motion.div>
+            {/* MAIN RESULTS GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                <p className="text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-widest mb-1">Network Address</p>
+                <p className="text-2xl font-mono font-bold text-emerald-400">{result.network} <span className="text-zinc-600">/</span> {result.cidr}</p>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl relative overflow-hidden group hover:border-rose-500/50 transition-colors">
+                <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                <p className="text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-widest mb-1">Broadcast Address</p>
+                <p className="text-2xl font-mono font-bold text-rose-400">{result.broadcast}</p>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 }} className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
+                <p className="text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-widest mb-1">Subnet Mask</p>
+                <p className="text-xl font-mono font-bold text-white">{result.mask}</p>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
+                <p className="text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-widest mb-1">Wildcard Mask</p>
+                <p className="text-xl font-mono font-bold text-white">{result.wildcard}</p>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.35 }} className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl md:col-span-2 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent"></div>
+                <p className="text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-widest mb-1">Usable Host Range</p>
+                <div className="flex items-center gap-3 text-xl md:text-2xl font-mono font-bold text-white">
+                  <span className="text-emerald-400">{result.firstHost}</span>
+                  <ArrowRight className="w-5 h-5 text-zinc-600" />
+                  <span className="text-emerald-400">{result.lastHost}</span>
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl md:col-span-2 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-widest mb-1">Total Usable Hosts</p>
+                  <p className="text-3xl font-mono font-bold text-white">{result.totalHosts.toLocaleString()}</p>
+                </div>
+                <Activity className="w-10 h-10 text-zinc-800" />
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
