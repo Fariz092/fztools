@@ -179,7 +179,7 @@ html.dim body {
 /* --- CUSTOM FONT MYRIAD PRO (FOLDER ASSET) --- */
 @font-face {
   font-family: 'MyriadPro';
-  src: url('/asset/MYRIADPRO-REGULAR.OTF') format('opentype');
+  src: url('/assets/MYRIADPRO-REGULAR.OTF') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -187,7 +187,7 @@ html.dim body {
 
 @font-face {
   font-family: 'MyriadPro';
-  src: url('/asset/MYRIADPRO-SEMIBOLD.OTF') format('opentype');
+  src: url('/assets/MYRIADPRO-SEMIBOLD.OTF') format('opentype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
@@ -195,7 +195,7 @@ html.dim body {
 
 @font-face {
   font-family: 'MyriadPro';
-  src: url('/asset/MYRIADPRO-BOLD.OTF') format('opentype');
+  src: url('/assets/MYRIADPRO-BOLD.OTF') format('opentype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
