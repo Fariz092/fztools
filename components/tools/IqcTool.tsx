@@ -28,82 +28,7 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.closePath();
 }
 
-/**
- * TRUE GLASSMORPHISM (4 LAYER DETAIL)
- * Layer 1: Background blur (dari snapshot)
- * Layer 2: Tint warna + Inner glow (inset shadow)
- * Layer 3: Highlight atas (::before)
- * Layer 4: Highlight kiri (::after)
- */
-function drawTrueGlass(
-  ctx: CanvasRenderingContext2D,
-  snapshot: HTMLCanvasElement,
-  x: number, y: number, w: number, h: number, r: number,
-  isPink: boolean,
-  blurPx: number = 44,
-  tintOpacity: number = 0.31
-) {
-  // LAYER 1: BACKGROUND BLUR
-  ctx.save();
-  drawRoundedRect(ctx, x, y, w, h, r);
-  ctx.clip();
-
-  if (typeof ctx.filter !== 'undefined') {
-    ctx.filter = `blur(${blurPx}px)`;
-  }
-  const pad = 30;
-  ctx.drawImage(snapshot, x - pad, y - pad, w + pad * 2, h + pad * 2, x - pad, y - pad, w + pad * 2, h + pad * 2);
-  ctx.filter = 'none';
-
-  // LAYER 2: TINT + INNER GLOW
-  ctx.fillStyle = isPink
-    ? `rgba(255, 255, 255, ${tintOpacity})`
-    : `rgba(45, 55, 65, ${tintOpacity})`;
-  ctx.fillRect(x, y, w, h);
-
-  // Inner glow (inset shadow)
-  const insetGrad = ctx.createRadialGradient(x + w/2, y + h/2, 0, x + w/2, y + h/2, Math.max(w, h) / 2);
-  insetGrad.addColorStop(0, isPink ? 'rgba(255, 255, 255, 0.0)' : 'rgba(255, 255, 255, 0.0)');
-  insetGrad.addColorStop(1, isPink ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.15)');
-  ctx.fillStyle = insetGrad;
-  ctx.fillRect(x, y, w, h);
-
-  ctx.restore();
-
-  // LAYER 3: HIGHLIGHT ATAS (::before)
-  ctx.save();
-  drawRoundedRect(ctx, x, y, w, h, r);
-  ctx.clip();
-  const topGrad = ctx.createLinearGradient(x, y, x + w, y);
-  topGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-  topGrad.addColorStop(0.5, isPink ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)');
-  topGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = topGrad;
-  ctx.fillRect(x, y, w, 1.5);
-  ctx.restore();
-
-  // LAYER 4: HIGHLIGHT KIRI (::after)
-  ctx.save();
-  drawRoundedRect(ctx, x, y, w, h, r);
-  ctx.clip();
-  const leftGrad = ctx.createLinearGradient(x, y, x, y + h);
-  leftGrad.addColorStop(0, isPink ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)');
-  leftGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
-  leftGrad.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
-  ctx.fillStyle = leftGrad;
-  ctx.fillRect(x, y, 1.5, h);
-  ctx.restore();
-
-  // BORDER LUAR
-  ctx.save();
-  ctx.strokeStyle = isPink ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)';
-  ctx.lineWidth = 1;
-  drawRoundedRect(ctx, x + 0.5, y + 0.5, w - 1, h - 1, r);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawLucideSvg(ctx: CanvasRenderingContext2D, pathData: string, x: number, y: number, color: string, size: number = 26, lineWidth: number = 2.4) {
+function drawLucideSvg(ctx: CanvasRenderingContext2D, pathData: string, x: number, y: number, color: string, size: number = 24, lineWidth: number = 2) {
   if (typeof Path2D === 'undefined') return;
   ctx.save();
   ctx.translate(x, y);
@@ -118,49 +43,47 @@ function drawLucideSvg(ctx: CanvasRenderingContext2D, pathData: string, x: numbe
   ctx.restore();
 }
 
-function drawIconReply(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) { drawLucideSvg(ctx, 'M9 17L4 12l5-5 M20 18v-2a4 4 0 0 0-4-4H4', x, y, color); }
-function drawIconForward(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) { drawLucideSvg(ctx, 'M15 17l5-5-5-5 M4 18v-2a4 4 0 0 1 4-4h12', x, y, color); }
+function drawIconReply(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) { 
+  drawLucideSvg(ctx, 'M9 17L4 12l5-5 M20 18v-2a4 4 0 0 0-4-4H4', x, y, color, 24, 2); 
+}
+function drawIconForward(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) { 
+  drawLucideSvg(ctx, 'M15 17l5-5-5-5 M4 18v-2a4 4 0 0 1 4-4h12', x, y, color, 24, 2); 
+}
 function drawIconCopy(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M9 9h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1', x, y, color, 26, 2.2);
+  drawLucideSvg(ctx, 'M9 9h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1', x, y, color, 24, 2);
 }
 function drawIconStar(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', x, y, color, 26, 2.2);
+  drawLucideSvg(ctx, 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', x, y, color, 24, 2);
 }
 function drawIconTrash(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M10 11v6 M14 11v6', x, y, color, 26, 2.2);
+  drawLucideSvg(ctx, 'M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M10 11v6 M14 11v6', x, y, color, 24, 2);
 }
-function drawIconInfo(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 16v-4 M12 8h.01', x, y, color, 26, 2.2);
+function drawIconEllipsis(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  drawLucideSvg(ctx, 'M5 12h.01 M12 12h.01 M19 12h.01', x, y, color, 24, 2);
 }
+
 function drawBlueTicks(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.save(); ctx.strokeStyle = '#53BDEB'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath(); ctx.moveTo(x, y + 5); ctx.lineTo(x + 4, y + 9); ctx.lineTo(x + 11, y + 1); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x + 5, y + 5); ctx.lineTo(x + 9, y + 9); ctx.lineTo(x + 16, y + 1); ctx.stroke();
+  ctx.save(); ctx.strokeStyle = '#53BDEB'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y + 4); ctx.lineTo(x + 3, y + 7); ctx.lineTo(x + 9, y + 1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 4, y + 4); ctx.lineTo(x + 7, y + 7); ctx.lineTo(x + 13, y + 1); ctx.stroke();
   ctx.restore();
 }
 
 export default function IqcTool() {
-  const [variant, setVariant] = useState<'iqcpink' | 'iqc'>('iqcpink');
   const [senderName, setSenderName] = useState<string>('ayang');
   const [quoteText, setQuoteText] = useState<string>('makanya cantik.');
   const [timeText, setTimeText] = useState<string>('18.30');
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pinkBgImgRef = useRef<HTMLImageElement | null>(null);
-  const darkBgImgRef = useRef<HTMLImageElement | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    let loadedCount = 0;
-    const checkAllLoaded = () => { loadedCount++; if (loadedCount >= 2) setImagesLoaded(true); };
-    const pinkImg = new Image(); pinkImg.crossOrigin = 'anonymous'; pinkImg.src = '/bc-iqcpink.png'; pinkImg.onload = checkAllLoaded; pinkImg.onerror = checkAllLoaded; pinkBgImgRef.current = pinkImg;
-    const darkImg = new Image(); darkImg.crossOrigin = 'anonymous'; darkImg.src = '/bc-iqc.png'; darkImg.onload = checkAllLoaded; darkImg.onerror = checkAllLoaded; darkBgImgRef.current = darkImg;
+    setImagesLoaded(true); // Anggap langsung loaded karena kita pake gradient
   }, []);
 
   const renderCard = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const isPink = variant === 'iqcpink';
     const w = 1080;
     const h = 1920;
     canvas.width = w; canvas.height = h;
@@ -171,72 +94,82 @@ export default function IqcTool() {
 
     const sfFontFamily = '"SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-    // BACKGROUND
-    const bgImg = isPink ? pinkBgImgRef.current : darkBgImgRef.current;
-    if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
-      ctx.drawImage(bgImg, 0, 0, w, h);
-    } else {
-      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
-      if (isPink) { bgGrad.addColorStop(0, '#FFF0F3'); bgGrad.addColorStop(0.5, '#FCE4E8'); bgGrad.addColorStop(1, '#F7D6DC'); }
-      else { bgGrad.addColorStop(0, '#0D1418'); bgGrad.addColorStop(0.5, '#111B21'); bgGrad.addColorStop(1, '#0B141A'); }
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, w, h);
+    // 1. BACKGROUND (SOFT PINK/WARM BOKEH)
+    ctx.fillStyle = '#FCF5F7'; // Warna dasar soft pink
+    ctx.fillRect(0, 0, w, h);
+
+    // Efek Bokeh Blur
+    const bokehColors = ['rgba(255, 218, 224, 0.4)', 'rgba(255, 240, 245, 0.6)', 'rgba(250, 230, 235, 0.5)'];
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      const r = 200 + Math.random() * 300;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, bokehColors[i % bokehColors.length]);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // DATE BADGE
+    // 2. DATE BADGE
     ctx.save();
     const dateText = 'HARI INI';
     ctx.font = `500 22px ${sfFontFamily}`;
     const dateW = ctx.measureText(dateText).width + 36;
     const dateX = (w - dateW) / 2;
-    const dateY = 80;
-    ctx.fillStyle = isPink ? 'rgba(255, 255, 255, 0.85)' : 'rgba(30, 42, 50, 0.85)';
+    const dateY = 100;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     drawRoundedRect(ctx, dateX, dateY, dateW, 38, 14);
     ctx.fill();
-    ctx.fillStyle = isPink ? '#54656F' : '#8696A0';
+    ctx.fillStyle = '#54656F';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(dateText, dateX + dateW / 2, dateY + 19);
     ctx.restore();
 
-    // DUMMY BUBBLES
+    // 3. DUMMY BUBBLES (BACKGROUND CHAT)
     const drawDummyBubble = (x: number, y: number, text: string, time: string, isIncoming: boolean) => {
       ctx.save();
-      ctx.font = `400 30px ${sfFontFamily}`;
+      ctx.font = `400 28px ${sfFontFamily}`;
       const lineW = ctx.measureText(text).width;
       const bW = Math.max(200, lineW + 80);
-      const bH = 72;
+      const bH = 68;
       const r = 20;
-      ctx.shadowColor = isPink ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.35)';
-      ctx.shadowBlur = 12;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.05)';
+      ctx.shadowBlur = 10;
       ctx.shadowOffsetY = 4;
-      ctx.fillStyle = isIncoming ? (isPink ? '#FFFFFF' : '#202C33') : (isPink ? '#FFD4E2' : '#005C4B');
+      ctx.fillStyle = isIncoming ? '#FFFFFF' : '#FFD4E2';
       drawRoundedRect(ctx, x, y, bW, bH, r);
       ctx.fill();
       ctx.restore();
 
-      ctx.fillStyle = isPink ? '#111B21' : '#E9EDEF';
-      ctx.font = `400 30px ${sfFontFamily}`;
+      ctx.fillStyle = '#111B21';
+      ctx.font = `400 28px ${sfFontFamily}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(text, x + 22, y + bH / 2 - 4);
 
-      ctx.fillStyle = isPink ? '#667781' : '#8696A0';
+      ctx.fillStyle = '#667781';
       ctx.font = `400 18px ${sfFontFamily}`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillText(time, x + bW - 14, y + bH - 10);
     };
 
+    // Chat Atas
     drawDummyBubble(86, 180, 'kamu lagi dimana sayang?', '18.25', true);
     drawDummyBubble(w - 86 - 360, 260, 'ini baru mau otw pulang kok', '18.27', false);
     drawDummyBubble(86, 340, 'yaudah hati-hati di jalan yaa', '18.28', true);
     drawDummyBubble(w - 86 - 320, 420, 'siap meluncur pulang', '18.29', false);
+
+    // Chat Bawah
     drawDummyBubble(86, 1560, 'nanti malam telfonan yaa', '18.31', true);
     drawDummyBubble(w - 86 - 280, 1640, 'iyaa sayang aman', '18.32', false);
     drawDummyBubble(86, 1720, 'jangan lupa makan', '18.33', true);
 
-    // BLUR + DIMMING BACKGROUND
+    // 4. BLUR BACKGROUND (FOKUS KE TENGAH)
     const bgSnapshot = document.createElement('canvas');
     bgSnapshot.width = w; bgSnapshot.height = h;
     const snapCtx = bgSnapshot.getContext('2d');
@@ -244,23 +177,18 @@ export default function IqcTool() {
       snapCtx.drawImage(canvas, 0, 0);
       ctx.save();
       ctx.clearRect(0, 0, w, h);
-      if (typeof ctx.filter !== 'undefined') ctx.filter = 'blur(16px)';
+      if (typeof ctx.filter !== 'undefined') ctx.filter = 'blur(12px)';
       ctx.drawImage(bgSnapshot, 0, 0);
       ctx.filter = 'none';
       ctx.restore();
     }
-    ctx.fillStyle = isPink ? 'rgba(40, 15, 25, 0.35)' : 'rgba(0, 0, 0, 0.55)';
+    // Dimming tipis
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
     ctx.fillRect(0, 0, w, h);
 
-    const glassSourceSnapshot = document.createElement('canvas');
-    glassSourceSnapshot.width = w; glassSourceSnapshot.height = h;
-    const glassSnapCtx = glassSourceSnapshot.getContext('2d');
-    if (glassSnapCtx) glassSnapCtx.drawImage(canvas, 0, 0);
-
     // HITUNG UKURAN BUBBLE
-    ctx.globalAlpha = 1.0;
     const bubbleX = 86;
-    const bubbleMaxW = Math.min(740, w - bubbleX * 2);
+    const bubbleMaxW = 800;
     const fontSize = 34;
     const lineHeight = 48;
     ctx.font = `400 ${fontSize}px ${sfFontFamily}`;
@@ -271,17 +199,9 @@ export default function IqcTool() {
       const words = p.split(/\s+/).filter(Boolean);
       let curLine = '';
       words.forEach((wrd) => {
-        if (ctx.measureText(wrd).width > bubbleMaxW - 100) {
-          for (let i = 0; i < wrd.length; i++) {
-            const char = wrd[i];
-            if (ctx.measureText(curLine + char).width > bubbleMaxW - 100) { textLines.push(curLine); curLine = char; }
-            else curLine += char;
-          }
-        } else {
-          const test = curLine ? `${curLine} ${wrd}` : wrd;
-          if (ctx.measureText(test).width > bubbleMaxW - 100 && curLine) { textLines.push(curLine); curLine = wrd; }
-          else curLine = test;
-        }
+        const test = curLine ? `${curLine} ${wrd}` : wrd;
+        if (ctx.measureText(test).width > bubbleMaxW - 100 && curLine) { textLines.push(curLine); curLine = wrd; }
+        else curLine = test;
       });
       if (curLine) textLines.push(curLine);
       if (words.length === 0) textLines.push('');
@@ -291,45 +211,41 @@ export default function IqcTool() {
     let longestLineWidth = 0;
     textLines.forEach((l) => { const metrics = ctx.measureText(l).width; if (metrics > longestLineWidth) longestLineWidth = metrics; });
 
-    let senderNameWidth = 0;
-    const hasSenderName = senderName.trim().length > 0;
-    if (hasSenderName) { ctx.font = `600 26px ${sfFontFamily}`; senderNameWidth = ctx.measureText(senderName.trim()).width + 16; }
-
     ctx.font = `400 20px ${sfFontFamily}`;
     const timeWidth = ctx.measureText(timeText).width + 30;
-    const contentNeededW = Math.max(longestLineWidth, senderNameWidth);
-    const needExtraLineForTime = textLines.length === 1 && contentNeededW + timeWidth + 50 > bubbleMaxW - 30;
-
-    const bubbleContentW = Math.max(280, contentNeededW + (needExtraLineForTime ? 34 : timeWidth + 56));
+    const bubbleContentW = Math.max(250, longestLineWidth + timeWidth + 50);
     const bubbleW = Math.min(bubbleMaxW, bubbleContentW);
-    const nameHeaderH = hasSenderName ? 30 : 0;
-    const bubbleH = Math.max(88, nameHeaderH + textLines.length * lineHeight + (needExtraLineForTime ? 54 : 30));
+    const bubbleH = textLines.length * lineHeight + 40;
 
-    const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-    const emojiCellW = 44;
-    const plusButtonW = 40;
-    const pillPaddingX = 18;
+    // POSISI ELEMEN
+    const bubbleY = 800; 
+    const bubbleYBottom = bubbleY + bubbleH;
+
+    // 5. REACTION PILL (BERDIRI SENDIRI, LEBAR FIX)
+    const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏', '😭'];
+    const emojiCellW = 48;
+    const plusButtonW = 48;
+    const pillPaddingX = 16;
     const pillW = pillPaddingX * 2 + emojis.length * emojiCellW + plusButtonW;
-    const pillH = 74;
-    const gapPillBubble = 12;
-    const gapBubbleMenu = 16;
-    const menuRowH = 68;
-    const menuRows = 6;
-    const menuH = menuRowH * menuRows;
-    const menuW = 390;
-
-    const bubbleY = 720;
+    const pillH = 80;
+    const gapPillBubble = 16;
     const pillY = bubbleY - pillH - gapPillBubble;
     const pillX = bubbleX;
-    const menuY = bubbleY + bubbleH + gapBubbleMenu;
-    const menuX = bubbleX;
 
-    // PILL: TRUE GLASS (DENGAN 4 LAYER DETAIL)
-    drawTrueGlass(ctx, glassSourceSnapshot, pillX, pillY, pillW, pillH, pillH / 2, isPink, 44, isPink ? 0.45 : 0.35);
+    // Draw Pill (Putih Solid)
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
+    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.restore();
 
+    // Draw Emojis
     ctx.save();
     ctx.fillStyle = '#000000';
-    ctx.font = '38px "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", "SF Pro Text", sans-serif';
+    ctx.font = '42px "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const emojiCenterY = pillY + pillH / 2;
@@ -337,24 +253,23 @@ export default function IqcTool() {
       const ex = pillX + pillPaddingX + idx * emojiCellW + emojiCellW / 2;
       ctx.fillText(em, ex, emojiCenterY + 2);
     });
+
+    // Draw Plus Button
     const plusCenterX = pillX + pillPaddingX + emojis.length * emojiCellW + plusButtonW / 2;
-    const plusCenterY = emojiCenterY;
-    const plusRadius = 16;
-    ctx.fillStyle = isPink ? 'rgba(240, 244, 247, 0.9)' : 'rgba(45, 56, 66, 0.9)';
-    ctx.beginPath(); ctx.arc(plusCenterX, plusCenterY, plusRadius, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = isPink ? 'rgba(224, 224, 224, 0.9)' : 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1.4; ctx.stroke();
-    ctx.fillStyle = isPink ? '#54656F' : '#8696A0';
-    ctx.font = `600 22px ${sfFontFamily}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('+', plusCenterX, plusCenterY + 1);
+    const plusRadius = 18;
+    ctx.fillStyle = '#F2F4F7';
+    ctx.beginPath(); ctx.arc(plusCenterX, emojiCenterY, plusRadius, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#54656F';
+    ctx.font = `600 28px ${sfFontFamily}`;
+    ctx.fillText('+', plusCenterX, emojiCenterY + 1);
     ctx.restore();
 
-    // FOCUSED BUBBLE
+    // 6. BUBBLE CHAT UTAMA (PUTIH SOLID)
     const r = 22;
     ctx.save();
-    ctx.globalAlpha = 1.0;
-    ctx.shadowColor = isPink ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.75)';
-    ctx.shadowBlur = 40;
-    ctx.shadowOffsetY = 15;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+    ctx.shadowBlur = 25;
+    ctx.shadowOffsetY = 8;
     ctx.beginPath();
     ctx.moveTo(bubbleX + r, bubbleY);
     ctx.lineTo(bubbleX + bubbleW - r, bubbleY);
@@ -367,95 +282,91 @@ export default function IqcTool() {
     ctx.bezierCurveTo(bubbleX - 3, bubbleY + 14, bubbleX - 14, bubbleY + 5, bubbleX - 16, bubbleY - 2);
     ctx.bezierCurveTo(bubbleX - 10, bubbleY - 1, bubbleX - 2, bubbleY + 2, bubbleX + 5, bubbleY);
     ctx.closePath();
-    ctx.fillStyle = isPink ? '#FFFFFF' : '#202C33';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fill();
     ctx.restore();
 
-    if (isPink) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(bubbleX + r, bubbleY); ctx.lineTo(bubbleX + bubbleW - r, bubbleY);
-      ctx.quadraticCurveTo(bubbleX + bubbleW, bubbleY, bubbleX + bubbleW, bubbleY + r);
-      ctx.lineTo(bubbleX + bubbleW, bubbleY + bubbleH - r);
-      ctx.quadraticCurveTo(bubbleX + bubbleW, bubbleY + bubbleH, bubbleX + bubbleW - r, bubbleY + bubbleH);
-      ctx.lineTo(bubbleX + r, bubbleY + bubbleH);
-      ctx.quadraticCurveTo(bubbleX, bubbleY + bubbleH, bubbleX, bubbleY + bubbleH - r);
-      ctx.lineTo(bubbleX, bubbleY + 24);
-      ctx.bezierCurveTo(bubbleX - 3, bubbleY + 14, bubbleX - 14, bubbleY + 5, bubbleX - 16, bubbleY - 2);
-      ctx.bezierCurveTo(bubbleX - 10, bubbleY - 1, bubbleX - 2, bubbleY + 2, bubbleX + 5, bubbleY);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    let contentStartY = bubbleY + 16;
+    // Draw Text Bubble
+    let contentStartY = bubbleY + 20;
     const textPaddingX = bubbleX + 26;
     ctx.save();
-    if (hasSenderName) {
-      ctx.font = `600 26px ${sfFontFamily}`;
-      ctx.fillStyle = isPink ? '#D81B60' : '#53BDEB';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(senderName.trim(), textPaddingX, contentStartY);
-      contentStartY += 30;
-    }
-    ctx.fillStyle = isPink ? '#111B21' : '#E9EDEF';
+    ctx.fillStyle = '#111B21';
     ctx.font = `400 ${fontSize}px ${sfFontFamily}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     textLines.forEach((l, idx) => { ctx.fillText(l, textPaddingX, contentStartY + idx * lineHeight); });
 
-    ctx.fillStyle = isPink ? '#667781' : '#8696A0';
+    ctx.fillStyle = '#667781';
     ctx.font = `400 20px ${sfFontFamily}`;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
     const timeEndX = bubbleX + bubbleW - 36;
-    ctx.fillText(timeText, timeEndX, bubbleY + bubbleH - 10);
+    ctx.fillText(timeText, timeEndX, bubbleY + bubbleH - 12);
     drawBlueTicks(ctx, timeEndX + 6, bubbleY + bubbleH - 22);
     ctx.restore();
 
-    // CONTEXT MENU: TRUE GLASS
-    drawTrueGlass(ctx, glassSourceSnapshot, menuX, menuY, menuW, menuH, 22, isPink, 44, isPink ? 0.5 : 0.4);
+    // 7. CONTEXT MENU (BERDIRI SENDIRI, IKON KIRI)
+    const menuW = 480;
+    const menuRowH = 76;
+    const menuItems = 6;
+    const menuH = menuRowH * menuItems;
+    const gapBubbleMenu = 24;
+    const menuY = bubbleYBottom + gapBubbleMenu;
+    const menuX = bubbleX;
 
     ctx.save();
-    const menuItems = [
-      { id: 'reply', label: 'Balas', icon: 'reply', isDestructive: false },
-      { id: 'forward', label: 'Teruskan', icon: 'forward', isDestructive: false },
-      { id: 'copy', label: 'Salin', icon: 'copy', isDestructive: false },
-      { id: 'star', label: 'Beri bintang', icon: 'star', isDestructive: false },
-      { id: 'delete', label: 'Hapus', icon: 'trash', isDestructive: true },
-      { id: 'info', label: 'Info', icon: 'info', isDestructive: false },
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+    ctx.shadowBlur = 25;
+    ctx.shadowOffsetY = 8;
+    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 24);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.restore();
+
+    const menuList = [
+      { label: 'Balas', icon: 'reply', color: '#111B21' },
+      { label: 'Teruskan', icon: 'forward', color: '#111B21' },
+      { label: 'Salin', icon: 'copy', color: '#111B21' },
+      { label: 'Beri bintang', icon: 'star', color: '#111B21' },
+      { label: 'Hapus', icon: 'trash', color: '#E91E63' }, // Merah/Pink
+      { label: 'Lainnya...', icon: 'ellipsis', color: '#111B21' }
     ];
-    menuItems.forEach((item, idx) => {
+
+    menuList.forEach((item, idx) => {
       const rowY = menuY + idx * menuRowH;
-      if (idx > 0) {
-        ctx.save();
-        ctx.strokeStyle = isPink ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.1)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(menuX + 20, rowY); ctx.lineTo(menuX + menuW - 20, rowY);
-        ctx.stroke();
-        ctx.restore();
+      
+      // Garis pembatas (kecuali item pertama dan terakhir)
+      if (idx > 0 && idx < menuList.length - 1 && idx !== menuList.length - 1) {
+        // Tambahkan garis sebelum "Lainnya..."
+        if (idx === 5) {
+           ctx.save();
+           ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
+           ctx.lineWidth = 1;
+           ctx.beginPath();
+           ctx.moveTo(menuX + 24, rowY);
+           ctx.lineTo(menuX + menuW - 24, rowY);
+           ctx.stroke();
+           ctx.restore();
+        }
       }
-      const textColor = item.isDestructive ? '#FF3B30' : isPink ? '#111B21' : '#FFFFFF';
-      const iconColor = item.isDestructive ? '#FF3B30' : isPink ? '#3C3C43' : '#8E8E93';
-      ctx.font = item.isDestructive ? `500 26px ${sfFontFamily}` : `400 26px ${sfFontFamily}`;
-      ctx.fillStyle = textColor;
+
+      // Ikon di Kiri
+      const iconX = menuX + 30;
+      const iconY = rowY + (menuRowH - 24) / 2;
+      if (item.icon === 'reply') drawIconReply(ctx, iconX, iconY, item.color);
+      if (item.icon === 'forward') drawIconForward(ctx, iconX, iconY, item.color);
+      if (item.icon === 'copy') drawIconCopy(ctx, iconX, iconY, item.color);
+      if (item.icon === 'star') drawIconStar(ctx, iconX, iconY, item.color);
+      if (item.icon === 'trash') drawIconTrash(ctx, iconX, iconY, item.color);
+      if (item.icon === 'ellipsis') drawIconEllipsis(ctx, iconX, iconY, item.color);
+
+      // Teks di Kanan
+      ctx.fillStyle = item.color;
+      ctx.font = `400 28px ${sfFontFamily}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(item.label, menuX + 24, rowY + menuRowH / 2);
-      const iconX = menuX + menuW - 46;
-      const iconY = rowY + (menuRowH - 26) / 2;
-      if (item.icon === 'reply') drawIconReply(ctx, iconX, iconY, iconColor);
-      if (item.icon === 'forward') drawIconForward(ctx, iconX, iconY, iconColor);
-      if (item.icon === 'copy') drawIconCopy(ctx, iconX, iconY, iconColor);
-      if (item.icon === 'star') drawIconStar(ctx, iconX, iconY, iconColor);
-      if (item.icon === 'trash') drawIconTrash(ctx, iconX, iconY, iconColor);
-      if (item.icon === 'info') drawIconInfo(ctx, iconX, iconY, iconColor);
+      ctx.fillText(item.label, menuX + 80, rowY + menuRowH / 2);
     });
-    ctx.restore();
   };
 
   useEffect(() => {
@@ -465,7 +376,7 @@ export default function IqcTool() {
       renderCard();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, senderName, quoteText, timeText, imagesLoaded]);
+  }, [senderName, quoteText, timeText, imagesLoaded]);
 
   const handleDownload = async () => {
     const canvas = canvasRef.current;
@@ -473,16 +384,16 @@ export default function IqcTool() {
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataUrl;
-    a.download = `${variant}_whatsapp_ios_${Date.now()}.png`;
+    a.download = `iqc_whatsapp_ios_${Date.now()}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
 
     try {
       await saveHistoryItem({
-        toolType: variant,
-        title: `${variant === 'iqcpink' ? '.IQCPINK' : '.IQC'}: "${quoteText.slice(0, 30)}..."`,
-        details: `Nama: ${senderName || '-'} | Jam: ${timeText} | Format: 9:16 iOS Proporsional`,
+        toolType: 'iqc',
+        title: `.IQC: "${quoteText.slice(0, 30)}..."`,
+        details: `Nama: ${senderName || '-'} | Jam: ${timeText} | Format: 9:16 iOS`,
         previewUrl: dataUrl,
         fileFormat: 'png',
       });
@@ -505,7 +416,7 @@ export default function IqcTool() {
       if (!blob) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `${variant}_sticker_${Date.now()}.webp`;
+      a.href = url; a.download = `iqc_sticker_${Date.now()}.webp`;
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
     }, 'image/webp');
@@ -526,39 +437,23 @@ export default function IqcTool() {
 
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-10 mb-12 shadow-xl shadow-zinc-200/20 dark:shadow-black/20 border border-zinc-200/80 dark:border-zinc-800/80">
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl mb-8 border border-indigo-100 dark:border-indigo-900/30">
-        <div className="flex items-center gap-3">
-          <span className="px-3 py-1 bg-indigo-600 text-white font-bold text-[10px] rounded-full uppercase tracking-widest">IQC v1 (Teks)</span>
-          <span className="text-[11px] font-medium text-indigo-900 dark:text-indigo-300 hidden sm:inline">Klasik WhatsApp quote generator</span>
-        </div>
-        <Link href="/iqcv2" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded-xl shadow-lg shadow-emerald-500/20 no-underline flex items-center gap-2 cursor-pointer transition-all uppercase tracking-wider">
-          <span>Buka IQC v2 (Foto + Caption)</span>
-          <span className="px-1.5 py-0.5 bg-white/20 rounded text-[8px]">BARU!</span>
-        </Link>
-      </div>
-
+      
+      {/* HEADER FORM */}
       <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-zinc-100 dark:border-zinc-900 mb-10">
         <div className="flex items-center gap-5">
           <div className="w-14 h-14 bg-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/20 font-bold text-2xl text-white">IQ</div>
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Generator .IQC & .IQCPINK</h2>
+              <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Generator .IQC</h2>
               <span className="inline-flex px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-md text-[10px] font-bold uppercase tracking-widest border border-amber-100 dark:border-amber-900/30">Proporsi 9:16</span>
             </div>
             <p className="text-sm text-zinc-400 font-medium mt-1">Desain presisi iOS WhatsApp dengan efek long-press haptic yang estetik.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 p-1 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-700">
-          <button onClick={() => setVariant('iqcpink')} className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all flex items-center gap-2 cursor-pointer ${variant === 'iqcpink' ? 'bg-white dark:bg-zinc-700 text-pink-600 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600' : 'text-zinc-400 hover:text-zinc-600'}`}>
-            <span className="w-2.5 h-2.5 rounded-full bg-pink-400" /><span>GLOSSY PINK</span>
-          </button>
-          <button onClick={() => setVariant('iqc')} className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all flex items-center gap-2 cursor-pointer ${variant === 'iqc' ? 'bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600' : 'text-zinc-400 hover:text-zinc-600'}`}>
-            <span className="w-2.5 h-2.5 rounded-full bg-zinc-900 dark:bg-white" /><span>CLASSIC DARK</span>
-          </button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* KOLOM KIRI: INPUT */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -616,14 +511,15 @@ export default function IqcTool() {
           </div>
         </div>
 
+        {/* KOLOM KANAN: PREVIEW CANVAS */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="rounded-3xl bg-zinc-950 p-6 sm:p-8 shadow-2xl shadow-black/20 flex flex-col items-center justify-center min-h-[600px] border border-zinc-800 relative group/canvas">
             <div className="absolute top-4 left-6 flex items-center gap-3">
               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Pratinjau</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
             </div>
             <div className="w-full max-w-[340px] transform scale-75 xs:scale-90 sm:scale-100 transition-transform duration-500 origin-center hover:scale-[1.02]">
-              <div className="relative rounded-2xl shadow-2xl bg-zinc-900 overflow-hidden aspect-[9/16]">
+              <div className="relative rounded-2xl shadow-2xl bg-white overflow-hidden aspect-[9/16]">
                 <canvas ref={canvasRef} className="w-full h-full object-cover" />
               </div>
             </div>
