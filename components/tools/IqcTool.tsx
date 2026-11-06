@@ -1138,7 +1138,7 @@ export default function IqcTool() {
             </div>
 
             <div className="w-full max-w-[340px] transform scale-75 xs:scale-90 sm:scale-100 transition-transform duration-500 origin-center hover:scale-[1.02]">
-              <div className="relative rounded-[40px] border-[10px] border-zinc-900 shadow-[0_0_60px_rgba(0,0,0,0.5)] bg-black overflow-hidden aspect-[9/16]">
+              <div className="relative rounded-2xl shadow-2xl bg-zinc-900 overflow-hidden aspect-[9/16]">
                 <canvas
                   ref={canvasRef}
                   className="w-full h-full object-cover"
