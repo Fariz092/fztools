@@ -28,41 +28,53 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.closePath();
 }
 
-function drawLiquidGlass(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, isPink: boolean) {
+function drawTrueGlass(
+  ctx: CanvasRenderingContext2D,
+  snapshot: HTMLCanvasElement,
+  x: number, y: number, w: number, h: number, r: number,
+  isPink: boolean,
+  blurPx: number = 30,
+  tintOpacity: number = 0.35
+) {
   ctx.save();
-  ctx.shadowColor = isPink ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 30;
-  ctx.shadowOffsetY = 10;
+  
   drawRoundedRect(ctx, x, y, w, h, r);
-  const grad = ctx.createLinearGradient(x, y, x + w, y + h);
-  if (isPink) {
-    grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-    grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
-    grad.addColorStop(1, 'rgba(255, 240, 245, 0.9)');
-  } else {
-    grad.addColorStop(0, 'rgba(45, 55, 65, 0.9)');
-    grad.addColorStop(0.5, 'rgba(35, 45, 52, 0.9)');
-    grad.addColorStop(1, 'rgba(25, 35, 42, 0.95)');
+  ctx.clip();
+
+  if (typeof ctx.filter !== 'undefined') {
+    ctx.filter = `blur(${blurPx}px)`;
   }
-  ctx.fillStyle = grad;
-  ctx.fill();
+  const pad = 20;
+  ctx.drawImage(snapshot, x - pad, y - pad, w + pad * 2, h + pad * 2, x - pad, y - pad, w + pad * 2, h + pad * 2);
+  ctx.filter = 'none';
+
+  ctx.fillStyle = isPink
+    ? `rgba(255, 245, 250, ${tintOpacity})`
+    : `rgba(30, 40, 48, ${tintOpacity})`;
+  ctx.fillRect(x, y, w, h);
+
+  const shine = ctx.createLinearGradient(x, y, x, y + h * 0.6);
+  shine.addColorStop(0, isPink ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)');
+  shine.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = shine;
+  ctx.fillRect(x, y, w, h * 0.6);
+
   ctx.restore();
 
   ctx.save();
-  ctx.strokeStyle = isPink ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.15)';
+  ctx.strokeStyle = isPink ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.2)';
   ctx.lineWidth = 1.5;
   drawRoundedRect(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, r);
   ctx.stroke();
   ctx.restore();
 
   ctx.save();
+  ctx.shadowColor = isPink ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 12;
   drawRoundedRect(ctx, x, y, w, h, r);
-  ctx.clip();
-  const shine = ctx.createLinearGradient(x, y, x, y + h * 0.5);
-  shine.addColorStop(0, isPink ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)');
-  shine.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = shine;
-  ctx.fillRect(x, y, w, h * 0.5);
+  ctx.strokeStyle = 'transparent';
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -134,7 +146,7 @@ export default function IqcTool() {
 
     const sfFontFamily = '"SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-    // --- BACKGROUND IMAGE ---
+    // BACKGROUND
     const bgImg = isPink ? pinkBgImgRef.current : darkBgImgRef.current;
     if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
       ctx.drawImage(bgImg, 0, 0, w, h);
@@ -146,7 +158,7 @@ export default function IqcTool() {
       ctx.fillRect(0, 0, w, h);
     }
 
-    // --- DATE BADGE ---
+    // DATE BADGE
     ctx.save();
     const dateText = 'HARI INI';
     ctx.font = `500 22px ${sfFontFamily}`;
@@ -162,7 +174,7 @@ export default function IqcTool() {
     ctx.fillText(dateText, dateX + dateW / 2, dateY + 19);
     ctx.restore();
 
-    // --- DUMMY BUBBLES (BACKGROUND CHAT) ---
+    // DUMMY BUBBLES
     const drawDummyBubble = (x: number, y: number, text: string, time: string, isIncoming: boolean) => {
       ctx.save();
       ctx.font = `400 30px ${sfFontFamily}`;
@@ -191,18 +203,15 @@ export default function IqcTool() {
       ctx.fillText(time, x + bW - 14, y + bH - 10);
     };
 
-    // Chat Dummy ATAS (sebelum bubble utama)
     drawDummyBubble(86, 180, 'kamu lagi dimana sayang?', '18.25', true);
     drawDummyBubble(w - 86 - 360, 260, 'ini baru mau otw pulang kok', '18.27', false);
     drawDummyBubble(86, 340, 'yaudah hati-hati di jalan yaa', '18.28', true);
     drawDummyBubble(w - 86 - 320, 420, 'siap meluncur pulang', '18.29', false);
-
-    // Chat Dummy BAWAH (setelah bubble utama)
     drawDummyBubble(86, 1560, 'nanti malam telfonan yaa', '18.31', true);
     drawDummyBubble(w - 86 - 280, 1640, 'iyaa sayang aman', '18.32', false);
     drawDummyBubble(86, 1720, 'jangan lupa makan', '18.33', true);
 
-    // --- BLUR & DIMMING (BACKGROUND CHAT JADI BUROM) ---
+    // BLUR + DIMMING BACKGROUND
     const bgSnapshot = document.createElement('canvas');
     bgSnapshot.width = w; bgSnapshot.height = h;
     const snapCtx = bgSnapshot.getContext('2d');
@@ -212,12 +221,18 @@ export default function IqcTool() {
       ctx.clearRect(0, 0, w, h);
       if (typeof ctx.filter !== 'undefined') ctx.filter = 'blur(16px)';
       ctx.drawImage(bgSnapshot, 0, 0);
+      ctx.filter = 'none';
       ctx.restore();
     }
     ctx.fillStyle = isPink ? 'rgba(40, 15, 25, 0.35)' : 'rgba(0, 0, 0, 0.55)';
     ctx.fillRect(0, 0, w, h);
 
-    // --- FOCUSED BUBBLE + REACTION + MENU ---
+    const glassSourceSnapshot = document.createElement('canvas');
+    glassSourceSnapshot.width = w; glassSourceSnapshot.height = h;
+    const glassSnapCtx = glassSourceSnapshot.getContext('2d');
+    if (glassSnapCtx) glassSnapCtx.drawImage(canvas, 0, 0);
+
+    // HITUNG UKURAN BUBBLE
     ctx.globalAlpha = 1.0;
     const bubbleX = 86;
     const bubbleMaxW = Math.min(740, w - bubbleX * 2);
@@ -284,8 +299,8 @@ export default function IqcTool() {
     const menuY = bubbleY + bubbleH + gapBubbleMenu;
     const menuX = bubbleX;
 
-    // 1. LIQUID GLASS PILL
-    drawLiquidGlass(ctx, pillX, pillY, pillW, pillH, pillH / 2, isPink);
+    // PILL: TRUE GLASS
+    drawTrueGlass(ctx, glassSourceSnapshot, pillX, pillY, pillW, pillH, pillH / 2, isPink, 40, isPink ? 0.45 : 0.35);
 
     ctx.save();
     ctx.fillStyle = '#000000';
@@ -300,15 +315,15 @@ export default function IqcTool() {
     const plusCenterX = pillX + pillPaddingX + emojis.length * emojiCellW + plusButtonW / 2;
     const plusCenterY = emojiCenterY;
     const plusRadius = 16;
-    ctx.fillStyle = isPink ? '#F2F4F7' : '#2D3842';
+    ctx.fillStyle = isPink ? 'rgba(240, 244, 247, 0.9)' : 'rgba(45, 56, 66, 0.9)';
     ctx.beginPath(); ctx.arc(plusCenterX, plusCenterY, plusRadius, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = isPink ? '#E0E0E0' : 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.strokeStyle = isPink ? 'rgba(224, 224, 224, 0.9)' : 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1.4; ctx.stroke();
     ctx.fillStyle = isPink ? '#54656F' : '#8696A0';
     ctx.font = `600 22px ${sfFontFamily}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('+', plusCenterX, plusCenterY + 1);
     ctx.restore();
 
-    // 2. FOCUSED BUBBLE
+    // FOCUSED BUBBLE
     const r = 22;
     ctx.save();
     ctx.globalAlpha = 1.0;
@@ -376,8 +391,8 @@ export default function IqcTool() {
     drawBlueTicks(ctx, timeEndX + 6, bubbleY + bubbleH - 22);
     ctx.restore();
 
-    // 3. CONTEXT MENU (Liquid Glass)
-    drawLiquidGlass(ctx, menuX, menuY, menuW, menuH, 22, isPink);
+    // CONTEXT MENU: TRUE GLASS
+    drawTrueGlass(ctx, glassSourceSnapshot, menuX, menuY, menuW, menuH, 22, isPink, 40, isPink ? 0.5 : 0.4);
 
     ctx.save();
     const menuItems = [
@@ -392,7 +407,7 @@ export default function IqcTool() {
       const rowY = menuY + idx * menuRowH;
       if (idx > 0) {
         ctx.save();
-        ctx.strokeStyle = isPink ? 'rgba(0, 0, 0, 0.07)' : 'rgba(255, 255, 255, 0.08)';
+        ctx.strokeStyle = isPink ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.1)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(menuX + 20, rowY); ctx.lineTo(menuX + menuW - 20, rowY);
