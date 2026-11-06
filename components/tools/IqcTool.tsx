@@ -4,6 +4,29 @@ import React, { useState, useRef } from 'react';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion } from 'motion/react';
 import { Download, Check } from 'lucide-react';
+import localFont from 'next/font/local';
+
+// LOAD FONT VIA NEXT.JS (Menunjuk ke folder public/assets)
+const myriadPro = localFont({
+  src: [
+    {
+      path: '../../public/assets/MYRIADPRO-REGULAR.OTF',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../public/assets/MYRIADPRO-SEMIBOLD.OTF',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../../public/assets/MYRIADPRO-BOLD.OTF',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-myriad',
+});
 
 const POPULAR_QUOTES = [
   { text: 'makanya cantik.', name: 'ayang', time: '18.30' },
@@ -15,7 +38,7 @@ const POPULAR_QUOTES = [
 ];
 
 export default function IqcTool() {
-  const [theme, setTheme] = useState<'neutral' | 'pink'>('pink'); // Default Pink
+  const [theme, setTheme] = useState<'neutral' | 'pink'>('pink'); 
   const [senderName, setSenderName] = useState<string>('ayang');
   const [quoteText, setQuoteText] = useState<string>('makanya cantik.');
   const [timeText, setTimeText] = useState<string>('18.30');
@@ -26,10 +49,7 @@ export default function IqcTool() {
     if (!previewRef.current) return;
     try {
       const { toPng } = await import('html-to-image');
-      const dataUrl = await toPng(previewRef.current, {
-        quality: 1,
-        pixelRatio: 3,
-      });
+      const dataUrl = await toPng(previewRef.current, { quality: 1, pixelRatio: 3 });
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `iqc_${theme}_${Date.now()}.png`;
@@ -151,12 +171,11 @@ export default function IqcTool() {
               <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
             </div>
             
-            {/* AREA YANG DI CAPTURE */}
+            {/* AREA YANG DI CAPTURE (DIPANGGIL myriadPro.className) */}
             <div 
               ref={previewRef}
-              className={`relative w-full rounded-[2rem] overflow-hidden aspect-[9/16] flex flex-col justify-center ${theme === 'pink' ? 'bg-vignette-pink' : 'bg-[#EFEFF4]'}`}
+              className={`relative w-full rounded-[2rem] overflow-hidden aspect-[9/16] flex flex-col justify-center ${theme === 'pink' ? 'bg-vignette-pink' : 'bg-[#EFEFF4]'} ${myriadPro.className}`}
               style={{ 
-                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
                 WebkitFontSmoothing: 'antialiased',
                 background: theme === 'pink' ? 'radial-gradient(circle at 45% 45%, #ffffff 0%, #fde4ec 30%, #f9a8d4 70%, #e11d48 135%)' : '#EFEFF4'
               }}
