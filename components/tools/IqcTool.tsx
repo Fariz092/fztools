@@ -164,7 +164,7 @@ export default function IqcTool() {
 
                 {/* 2. Bubble Chat */}
                 <div className="relative ml-2 mt-0.5">
-                  <div className="relative bg-white rounded-2xl rounded-tl-none px-3.5 py-2 shadow-sm inline-flex items-end gap-3 z-20 max-w-[280px]">
+                  <div className="relative bg-white rounded-2xl rounded-tl-none px-3.5 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] inline-flex items-end gap-3 z-20 max-w-[280px]">
                     {/* Ekor chat (Top-Left) */}
                     <div className="absolute top-0 -left-2 w-3 h-3 bg-white" style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
                     <span className="text-[15.5px] text-gray-900 pb-0.5 leading-snug break-words">{quoteText}</span>
@@ -173,7 +173,7 @@ export default function IqcTool() {
                 </div>
 
                 {/* 3. Context Menu (Glassmorphism) */}
-                <div className="mt-1 ml-2 bg-white/40 backdrop-blur-2xl backdrop-saturate-150 border border-white/70 rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] flex flex-col w-[260px] py-2 overflow-hidden z-10">
+                <div className="mt-1 ml-2 bg-white/40 backdrop-blur-2xl backdrop-saturate-150 border border-white/70 rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.06)] flex flex-col w-[260px] py-2 overflow-hidden z-10">
                   
                   <button className="flex items-center gap-4 px-5 py-3 hover:bg-white/50 transition-colors w-full text-left group">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.75" stroke="currentColor" className="w-5 h-5 text-gray-800"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
