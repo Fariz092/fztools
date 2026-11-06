@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import { Download, Check } from 'lucide-react';
 import localFont from 'next/font/local';
 
-// LOAD FONT VIA NEXT.JS (Menunjuk ke folder public/assets)
+// LOAD FONT VIA NEXT.JS
 const myriadPro = localFont({
   src: [
     {
@@ -39,6 +39,7 @@ const POPULAR_QUOTES = [
 
 export default function IqcTool() {
   const [theme, setTheme] = useState<'neutral' | 'pink'>('pink'); 
+  const [fontWeight, setFontWeight] = useState<'normal' | 'semibold' | 'bold'>('normal');
   const [senderName, setSenderName] = useState<string>('ayang');
   const [quoteText, setQuoteText] = useState<string>('makanya cantik.');
   const [timeText, setTimeText] = useState<string>('18.30');
@@ -48,11 +49,14 @@ export default function IqcTool() {
   const handleDownload = async () => {
     if (!previewRef.current) return;
     try {
+      // Pastikan font sudah fully loaded sebelum capture
+      await document.fonts.ready;
+      
       const { toPng } = await import('html-to-image');
       const dataUrl = await toPng(previewRef.current, { quality: 1, pixelRatio: 3 });
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `iqc_${theme}_${Date.now()}.png`;
+      a.download = `iqc_${theme}_${fontWeight}_${Date.now()}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -60,7 +64,7 @@ export default function IqcTool() {
       await saveHistoryItem({
         toolType: 'iqc',
         title: `.IQC ${theme.toUpperCase()}: "${quoteText.slice(0, 30)}..."`,
-        details: `Nama: ${senderName || '-'} | Jam: ${timeText}`,
+        details: `Nama: ${senderName || '-'} | Jam: ${timeText} | Font: ${fontWeight}`,
         previewUrl: dataUrl,
         fileFormat: 'png',
       });
@@ -73,6 +77,7 @@ export default function IqcTool() {
   const handleCopy = async () => {
     if (!previewRef.current) return;
     try {
+      await document.fonts.ready;
       const { toBlob } = await import('html-to-image');
       const blob = await toBlob(previewRef.current, { pixelRatio: 3 });
       if (!blob) return;
@@ -118,6 +123,31 @@ export default function IqcTool() {
                 className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${theme === 'pink' ? 'bg-white dark:bg-zinc-700 shadow-sm text-pink-600 dark:text-pink-400' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
               >
                 Pink
+              </button>
+            </div>
+          </div>
+
+          {/* FONT TOGGLE */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Pilih Ketebalan Font:</label>
+            <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl w-max">
+              <button 
+                onClick={() => setFontWeight('normal')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${fontWeight === 'normal' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                Regular
+              </button>
+              <button 
+                onClick={() => setFontWeight('semibold')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${fontWeight === 'semibold' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                Semibold
+              </button>
+              <button 
+                onClick={() => setFontWeight('bold')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${fontWeight === 'bold' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                Bold
               </button>
             </div>
           </div>
@@ -171,13 +201,14 @@ export default function IqcTool() {
               <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
             </div>
             
-            {/* AREA YANG DI CAPTURE (DIPANGGIL myriadPro.className) */}
+            {/* AREA YANG DI CAPTURE (FONT WEIGHT DINAMIS) */}
             <div 
               ref={previewRef}
               className={`relative w-full rounded-[2rem] overflow-hidden aspect-[9/16] flex flex-col justify-center ${theme === 'pink' ? 'bg-vignette-pink' : 'bg-[#EFEFF4]'} ${myriadPro.className}`}
               style={{ 
                 WebkitFontSmoothing: 'antialiased',
-                background: theme === 'pink' ? 'radial-gradient(circle at 45% 45%, #ffffff 0%, #fde4ec 30%, #f9a8d4 70%, #e11d48 135%)' : '#EFEFF4'
+                background: theme === 'pink' ? 'radial-gradient(circle at 45% 45%, #ffffff 0%, #fde4ec 30%, #f9a8d4 70%, #e11d48 135%)' : '#EFEFF4',
+                fontWeight: fontWeight === 'bold' ? 700 : fontWeight === 'semibold' ? 600 : 400
               }}
             >
               {/* Background Dummy Chats (Blurred) */}
