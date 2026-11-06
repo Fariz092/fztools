@@ -44,28 +44,28 @@ function drawLucideSvg(ctx: CanvasRenderingContext2D, pathData: string, x: numbe
 }
 
 function drawIconReply(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) { 
-  drawLucideSvg(ctx, 'M9 17L4 12l5-5 M20 18v-2a4 4 0 0 0-4-4H4', x, y, color, 24, 2); 
+  drawLucideSvg(ctx, 'M9 17L4 12l5-5 M20 18v-2a4 4 0 0 0-4-4H4', x, y, color, 32, 2.5); 
 }
 function drawIconForward(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) { 
-  drawLucideSvg(ctx, 'M15 17l5-5-5-5 M4 18v-2a4 4 0 0 1 4-4h12', x, y, color, 24, 2); 
+  drawLucideSvg(ctx, 'M15 17l5-5-5-5 M4 18v-2a4 4 0 0 1 4-4h12', x, y, color, 32, 2.5); 
 }
 function drawIconCopy(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M9 9h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1', x, y, color, 24, 2);
+  drawLucideSvg(ctx, 'M9 9h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1', x, y, color, 32, 2.5);
 }
 function drawIconStar(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', x, y, color, 24, 2);
+  drawLucideSvg(ctx, 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', x, y, color, 32, 2.5);
 }
 function drawIconTrash(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M10 11v6 M14 11v6', x, y, color, 24, 2);
+  drawLucideSvg(ctx, 'M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M10 11v6 M14 11v6', x, y, color, 32, 2.5);
 }
 function drawIconEllipsis(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  drawLucideSvg(ctx, 'M5 12h.01 M12 12h.01 M19 12h.01', x, y, color, 24, 2);
+  drawLucideSvg(ctx, 'M5 12h.01 M12 12h.01 M19 12h.01', x, y, color, 32, 3);
 }
 
 function drawBlueTicks(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.save(); ctx.strokeStyle = '#53BDEB'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath(); ctx.moveTo(x, y + 4); ctx.lineTo(x + 3, y + 7); ctx.lineTo(x + 9, y + 1); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x + 4, y + 4); ctx.lineTo(x + 7, y + 7); ctx.lineTo(x + 13, y + 1); ctx.stroke();
+  ctx.save(); ctx.strokeStyle = '#53BDEB'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y + 5); ctx.lineTo(x + 4, y + 9); ctx.lineTo(x + 12, y + 1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 5, y + 5); ctx.lineTo(x + 9, y + 9); ctx.lineTo(x + 17, y + 1); ctx.stroke();
   ctx.restore();
 }
 
@@ -93,12 +93,12 @@ export default function IqcTool() {
     ctx.fillStyle = '#FCF5F7'; 
     ctx.fillRect(0, 0, w, h);
 
-    const bokehColors = ['rgba(255, 218, 224, 0.4)', 'rgba(255, 240, 245, 0.6)', 'rgba(250, 230, 235, 0.5)'];
+    const bokehColors = ['rgba(255, 218, 224, 0.5)', 'rgba(255, 240, 245, 0.7)', 'rgba(250, 230, 235, 0.6)'];
     for (let i = 0; i < 5; i++) {
       ctx.beginPath();
       const x = Math.random() * w;
       const y = Math.random() * h;
-      const r = 200 + Math.random() * 300;
+      const r = 250 + Math.random() * 350;
       const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
       grad.addColorStop(0, bokehColors[i % bokehColors.length]);
       grad.addColorStop(1, 'transparent');
@@ -110,55 +110,55 @@ export default function IqcTool() {
     // 2. DATE BADGE
     ctx.save();
     const dateText = 'HARI INI';
-    ctx.font = `500 22px ${sfFontFamily}`;
-    const dateW = ctx.measureText(dateText).width + 36;
+    ctx.font = `500 28px ${sfFontFamily}`;
+    const dateW = ctx.measureText(dateText).width + 48;
     const dateX = (w - dateW) / 2;
-    const dateY = 100;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    drawRoundedRect(ctx, dateX, dateY, dateW, 38, 14);
+    const dateY = 120;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    drawRoundedRect(ctx, dateX, dateY, dateW, 48, 20);
     ctx.fill();
     ctx.fillStyle = '#54656F';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(dateText, dateX + dateW / 2, dateY + 19);
+    ctx.fillText(dateText, dateX + dateW / 2, dateY + 25);
     ctx.restore();
 
-    // 3. DUMMY BUBBLES
+    // 3. DUMMY BUBBLES (SCALED UP)
     const drawDummyBubble = (x: number, y: number, text: string, time: string, isIncoming: boolean) => {
       ctx.save();
-      ctx.font = `400 28px ${sfFontFamily}`;
+      ctx.font = `400 34px ${sfFontFamily}`;
       const lineW = ctx.measureText(text).width;
-      const bW = Math.max(200, lineW + 80);
-      const bH = 68;
-      const r = 20;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.05)';
-      ctx.shadowBlur = 10;
-      ctx.shadowOffsetY = 4;
+      const bW = Math.max(260, lineW + 100);
+      const bH = 80;
+      const r = 24;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.06)';
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetY = 5;
       ctx.fillStyle = isIncoming ? '#FFFFFF' : '#FFD4E2';
       drawRoundedRect(ctx, x, y, bW, bH, r);
       ctx.fill();
       ctx.restore();
 
       ctx.fillStyle = '#111B21';
-      ctx.font = `400 28px ${sfFontFamily}`;
+      ctx.font = `400 34px ${sfFontFamily}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(text, x + 22, y + bH / 2 - 4);
+      ctx.fillText(text, x + 26, y + bH / 2 - 4);
 
       ctx.fillStyle = '#667781';
-      ctx.font = `400 18px ${sfFontFamily}`;
+      ctx.font = `400 22px ${sfFontFamily}`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
-      ctx.fillText(time, x + bW - 14, y + bH - 10);
+      ctx.fillText(time, x + bW - 18, y + bH - 12);
     };
 
-    drawDummyBubble(86, 180, 'kamu lagi dimana sayang?', '18.25', true);
-    drawDummyBubble(w - 86 - 360, 260, 'ini baru mau otw pulang kok', '18.27', false);
-    drawDummyBubble(86, 340, 'yaudah hati-hati di jalan yaa', '18.28', true);
-    drawDummyBubble(w - 86 - 320, 420, 'siap meluncur pulang', '18.29', false);
-    drawDummyBubble(86, 1560, 'nanti malam telfonan yaa', '18.31', true);
-    drawDummyBubble(w - 86 - 280, 1640, 'iyaa sayang aman', '18.32', false);
-    drawDummyBubble(86, 1720, 'jangan lupa makan', '18.33', true);
+    drawDummyBubble(86, 200, 'kamu lagi dimana sayang?', '18.25', true);
+    drawDummyBubble(w - 86 - 420, 300, 'ini baru mau otw pulang kok', '18.27', false);
+    drawDummyBubble(86, 400, 'yaudah hati-hati di jalan yaa', '18.28', true);
+    drawDummyBubble(w - 86 - 380, 500, 'siap meluncur pulang', '18.29', false);
+    drawDummyBubble(86, 1450, 'nanti malam telfonan yaa', '18.31', true);
+    drawDummyBubble(w - 86 - 340, 1550, 'iyaa sayang aman', '18.32', false);
+    drawDummyBubble(86, 1650, 'jangan lupa makan', '18.33', true);
 
     // 4. BLUR BACKGROUND
     const bgSnapshot = document.createElement('canvas');
@@ -168,7 +168,7 @@ export default function IqcTool() {
       snapCtx.drawImage(canvas, 0, 0);
       ctx.save();
       ctx.clearRect(0, 0, w, h);
-      if (typeof ctx.filter !== 'undefined') ctx.filter = 'blur(12px)';
+      if (typeof ctx.filter !== 'undefined') ctx.filter = 'blur(16px)';
       ctx.drawImage(bgSnapshot, 0, 0);
       ctx.filter = 'none';
       ctx.restore();
@@ -176,11 +176,11 @@ export default function IqcTool() {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
     ctx.fillRect(0, 0, w, h);
 
-    // HITUNG UKURAN BUBBLE
-    const bubbleX = 86;
-    const bubbleMaxW = 800;
-    const fontSize = 34;
-    const lineHeight = 48;
+    // HITUNG UKURAN BUBBLE (ZOOMED UP)
+    const bubbleX = 90;
+    const bubbleMaxW = 900;
+    const fontSize = 46; // Teks lebih besar
+    const lineHeight = 62;
     ctx.font = `400 ${fontSize}px ${sfFontFamily}`;
 
     const textLines: string[] = [];
@@ -190,7 +190,7 @@ export default function IqcTool() {
       let curLine = '';
       words.forEach((wrd) => {
         const test = curLine ? `${curLine} ${wrd}` : wrd;
-        if (ctx.measureText(test).width > bubbleMaxW - 100 && curLine) { textLines.push(curLine); curLine = wrd; }
+        if (ctx.measureText(test).width > bubbleMaxW - 120 && curLine) { textLines.push(curLine); curLine = wrd; }
         else curLine = test;
       });
       if (curLine) textLines.push(curLine);
@@ -201,30 +201,30 @@ export default function IqcTool() {
     let longestLineWidth = 0;
     textLines.forEach((l) => { const metrics = ctx.measureText(l).width; if (metrics > longestLineWidth) longestLineWidth = metrics; });
 
-    ctx.font = `400 20px ${sfFontFamily}`;
-    const timeWidth = ctx.measureText(timeText).width + 30;
-    const bubbleContentW = Math.max(250, longestLineWidth + timeWidth + 50);
+    ctx.font = `400 26px ${sfFontFamily}`;
+    const timeWidth = ctx.measureText(timeText).width + 40;
+    const bubbleContentW = Math.max(300, longestLineWidth + timeWidth + 60);
     const bubbleW = Math.min(bubbleMaxW, bubbleContentW);
-    const bubbleH = textLines.length * lineHeight + 40;
+    const bubbleH = textLines.length * lineHeight + 50; // Padding lebih lega
 
-    const bubbleY = 800; 
+    const bubbleY = 720; // Posisi agak ke atas
     const bubbleYBottom = bubbleY + bubbleH;
 
-    // 5. REACTION PILL (EMOJI BERJARAK)
+    // 5. REACTION PILL (ZOOMED UP)
     const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏', '😭'];
-    const emojiCellW = 56; // Lebih lebar biar berjarak
-    const plusButtonW = 56;
-    const pillPaddingX = 16;
+    const emojiCellW = 72; // Jarak antar emoji lebih lebar
+    const plusButtonW = 72;
+    const pillPaddingX = 20;
     const pillW = pillPaddingX * 2 + emojis.length * emojiCellW + plusButtonW;
-    const pillH = 80;
-    const gapPillBubble = 16;
+    const pillH = 100;
+    const gapPillBubble = 24;
     const pillY = bubbleY - pillH - gapPillBubble;
     const pillX = bubbleX;
 
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-    ctx.shadowBlur = 30;
-    ctx.shadowOffsetY = 10;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
+    ctx.shadowBlur = 35;
+    ctx.shadowOffsetY = 12;
     drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
     ctx.fillStyle = '#FFFFFF';
     ctx.fill();
@@ -232,30 +232,30 @@ export default function IqcTool() {
 
     ctx.save();
     ctx.fillStyle = '#000000';
-    ctx.font = '42px "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif';
+    ctx.font = '54px "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const emojiCenterY = pillY + pillH / 2;
     emojis.forEach((em, idx) => {
       const ex = pillX + pillPaddingX + idx * emojiCellW + emojiCellW / 2;
-      ctx.fillText(em, ex, emojiCenterY + 2);
+      ctx.fillText(em, ex, emojiCenterY + 4);
     });
 
     const plusCenterX = pillX + pillPaddingX + emojis.length * emojiCellW + plusButtonW / 2;
-    const plusRadius = 18;
+    const plusRadius = 24;
     ctx.fillStyle = '#F2F4F7';
     ctx.beginPath(); ctx.arc(plusCenterX, emojiCenterY, plusRadius, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#54656F';
-    ctx.font = `600 28px ${sfFontFamily}`;
-    ctx.fillText('+', plusCenterX, emojiCenterY + 1);
+    ctx.font = `600 36px ${sfFontFamily}`;
+    ctx.fillText('+', plusCenterX, emojiCenterY + 2);
     ctx.restore();
 
-    // 6. BUBBLE CHAT UTAMA (SUDUT LEBIH BULAT)
-    const r = 28; // Radius ditambah
+    // 6. BUBBLE CHAT UTAMA
+    const r = 36;
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
-    ctx.shadowBlur = 25;
-    ctx.shadowOffsetY = 8;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
     ctx.beginPath();
     ctx.moveTo(bubbleX + r, bubbleY);
     ctx.lineTo(bubbleX + bubbleW - r, bubbleY);
@@ -264,16 +264,16 @@ export default function IqcTool() {
     ctx.quadraticCurveTo(bubbleX + bubbleW, bubbleY + bubbleH, bubbleX + bubbleW - r, bubbleY + bubbleH);
     ctx.lineTo(bubbleX + r, bubbleY + bubbleH);
     ctx.quadraticCurveTo(bubbleX, bubbleY + bubbleH, bubbleX, bubbleY + bubbleH - r);
-    ctx.lineTo(bubbleX, bubbleY + 24);
-    ctx.bezierCurveTo(bubbleX - 3, bubbleY + 14, bubbleX - 14, bubbleY + 5, bubbleX - 16, bubbleY - 2);
-    ctx.bezierCurveTo(bubbleX - 10, bubbleY - 1, bubbleX - 2, bubbleY + 2, bubbleX + 5, bubbleY);
+    ctx.lineTo(bubbleX, bubbleY + 30);
+    ctx.bezierCurveTo(bubbleX - 4, bubbleY + 18, bubbleX - 18, bubbleY + 6, bubbleX - 20, bubbleY - 2);
+    ctx.bezierCurveTo(bubbleX - 12, bubbleY - 1, bubbleX - 2, bubbleY + 2, bubbleX + 6, bubbleY);
     ctx.closePath();
     ctx.fillStyle = '#FFFFFF';
     ctx.fill();
     ctx.restore();
 
-    let contentStartY = bubbleY + 20;
-    const textPaddingX = bubbleX + 26;
+    let contentStartY = bubbleY + 24;
+    const textPaddingX = bubbleX + 32;
     ctx.save();
     ctx.fillStyle = '#111B21';
     ctx.font = `400 ${fontSize}px ${sfFontFamily}`;
@@ -282,38 +282,37 @@ export default function IqcTool() {
     textLines.forEach((l, idx) => { ctx.fillText(l, textPaddingX, contentStartY + idx * lineHeight); });
 
     ctx.fillStyle = '#667781';
-    ctx.font = `400 20px ${sfFontFamily}`;
+    ctx.font = `400 26px ${sfFontFamily}`;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
-    const timeEndX = bubbleX + bubbleW - 36;
-    ctx.fillText(timeText, timeEndX, bubbleY + bubbleH - 12);
-    drawBlueTicks(ctx, timeEndX + 6, bubbleY + bubbleH - 22);
+    const timeEndX = bubbleX + bubbleW - 42;
+    ctx.fillText(timeText, timeEndX, bubbleY + bubbleH - 14);
+    drawBlueTicks(ctx, timeEndX + 8, bubbleY + bubbleH - 24);
     ctx.restore();
 
-    // 7. CONTEXT MENU (GLASS EFFECT + LEBIH RAMPING)
-    const menuW = 480;
-    const menuRowH = 64; // Dirampingkan (sebelumnya 76)
+    // 7. CONTEXT MENU (ZOOMED UP)
+    const menuW = 620;
+    const menuRowH = 88;
     const menuItems = 6;
     const menuH = menuRowH * menuItems;
-    const gapBubbleMenu = 24;
+    const gapBubbleMenu = 32;
     const menuY = bubbleYBottom + gapBubbleMenu;
     const menuX = bubbleX;
 
-    // Draw Glass Menu Background
+    // Glass Effect
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-    ctx.shadowBlur = 30;
-    ctx.shadowOffsetY = 10;
-    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 28); // Radius lebih bulat
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)'; // Semi transparan
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 15;
+    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 32);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.fill();
     ctx.restore();
 
-    // Draw Glass Border
     ctx.save();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.lineWidth = 1.5;
-    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 28);
+    drawRoundedRect(ctx, menuX, menuY, menuW, menuH, 32);
     ctx.stroke();
     ctx.restore();
 
@@ -332,16 +331,16 @@ export default function IqcTool() {
       if (idx === 5) {
          ctx.save();
          ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
-         ctx.lineWidth = 1;
+         ctx.lineWidth = 1.5;
          ctx.beginPath();
-         ctx.moveTo(menuX + 24, rowY);
-         ctx.lineTo(menuX + menuW - 24, rowY);
+         ctx.moveTo(menuX + 30, rowY);
+         ctx.lineTo(menuX + menuW - 30, rowY);
          ctx.stroke();
          ctx.restore();
       }
 
-      const iconX = menuX + 30;
-      const iconY = rowY + (menuRowH - 24) / 2;
+      const iconX = menuX + 36;
+      const iconY = rowY + (menuRowH - 32) / 2;
       if (item.icon === 'reply') drawIconReply(ctx, iconX, iconY, item.color);
       if (item.icon === 'forward') drawIconForward(ctx, iconX, iconY, item.color);
       if (item.icon === 'copy') drawIconCopy(ctx, iconX, iconY, item.color);
@@ -350,10 +349,10 @@ export default function IqcTool() {
       if (item.icon === 'ellipsis') drawIconEllipsis(ctx, iconX, iconY, item.color);
 
       ctx.fillStyle = item.color;
-      ctx.font = `400 26px ${sfFontFamily}`;
+      ctx.font = `400 34px ${sfFontFamily}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(item.label, menuX + 80, rowY + menuRowH / 2);
+      ctx.fillText(item.label, menuX + 96, rowY + menuRowH / 2);
     });
   };
 
@@ -497,7 +496,6 @@ export default function IqcTool() {
           </div>
         </div>
 
-        {/* KOLOM KANAN: PREVIEW CANVAS PENUH */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="w-full max-w-[420px] mx-auto rounded-[2.5rem] bg-zinc-950 p-2 shadow-2xl border border-zinc-800 relative">
             <div className="absolute top-4 left-6 flex items-center gap-3 z-10">
