@@ -1,7 +1,6 @@
 'use client';
 
 import AppShell from '@/components/AppShell';
-import FakeCallTool from '@/components/tools/FakeCallTool';
 import BackButton from '@/components/BackButton';
 
 export default function FakeCallPage() {
@@ -11,7 +10,9 @@ export default function FakeCallPage() {
         <div className="mb-8">
           <BackButton />
         </div>
-        <FakeCallTool />
+        <div className="bg-red-500 text-white p-10 rounded-2xl text-center">
+          <h1 className="text-2xl font-bold">TEST: Halaman Fake Call Muncul!</h1>
+        </div>
       </div>
     </AppShell>
   );
