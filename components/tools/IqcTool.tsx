@@ -6,18 +6,17 @@ import { motion } from 'motion/react';
 import { Download, Check } from 'lucide-react';
 
 const POPULAR_QUOTES = [
-  { text: 'makanya cantik.', name: 'ayang', time: '18.30' },
-  { text: 'dihina ga tumbang\ndibilang cakep ya emang bang', name: 'crush', time: '21.35' },
-  { text: 'jangan berekspektasi tinggi,\nmanusia itu tempatnya kecewa.', name: 'ayang', time: '02.14' },
-  { text: 'tetap tersenyum,\nwalau batin sedang babak belur.', name: 'bestie', time: '19.45' },
-  { text: 'capek kerja pengen kaya,\ntapi males gerak.', name: 'ayang', time: '12.00' },
-  { text: 'yang jago cuman ayam\nyang sakti cuman kera\nkalo yang elit ya kitaa', name: 'ayang', time: '23.49' },
+  { text: 'makanya cantik.', time: '18.30' },
+  { text: 'dihina ga tumbang\ndibilang cakep ya emang bang', time: '21.35' },
+  { text: 'jangan berekspektasi tinggi,\nmanusia itu tempatnya kecewa.', time: '02.14' },
+  { text: 'tetap tersenyum,\nwalau batin sedang babak belur.', time: '19.45' },
+  { text: 'capek kerja pengen kaya,\ntapi males gerak.', time: '12.00' },
+  { text: 'yang jago cuman ayam\nyang sakti cuman kera\nkalo yang elit ya kitaa', time: '23.49' },
 ];
 
 export default function IqcTool() {
   const [theme, setTheme] = useState<'neutral' | 'pink'>('pink'); 
   const [fontWeight, setFontWeight] = useState<'normal' | 'semibold' | 'bold'>('normal');
-  const [senderName, setSenderName] = useState<string>('ayang');
   const [quoteText, setQuoteText] = useState<string>('makanya cantik.');
   const [timeText, setTimeText] = useState<string>('18.30');
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
@@ -39,7 +38,7 @@ export default function IqcTool() {
       await saveHistoryItem({
         toolType: 'iqc',
         title: `.IQC ${theme.toUpperCase()}: "${quoteText.slice(0, 30)}..."`,
-        details: `Nama: ${senderName || '-'} | Jam: ${timeText} | Font: ${fontWeight}`,
+        details: `Jam: ${timeText} | Font: ${fontWeight}`,
         previewUrl: dataUrl,
         fileFormat: 'png',
       });
@@ -128,11 +127,6 @@ export default function IqcTool() {
           </div>
 
           <div className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Nama Kontak:</label>
-            <input type="text" value={senderName} onChange={(e) => setSenderName(e.target.value)} placeholder="Contoh: ayang" className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm font-semibold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all" />
-          </div>
-
-          <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Teks Kutipan:</label>
             <textarea rows={4} value={quoteText} onChange={(e) => setQuoteText(e.target.value)} placeholder="Tulis pesan kutipan..." className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-4 text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all resize-none" />
           </div>
@@ -149,7 +143,7 @@ export default function IqcTool() {
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Preset Populer:</label>
             <div className="flex flex-wrap gap-2">
               {POPULAR_QUOTES.map((preset, idx) => (
-                <button key={idx} type="button" onClick={() => { setQuoteText(preset.text); setSenderName(preset.name); setTimeText(preset.time); }} className="px-3 py-1.5 text-[10px] font-medium rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-500 hover:text-pink-600 hover:bg-white transition-all cursor-pointer border border-zinc-100 dark:border-zinc-700 shadow-sm">
+                <button key={idx} type="button" onClick={() => { setQuoteText(preset.text); setTimeText(preset.time); }} className="px-3 py-1.5 text-[10px] font-medium rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-500 hover:text-pink-600 hover:bg-white transition-all cursor-pointer border border-zinc-100 dark:border-zinc-700 shadow-sm">
                   &quot;{preset.text.split('\n')[0].slice(0, 16)}...&quot;
                 </button>
               ))}
@@ -176,7 +170,7 @@ export default function IqcTool() {
               <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
             </div>
             
-            {/* AREA YANG DI CAPTURE (PAKAI FONT MYRIADPRO) */}
+            {/* AREA YANG DI CAPTURE */}
             <div 
               ref={previewRef}
               className={`relative w-full rounded-[2rem] overflow-hidden aspect-[9/16] flex flex-col justify-center ${theme === 'pink' ? 'bg-vignette-pink' : 'bg-[#EFEFF4]'}`}
