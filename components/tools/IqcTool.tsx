@@ -28,52 +28,77 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.closePath();
 }
 
+/**
+ * TRUE GLASSMORPHISM (4 LAYER DETAIL)
+ * Layer 1: Background blur (dari snapshot)
+ * Layer 2: Tint warna + Inner glow (inset shadow)
+ * Layer 3: Highlight atas (::before)
+ * Layer 4: Highlight kiri (::after)
+ */
 function drawTrueGlass(
   ctx: CanvasRenderingContext2D,
   snapshot: HTMLCanvasElement,
   x: number, y: number, w: number, h: number, r: number,
   isPink: boolean,
-  blurPx: number = 30,
-  tintOpacity: number = 0.35
+  blurPx: number = 44,
+  tintOpacity: number = 0.31
 ) {
+  // LAYER 1: BACKGROUND BLUR
   ctx.save();
-  
   drawRoundedRect(ctx, x, y, w, h, r);
   ctx.clip();
 
   if (typeof ctx.filter !== 'undefined') {
     ctx.filter = `blur(${blurPx}px)`;
   }
-  const pad = 20;
+  const pad = 30;
   ctx.drawImage(snapshot, x - pad, y - pad, w + pad * 2, h + pad * 2, x - pad, y - pad, w + pad * 2, h + pad * 2);
   ctx.filter = 'none';
 
+  // LAYER 2: TINT + INNER GLOW
   ctx.fillStyle = isPink
-    ? `rgba(255, 245, 250, ${tintOpacity})`
-    : `rgba(30, 40, 48, ${tintOpacity})`;
+    ? `rgba(255, 255, 255, ${tintOpacity})`
+    : `rgba(45, 55, 65, ${tintOpacity})`;
   ctx.fillRect(x, y, w, h);
 
-  const shine = ctx.createLinearGradient(x, y, x, y + h * 0.6);
-  shine.addColorStop(0, isPink ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)');
-  shine.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = shine;
-  ctx.fillRect(x, y, w, h * 0.6);
+  // Inner glow (inset shadow)
+  const insetGrad = ctx.createRadialGradient(x + w/2, y + h/2, 0, x + w/2, y + h/2, Math.max(w, h) / 2);
+  insetGrad.addColorStop(0, isPink ? 'rgba(255, 255, 255, 0.0)' : 'rgba(255, 255, 255, 0.0)');
+  insetGrad.addColorStop(1, isPink ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.15)');
+  ctx.fillStyle = insetGrad;
+  ctx.fillRect(x, y, w, h);
 
   ctx.restore();
 
+  // LAYER 3: HIGHLIGHT ATAS (::before)
   ctx.save();
-  ctx.strokeStyle = isPink ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.2)';
-  ctx.lineWidth = 1.5;
-  drawRoundedRect(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, r);
-  ctx.stroke();
-  ctx.restore();
-
-  ctx.save();
-  ctx.shadowColor = isPink ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.6)';
-  ctx.shadowBlur = 40;
-  ctx.shadowOffsetY = 12;
   drawRoundedRect(ctx, x, y, w, h, r);
-  ctx.strokeStyle = 'transparent';
+  ctx.clip();
+  const topGrad = ctx.createLinearGradient(x, y, x + w, y);
+  topGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+  topGrad.addColorStop(0.5, isPink ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)');
+  topGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(x, y, w, 1.5);
+  ctx.restore();
+
+  // LAYER 4: HIGHLIGHT KIRI (::after)
+  ctx.save();
+  drawRoundedRect(ctx, x, y, w, h, r);
+  ctx.clip();
+  const leftGrad = ctx.createLinearGradient(x, y, x, y + h);
+  leftGrad.addColorStop(0, isPink ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)');
+  leftGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+  leftGrad.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
+  ctx.fillStyle = leftGrad;
+  ctx.fillRect(x, y, 1.5, h);
+  ctx.restore();
+
+  // BORDER LUAR
+  ctx.save();
+  ctx.strokeStyle = isPink ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)';
+  ctx.lineWidth = 1;
+  drawRoundedRect(ctx, x + 0.5, y + 0.5, w - 1, h - 1, r);
   ctx.stroke();
   ctx.restore();
 }
@@ -299,8 +324,8 @@ export default function IqcTool() {
     const menuY = bubbleY + bubbleH + gapBubbleMenu;
     const menuX = bubbleX;
 
-    // PILL: TRUE GLASS
-    drawTrueGlass(ctx, glassSourceSnapshot, pillX, pillY, pillW, pillH, pillH / 2, isPink, 40, isPink ? 0.45 : 0.35);
+    // PILL: TRUE GLASS (DENGAN 4 LAYER DETAIL)
+    drawTrueGlass(ctx, glassSourceSnapshot, pillX, pillY, pillW, pillH, pillH / 2, isPink, 44, isPink ? 0.45 : 0.35);
 
     ctx.save();
     ctx.fillStyle = '#000000';
@@ -392,7 +417,7 @@ export default function IqcTool() {
     ctx.restore();
 
     // CONTEXT MENU: TRUE GLASS
-    drawTrueGlass(ctx, glassSourceSnapshot, menuX, menuY, menuW, menuH, 22, isPink, 40, isPink ? 0.5 : 0.4);
+    drawTrueGlass(ctx, glassSourceSnapshot, menuX, menuY, menuW, menuH, 22, isPink, 44, isPink ? 0.5 : 0.4);
 
     ctx.save();
     const menuItems = [
