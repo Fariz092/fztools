@@ -53,6 +53,14 @@ export default function FakeCallTool() {
       const dataUrl = await toPng(previewRef.current, {
         quality: 1,
         pixelRatio: 3,
+        cacheBust: true,
+        skipFonts: true,
+        filter: (node) => {
+          if (node?.tagName?.toLowerCase() === 'button') {
+            return false;
+          }
+          return true;
+        },
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
@@ -180,9 +188,9 @@ export default function FakeCallTool() {
               style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
             >
               <div className="relative pt-12 px-6 flex flex-col items-center">
-                <button className="absolute top-8 right-6 text-white/70">
+                <div className="absolute top-8 right-6 text-white/70">
                   <Info className="w-6 h-6" />
-                </button>
+                </div>
                 <div className="mt-8 flex flex-col items-center gap-1 text-center w-full">
                   <span className="text-white/70 text-lg font-medium tracking-wide">
                     {isRunning ? formatTime(callTime) : duration}
@@ -202,39 +210,39 @@ export default function FakeCallTool() {
               <div className="px-8 pb-16 flex flex-col items-center w-full">
                 <div className="grid grid-cols-3 gap-x-6 gap-y-6 max-w-[300px] w-full">
                   <div className="flex flex-col items-center gap-2">
-                    <button className={`w-[76px] h-[76px] rounded-full flex items-center justify-center ${isSpeakerActive ? 'bg-white text-black' : 'bg-white/15 text-white'}`}>
+                    <div className={`w-[76px] h-[76px] rounded-full flex items-center justify-center ${isSpeakerActive ? 'bg-white text-black' : 'bg-white/15 text-white'}`}>
                       <Volume2 className="w-8 h-8" />
-                    </button>
+                    </div>
                     <span className="text-white text-[13px]">Speaker</span>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <button className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white/40">
+                    <div className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white/40">
                       <Video className="w-8 h-8" />
-                    </button>
+                    </div>
                     <span className="text-white text-[13px]">FaceTime</span>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <button className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white">
+                    <div className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white">
                       <MicOff className="w-8 h-8" />
-                    </button>
+                    </div>
                     <span className="text-white text-[13px]">Mute</span>
                   </div>
                   <div className="flex flex-col items-center gap-2 mt-1">
-                    <button className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white">
+                    <div className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white">
                       <UserPlus className="w-8 h-8" />
-                    </button>
+                    </div>
                     <span className="text-white text-[13px]">Add</span>
                   </div>
                   <div className="flex flex-col items-center gap-2 mt-1">
-                    <button className="w-[76px] h-[76px] rounded-full bg-[#eb4e3d] flex items-center justify-center text-white">
+                    <div className="w-[76px] h-[76px] rounded-full bg-[#eb4e3d] flex items-center justify-center text-white">
                       <Phone className="w-8 h-8 rotate-[135deg]" fill="currentColor" />
-                    </button>
+                    </div>
                     <span className="text-white text-[13px]">End</span>
                   </div>
                   <div className="flex flex-col items-center gap-2 mt-1">
-                    <button className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white">
+                    <div className="w-[76px] h-[76px] rounded-full bg-white/15 flex items-center justify-center text-white">
                       <Grid3X3 className="w-8 h-8" />
-                    </button>
+                    </div>
                     <span className="text-white text-[13px]">Keypad</span>
                   </div>
                 </div>
