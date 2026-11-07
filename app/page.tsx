@@ -13,7 +13,7 @@ import SarcasticMemeTool from '@/components/tools/SarcasticMemeTool';
 import TiktokDownloaderTool from '@/components/tools/TiktokDownloaderTool';
 import SubnetCalculator from '@/components/tools/SubnetCalculator';
 import { testConnection } from '@/lib/firebase';
-import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Download, Phone, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
 
@@ -24,18 +24,22 @@ const ROTATING_SUBTITLES = [
   'Buat kode QR vektor, ubah teks menjadi gambar gaya Brat, dan hasilkan roasting AI dengan model Gemini.',
 ];
 
+const ROTATING_PROVIDERS = ['Next.js', 'React', 'Tailwind CSS', 'HTML5', 'CSS3', 'Firebase', 'Vercel'];
+
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [targetIndex, setTargetIndex] = useState<number>(0);
   const [subtitleIndex, setSubtitleIndex] = useState<number>(0);
+  const [providerIndex, setProviderIndex] = useState<number>(0);
 
   useEffect(() => { testConnection(); }, []);
 
   useEffect(() => {
     const t = setInterval(() => setTargetIndex((p) => (p + 1) % ROTATING_TARGETS.length), 3200);
     const s = setInterval(() => setSubtitleIndex((p) => (p + 1) % ROTATING_SUBTITLES.length), 5500);
-    return () => { clearInterval(t); clearInterval(s); };
+    const p = setInterval(() => setProviderIndex((p) => (p + 1) % ROTATING_PROVIDERS.length), 2000);
+    return () => { clearInterval(t); clearInterval(s); clearInterval(p); };
   }, []);
 
   const filteredTools = TOOLS_CONFIG.filter((tool) => {
@@ -44,6 +48,8 @@ export default function HomePage() {
     const q = searchQuery.toLowerCase();
     return tool.name.toLowerCase().includes(q) || tool.badge.toLowerCase().includes(q) || tool.id.toLowerCase().includes(q);
   });
+
+  const MAIN_MENUS = ['iqc', 'iqcv2', 'tiktok', 'subnet'];
 
   return (
     <AppShell activeTab={activeTab} setActiveTab={setActiveTab} searchQuery={searchQuery} setSearchQuery={setSearchQuery}>
@@ -76,12 +82,28 @@ export default function HomePage() {
                   <motion.p key={subtitleIndex} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.7, ease: 'easeInOut' }} className="text-base sm:text-xl text-white/95 leading-relaxed font-medium drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">{ROTATING_SUBTITLES[subtitleIndex]}</motion.p>
                 </AnimatePresence>
               </div>
-              <div className="flex flex-wrap justify-center gap-2.5">
-                {TOOLS_CONFIG.filter(t => t.id !== 'all').map((t, idx) => (
-                  <motion.button key={t.id} onClick={() => setActiveTab(t.id)} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + idx * 0.04 }} whileHover={{ y: -3, scale: 1.02 }} whileTap={{ scale: 0.98 }} className="glass-btn-purple px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-md cursor-pointer border border-white/20">{t.name}</motion.button>
-                ))}
+
+              {/* Animasi Provider Loop */}
+              <div className="flex items-center justify-center gap-3 mb-8">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-white/60 font-bold">Powered by</span>
+                <div className="h-8 overflow-hidden relative min-w-[100px] flex items-center justify-center bg-black/40 px-4 rounded-full border border-white/10 backdrop-blur-xs">
+                  <AnimatePresence mode="wait">
+                    <motion.span 
+                      key={providerIndex} 
+                      initial={{ opacity: 0, y: 10 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      exit={{ opacity: 0, y: -10 }} 
+                      transition={{ duration: 0.3 }} 
+                      className="text-xs font-bold text-indigo-300 tracking-wider"
+                    >
+                      {ROTATING_PROVIDERS[providerIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
               </div>
+
             </div>
+
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-white/20 dark:border-white/10 mb-8">
               <h2 className="text-[10px] font-extrabold uppercase tracking-[0.3em] text-white drop-shadow-md">Direktori Alat</h2>
               <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -116,27 +138,21 @@ export default function HomePage() {
 
             {activeTab === 'all' && !searchQuery && (
               <div className="mb-20">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredTools.map((t) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {filteredTools.filter(t => MAIN_MENUS.includes(t.id)).map((t) => (
                     <motion.button key={t.id} onClick={() => setActiveTab(t.id)} whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} className="modern-glass-card text-left rounded-2xl p-6 group flex flex-col justify-between h-full cursor-pointer">
                       <div>
                         <div className="flex items-center justify-between mb-5">
                           <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center text-zinc-700 dark:text-zinc-200 group-hover:scale-110 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all">
-                            {t.id === 'subnet' ? <Network className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                            {t.id === 'subnet' ? <Network className="w-4 h-4" /> : t.id === 'tiktok' ? <Download className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
                           </div>
                           <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{t.id}</span>
                         </div>
                         <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-2 leading-tight">{t.name}</h3>
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-normal mb-6">
-                          {t.id === 'converter' && 'Konversi cepat format gambar (WEBP, PNG, JPG), encoding Base64, dan manipulasi data JSON/CSV.'}
-                          {t.id === 'brat' && 'Buat teks dan animasi GIF bergaya viral Charli XCX brat dengan kustomisasi presisi.'}
                           {t.id === 'iqc' && 'Kartu kutipan pesan WhatsApp gaya iPhone dengan efek blur glassmorphism yang estetik.'}
                           {t.id === 'iqcv2' && 'Generator kartu media iOS dengan pemotongan foto otomatis dan menu konteks interaktif.'}
                           {t.id === 'subnet' && 'Kalkulator subnet IP (IPv4) untuk menghitung Network ID, Broadcast, dan Host Range secara instan.'}
-                          {t.id === 'qr' && 'Buat kode QR modern untuk URL, teks, atau WiFi dengan desain poster yang bersih dan minimalis.'}
-                          {t.id === 'fakett' && 'Mockup komentar TikTok realistis dengan foto profil kustom dan metrik interaksi viral.'}
-                          {t.id === 'meme' && 'Template meme Indonesia populer untuk pembuatan konten instan.'}
-                          {t.id === 'sarcasm' && 'Generator roasting dan sarkasme bertenaga AI untuk sindiran tajam khas netizen.'}
                           {t.id === 'tiktok' && 'Unduh video TikTok tanpa watermark dan audio MP3 kualitas tinggi secara gratis.'}
                         </p>
                       </div>
