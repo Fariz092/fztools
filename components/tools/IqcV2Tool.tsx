@@ -40,10 +40,11 @@ const PRESET_PHOTOS = [
   },
 ];
 
+// Pake class statis biar Tailwind ga gagal render
 const ASPECT_RATIOS = [
-  { id: '4/5', label: '4:5 (Feed IG)' },
-  { id: '1/1', label: '1:1 (Kotak)' },
-  { id: '9/16', label: '9:16 (Story)' },
+  { id: '4/5', label: '4:5 (Feed)', class: 'aspect-[4/5]' },
+  { id: '1/1', label: '1:1 (Kotak)', class: 'aspect-square' },
+  { id: '9/16', label: '9:16 (Story)', class: 'aspect-[9/16]' },
 ];
 
 export default function IqcV2Tool() {
@@ -113,6 +114,7 @@ export default function IqcV2Tool() {
   };
 
   const isPink = variant === 'iqcpink';
+  const currentAspectClass = ASPECT_RATIOS.find(r => r.id === aspectRatio)?.class || 'aspect-[4/5]';
 
   return (
     <div className="w-full max-w-6xl mx-auto">
@@ -316,16 +318,19 @@ export default function IqcV2Tool() {
               </div>
             </div>
             
-            <div className="relative group bg-zinc-200 dark:bg-zinc-950 p-3 rounded-[52px] shadow-2xl border border-white/10">
-              <div className="absolute inset-0 border-[10px] border-zinc-900 dark:border-zinc-800 rounded-[52px] pointer-events-none z-20" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-zinc-900 dark:bg-zinc-800 rounded-b-2xl z-30" />
+            {/* HP Frame Container (UKURAN SAMA KAYAK IQC V1) */}
+            <div className="w-full max-w-[400px] mx-auto rounded-[2.5rem] bg-zinc-950 p-2 shadow-2xl border border-zinc-800 relative">
+              <div className="absolute top-4 left-6 flex items-center gap-3 z-10">
+                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Pratinjau</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
+              </div>
               
-              <div className="relative rounded-[40px] overflow-hidden w-[320px] sm:w-[380px] bg-zinc-100">
+              <div className="relative rounded-[2rem] overflow-hidden">
                 
-                {/* AREA YANG DI CAPTURE (HTML/CSS VERSION) */}
+                {/* AREA YANG DI CAPTURE (HTML/CSS) */}
                 <div 
                   ref={previewRef}
-                  className={`relative w-full aspect-[9/16] flex flex-col justify-center overflow-hidden ${isPink ? 'bg-vignette-pink' : 'bg-[#0b141a]'}`}
+                  className={`relative w-full aspect-[9/16] flex flex-col justify-center overflow-hidden ${isPink ? 'bg-[#fdf2f8]' : 'bg-[#0b141a]'}`}
                   style={{ 
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                     WebkitFontSmoothing: 'antialiased',
@@ -336,29 +341,29 @@ export default function IqcV2Tool() {
                       <div className={`self-start ${isPink ? 'bg-white/80' : 'bg-[#202c33]'} rounded-2xl rounded-tl-none px-4 py-2 max-w-[70%] shadow-sm`}>
                           <span className={`text-[15px] ${isPink ? 'text-gray-900' : 'text-white'}`}>Kenapa bisa gitu sih?</span>
                       </div>
-                      <div className={`self-end ${isPink ? 'bg-[#dcf8c6]' : 'bg-[#005c4b]'} rounded-2xl rounded-tr-none px-4 py-2 max-w-[70%] shadow-sm mt-1`}>
+                      <div className={`self-end ${isPink ? 'bg-pink-200' : 'bg-[#005c4b]'} rounded-2xl rounded-tr-none px-4 py-2 max-w-[70%] shadow-sm mt-1`}>
                           <span className={`text-[15px] ${isPink ? 'text-gray-900' : 'text-white'}`}>Ya emang dasarnya begitu dari sana 😅</span>
                       </div>
                       <div className={`self-start ${isPink ? 'bg-white/80' : 'bg-[#202c33]'} rounded-2xl rounded-tl-none px-4 py-2 max-w-[70%] shadow-sm mt-2`}>
                           <span className={`text-[15px] ${isPink ? 'text-gray-900' : 'text-white'}`}>Bisa dikirim ulang fotonya?</span>
                       </div>
                       <div className="h-44"></div>
-                      <div className={`self-end ${isPink ? 'bg-[#dcf8c6]' : 'bg-[#005c4b]'} rounded-2xl rounded-tr-none px-4 py-2 max-w-[70%] shadow-sm mt-8`}>
+                      <div className={`self-end ${isPink ? 'bg-pink-200' : 'bg-[#005c4b]'} rounded-2xl rounded-tr-none px-4 py-2 max-w-[70%] shadow-sm mt-8`}>
                           <span className={`text-[15px] ${isPink ? 'text-gray-900' : 'text-white'}`}>Nanti aku kabarin lagi kalau udah siap ya.</span>
                       </div>
                   </div>
 
                   {/* Main Active UI Container */}
-                  <div className="relative w-full max-w-sm flex flex-col items-start gap-2 z-10 px-5">
+                  <div className="relative w-full flex flex-col items-start gap-2 z-10 px-6">
                     
                     {/* 1. Message Bubble */}
-                    <div className="relative mt-0.5">
-                        <div className={`relative ${isPink ? 'bg-white' : 'bg-[#202c33]'} rounded-2xl rounded-tl-none p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col z-20 w-[260px] max-w-full`}>
+                    <div className="relative mt-0.5 w-full max-w-[280px]">
+                        <div className={`relative ${isPink ? 'bg-white' : 'bg-[#202c33]'} rounded-2xl rounded-tl-none p-1 shadow-[0_2px_12px_rgba(0,0,0,0.08)] flex flex-col z-20`}>
                             {/* Ekor Chat */}
                             <div className={`absolute top-0 -left-2 w-3 h-3 ${isPink ? 'bg-white' : 'bg-[#202c33]'}`} style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
                             
                             {/* Media Image */}
-                            <img src={imageSrc} alt="Preview" className={`w-full h-auto rounded-[12px] rounded-tl-[4px] object-cover aspect-[${aspectRatio}] shadow-sm`} />
+                            <img src={imageSrc} alt="Preview" className={`w-full h-auto rounded-[12px] rounded-tl-[4px] object-cover ${currentAspectClass} shadow-sm`} />
                             
                             {/* Caption Text & Timestamp */}
                             <div className="flex flex-col px-1.5 pt-1.5 pb-0.5">
@@ -379,7 +384,7 @@ export default function IqcV2Tool() {
                     </div>
 
                     {/* 2. Context Menu */}
-                    <div className={`mt-0.5 ${isPink ? 'bg-white/40 border-white/60' : 'bg-[#233138]/90 border-white/10'} backdrop-blur-[24px] rounded-[26px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] flex flex-col w-[250px] py-1.5 overflow-hidden z-10 border ring-1 ring-black/5`}>
+                    <div className={`mt-0.5 ${isPink ? 'bg-white/60 border-white/80' : 'bg-[#233138]/90 border-white/10'} backdrop-blur-[24px] rounded-[26px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] flex flex-col w-[250px] py-1.5 overflow-hidden z-10 border ring-1 ring-black/5`}>
                         
                         <button className={`flex items-center gap-4 px-4 py-2.5 transition-colors w-full text-left ${isPink ? 'hover:bg-white/40 text-gray-900' : 'hover:bg-white/5 text-white'}`}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
@@ -411,6 +416,7 @@ export default function IqcV2Tool() {
                   </div>
                 </div>
                 {/* END CAPTURE AREA */}
+
               </div>
             </div>
             
