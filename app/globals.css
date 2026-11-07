@@ -225,3 +225,11 @@ html.dim body {
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/assets/SF-Pro-Display-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

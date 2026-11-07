@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { saveHistoryItem } from '@/lib/history-service';
 import { motion } from 'motion/react';
-import { Download, Check } from 'lucide-react';
+import { Download, Check, Type } from 'lucide-react';
 
 const POPULAR_QUOTES = [
   { text: 'makanya cantik.', time: '18.30' },
@@ -17,6 +17,7 @@ const POPULAR_QUOTES = [
 export default function IqcTool() {
   const [theme, setTheme] = useState<'neutral' | 'pink'>('pink'); 
   const [fontWeight, setFontWeight] = useState<'normal' | 'semibold' | 'bold'>('normal');
+  const [fontFamily, setFontFamily] = useState<'myriad' | 'sfpro'>('myriad');
   const [quoteText, setQuoteText] = useState<string>('makanya cantik.');
   const [timeText, setTimeText] = useState<string>('18.30');
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
@@ -30,7 +31,7 @@ export default function IqcTool() {
       const dataUrl = await toPng(previewRef.current, { quality: 1, pixelRatio: 3 });
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `iqc_${theme}_${fontWeight}_${Date.now()}.png`;
+      a.download = `iqc_${theme}_${fontFamily}_${Date.now()}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -38,7 +39,7 @@ export default function IqcTool() {
       await saveHistoryItem({
         toolType: 'iqc',
         title: `.IQC ${theme.toUpperCase()}: "${quoteText.slice(0, 30)}..."`,
-        details: `Jam: ${timeText} | Font: ${fontWeight}`,
+        details: `Jam: ${timeText} | Font: ${fontFamily === 'sfpro' ? 'SF Pro' : 'Myriad'}`,
         previewUrl: dataUrl,
         fileFormat: 'png',
       });
@@ -61,6 +62,11 @@ export default function IqcTool() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const getFontFamily = () => {
+    if (fontFamily === 'sfpro') return '"SF Pro Display", -apple-system, sans-serif';
+    return '"MyriadPro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   };
 
   return (
@@ -97,6 +103,27 @@ export default function IqcTool() {
                 className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${theme === 'pink' ? 'bg-white dark:bg-zinc-700 shadow-sm text-pink-600 dark:text-pink-400' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
               >
                 Pink
+              </button>
+            </div>
+          </div>
+
+          {/* FONT FAMILY TOGGLE (BARU) */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+              <Type className="w-3 h-3" /> Pilih Jenis Font:
+            </label>
+            <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl w-max">
+              <button 
+                onClick={() => setFontFamily('myriad')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${fontFamily === 'myriad' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                Myriad (Default)
+              </button>
+              <button 
+                onClick={() => setFontFamily('sfpro')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${fontFamily === 'sfpro' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                SF Pro (iOS)
               </button>
             </div>
           </div>
@@ -175,7 +202,7 @@ export default function IqcTool() {
               ref={previewRef}
               className={`relative w-full rounded-[2rem] overflow-hidden aspect-[9/16] flex flex-col justify-center ${theme === 'pink' ? 'bg-vignette-pink' : 'bg-[#EFEFF4]'}`}
               style={{ 
-                fontFamily: '"MyriadPro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontFamily: getFontFamily(),
                 WebkitFontSmoothing: 'antialiased',
                 background: theme === 'pink' ? 'radial-gradient(circle at 45% 45%, #ffffff 0%, #fde4ec 30%, #f9a8d4 70%, #e11d48 135%)' : '#EFEFF4',
                 fontWeight: fontWeight === 'bold' ? 700 : fontWeight === 'semibold' ? 600 : 400
