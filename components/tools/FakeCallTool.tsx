@@ -69,14 +69,9 @@ export default function FakeCallTool() {
       await saveHistoryItem({
         toolType: 'fake-call',
         title: `Fake Call: ${contactName}`,
-        data: {
-          contactName,
-          duration: isRunning ? formatTime(callTime) : duration,
-          photoUrl,
-          isSpeakerActive,
-        },
+        details: `Durasi: ${isRunning ? formatTime(callTime) : duration}`,
         previewUrl: dataUrl,
-        format: 'png',
+        fileFormat: 'png',
       });
     } catch (e) {
       console.error('Download Error:', e);
