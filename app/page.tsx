@@ -12,8 +12,9 @@ import IndoMemeTool from '@/components/tools/IndoMemeTool';
 import SarcasticMemeTool from '@/components/tools/SarcasticMemeTool';
 import TiktokDownloaderTool from '@/components/tools/TiktokDownloaderTool';
 import SubnetCalculator from '@/components/tools/SubnetCalculator';
+import LinkExpanderTool from '@/components/tools/LinkExpanderTool';
 import { testConnection } from '@/lib/firebase';
-import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Download } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Download, Link as LinkIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
 
@@ -83,7 +84,6 @@ export default function HomePage() {
                 </AnimatePresence>
               </div>
 
-              {/* Animasi Provider Loop */}
               <div className="flex items-center justify-center gap-3 mb-8">
                 <span className="text-[10px] uppercase tracking-[0.2em] text-white/60 font-bold">Powered by</span>
                 <div className="h-8 overflow-hidden relative min-w-[100px] flex items-center justify-center bg-black/40 px-4 rounded-full border border-white/10 backdrop-blur-xs">
