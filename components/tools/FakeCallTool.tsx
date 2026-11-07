@@ -13,6 +13,7 @@ export default function FakeCallTool() {
   const previewRef = useRef<HTMLDivElement>(null);
   const [callTime, setCallTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -31,11 +32,23 @@ export default function FakeCallTool() {
   };
 
   const handleDownload = async () => {
-    if (!previewRef.current) return;
+    if (!previewRef.current || isDownloading) return;
+    setIsDownloading(true);
+
     try {
       await document.fonts.ready;
       const { toPng } = await import('html-to-image');
-      const dataUrl = await toPng(previewRef.current, { quality: 1, pixelRatio: 3 });
+
+      const dataUrl = await toPng(previewRef.current, {
+        quality: 1,
+        pixelRatio: 3,
+        cacheBust: true,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+        },
+      });
+
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `fake_call_${Date.now()}.png`;
@@ -46,13 +59,20 @@ export default function FakeCallTool() {
       await saveHistoryItem({
         toolType: 'fake-call',
         title: `Fake Call: ${contactName}`,
-        details: `Durasi: ${isRunning ? formatTime(callTime) : duration}`,
+        data: {
+          contactName,
+          duration: isRunning ? formatTime(callTime) : duration,
+          photoUrl,
+          isSpeakerActive,
+        },
         previewUrl: dataUrl,
-        fileFormat: 'png',
+        format: 'png',
       });
     } catch (e) {
-      console.error(e);
-      alert('Gagal render gambar.');
+      console.error('Download Error:', e);
+      alert('Gagal render gambar. Coba lagi atau ganti foto profil dengan gambar lokal.');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -74,63 +94,64 @@ export default function FakeCallTool() {
         <div className="lg:col-span-5 flex flex-col gap-6">
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Nama / Nomor:</label>
-            <input 
-              type="text" 
-              value={contactName} 
-              onChange={(e) => setContactName(e.target.value)} 
-              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm font-semibold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all" 
+            <input
+              type="text"
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm font-semibold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
             />
           </div>
 
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Durasi Panggilan:</label>
-            <input 
-              type="text" 
-              value={duration} 
-              onChange={(e) => setDuration(e.target.value)} 
-              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm font-bold text-zinc-900 dark:text-white focus:outline-none" 
+            <input
+              type="text"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm font-bold text-zinc-900 dark:text-white focus:outline-none"
             />
           </div>
 
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">URL Foto Profil:</label>
-            <input 
-              type="text" 
-              value={photoUrl} 
-              onChange={(e) => setPhotoUrl(e.target.value)} 
-              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none" 
+            <input
+              type="text"
+              value={photoUrl}
+              onChange={(e) => setPhotoUrl(e.target.value)}
+              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none"
             />
           </div>
 
           <div className="space-y-3">
             <label className="flex items-center gap-3 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={isSpeakerActive} 
+              <input
+                type="checkbox"
+                checked={isSpeakerActive}
                 onChange={(e) => setIsSpeakerActive(e.target.checked)}
-                className="w-4 h-4 rounded text-green-600 focus:ring-green-500" 
+                className="w-4 h-4 rounded text-green-600 focus:ring-green-500"
               />
               <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Speaker Aktif</span>
             </label>
           </div>
 
           <div className="flex flex-col gap-3 pt-6 border-t border-zinc-100 dark:border-zinc-900">
-            <motion.button 
-              onClick={() => { setIsRunning(!isRunning); setCallTime(0); }} 
-              whileHover={{ y: -2 }} 
-              whileTap={{ scale: 0.98 }} 
+            <motion.button
+              onClick={() => { setIsRunning(!isRunning); setCallTime(0); }}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
               className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold text-xs rounded-2xl shadow-xl transition-all cursor-pointer uppercase tracking-[0.2em]"
             >
               {isRunning ? 'Stop Timer' : 'Mulai Timer (Live)'}
             </motion.button>
-            <motion.button 
-              onClick={handleDownload} 
-              whileHover={{ y: -2 }} 
-              whileTap={{ scale: 0.98 }} 
-              className="w-full py-4 bg-green-600 text-white font-bold text-xs rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3 uppercase tracking-[0.2em]"
+            <motion.button
+              onClick={handleDownload}
+              disabled={isDownloading}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-4 bg-green-600 text-white font-bold text-xs rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3 uppercase tracking-[0.2em] disabled:opacity-50"
             >
               <Download className="w-5 h-5" />
-              <span>Simpan Screenshot</span>
+              <span>{isDownloading ? 'Memproses...' : 'Simpan Screenshot'}</span>
             </motion.button>
           </div>
         </div>
@@ -142,7 +163,7 @@ export default function FakeCallTool() {
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             </div>
 
-            <div 
+            <div
               ref={previewRef}
               className="relative w-full rounded-[2rem] overflow-hidden aspect-[9/16] flex flex-col justify-between bg-gradient-to-b from-[#3d463d] to-[#1c1c1c]"
               style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
@@ -163,7 +184,7 @@ export default function FakeCallTool() {
 
               <div className="flex-1 flex items-center justify-center pb-8">
                 <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden shadow-2xl bg-white/10 relative">
-                  <img src={photoUrl} alt="Contact" className="w-full h-full object-cover" />
+                  <img src={photoUrl} alt="Contact" className="w-full h-full object-cover" crossOrigin="anonymous" />
                 </div>
               </div>
 
