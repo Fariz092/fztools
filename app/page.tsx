@@ -13,7 +13,7 @@ import SarcasticMemeTool from '@/components/tools/SarcasticMemeTool';
 import TiktokDownloaderTool from '@/components/tools/TiktokDownloaderTool';
 import SubnetCalculator from '@/components/tools/SubnetCalculator';
 import { testConnection } from '@/lib/firebase';
-import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Download, Phone, Cpu } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
 

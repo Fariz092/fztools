@@ -23,6 +23,7 @@ interface NavbarProps {
 
 export const TOOLS_CONFIG = [
   { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/' },
+  { id: 'ig-note', name: 'IG Note', badge: 'Baru', color: 'bg-pink-50', path: '/ig-note' },
   { id: 'subnet', name: 'Subnet Calculator', badge: 'TJKT', color: 'bg-cyan-50', path: '/subnet' },
   { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter' },
   { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat' },
@@ -77,6 +78,7 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
     if (pathname === '/tentang') return 'TENTANG';
     if (pathname === '/faq') return 'FAQ';
     if (pathname === '/privasi') return 'PRIVASI';
+    if (pathname === '/ig-note') return 'IG NOTE';
     return 'FZ SUITE';
   };
 
