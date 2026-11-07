@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Download, Phone, Volume2, Video, MicOff, UserPlus, Grid3X3, Info } from 'lucide-react';
+import { Download, Phone, Volume2, Video, MicOff, UserPlus, Grid3X3, Info, Upload } from 'lucide-react';
 import { saveHistoryItem } from '@/lib/history-service';
 
 export default function FakeCallTool() {
@@ -31,6 +31,17 @@ export default function FakeCallTool() {
     return `${m}:${s}`;
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDownload = async () => {
     if (!previewRef.current || isDownloading) return;
     setIsDownloading(true);
@@ -42,7 +53,6 @@ export default function FakeCallTool() {
       const dataUrl = await toPng(previewRef.current, {
         quality: 1,
         pixelRatio: 3,
-        cacheBust: true,
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
@@ -70,7 +80,7 @@ export default function FakeCallTool() {
       });
     } catch (e) {
       console.error('Download Error:', e);
-      alert('Gagal render gambar. Coba lagi atau ganti foto profil dengan gambar lokal.');
+      alert('Gagal render gambar. Coba lagi.');
     } finally {
       setIsDownloading(false);
     }
@@ -113,13 +123,19 @@ export default function FakeCallTool() {
           </div>
 
           <div className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">URL Foto Profil:</label>
-            <input
-              type="text"
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none"
-            />
+            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Upload Foto Profil:</label>
+            <div className="flex items-center gap-3">
+              <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl cursor-pointer transition-all border border-zinc-200 dark:border-zinc-700 font-semibold text-xs">
+                <Upload className="w-4 h-4" />
+                <span>Pilih Foto</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -184,7 +200,7 @@ export default function FakeCallTool() {
 
               <div className="flex-1 flex items-center justify-center pb-8">
                 <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden shadow-2xl bg-white/10 relative">
-                  <img src={photoUrl} alt="Contact" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                  <img src={photoUrl} alt="Contact" className="w-full h-full object-cover" />
                 </div>
               </div>
 
