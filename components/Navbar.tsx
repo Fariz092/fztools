@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  User, UserPlus, Menu, X, Home, Wrench, HelpCircle, ShieldCheck, Info, Clock, LogOut, ChevronRight, Layers
+  User, UserPlus, Menu, X, Home, Wrench, HelpCircle, ShieldCheck, Info, Clock, LogOut, ChevronRight, Layers,
+  Link as LinkIcon, Sticker, Network, FileImage, Type, MessageSquare, Image as ImageIcon, QrCode, MessageCircle,
+  Laugh, Sparkles, Download, Instagram
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
@@ -22,19 +24,19 @@ interface NavbarProps {
 }
 
 export const TOOLS_CONFIG = [
-  { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/' },
-  { id: 'link-expander', name: 'Link Expander', badge: 'Baru', color: 'bg-blue-50', path: '/link-expander' },
-  { id: 'ig-note', name: 'IG Note', badge: 'Baru', color: 'bg-pink-50', path: '/ig-note' },
-  { id: 'subnet', name: 'Subnet Calculator', badge: 'TJKT', color: 'bg-cyan-50', path: '/subnet' },
-  { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter' },
-  { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat' },
-  { id: 'iqc', name: 'IQC WhatsApp', badge: 'Teks', color: 'bg-rose-50', path: '/iqc' },
-  { id: 'iqcv2', name: 'IQC V2 Media', badge: 'Foto', color: 'bg-emerald-50', path: '/iqcv2' },
-  { id: 'qr', name: 'Generator QR', badge: 'Bersih', color: 'bg-cyan-50', path: '/qr' },
-  { id: 'fakett', name: 'TikTok Comment', badge: 'Mockup', color: 'bg-amber-50', path: '/fakett' },
-  { id: 'meme', name: 'Meme Indonesia', badge: 'Populer', color: 'bg-orange-50', path: '/meme' },
-  { id: 'sarcasm', name: 'Sarkasme AI', badge: 'Gemini', color: 'bg-rose-100', path: '/sarcastic' },
-  { id: 'tiktok', name: 'TikTok Downloader', badge: 'HD', color: 'bg-violet-50', path: '/tiktok' },
+  { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/', icon: Layers },
+  { id: 'link-expander', name: 'Link Expander', badge: 'Baru', color: 'bg-blue-50', path: '/link-expander', icon: LinkIcon },
+  { id: 'ig-note', name: 'IG Note', badge: 'Baru', color: 'bg-pink-50', path: '/ig-note', icon: Instagram },
+  { id: 'subnet', name: 'Subnet Calculator', badge: 'TJKT', color: 'bg-cyan-50', path: '/subnet', icon: Network },
+  { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter', icon: FileImage },
+  { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat', icon: Sticker },
+  { id: 'iqc', name: 'IQC WhatsApp', badge: 'Teks', color: 'bg-rose-50', path: '/iqc', icon: MessageSquare },
+  { id: 'iqcv2', name: 'IQC V2 Media', badge: 'Foto', color: 'bg-emerald-50', path: '/iqcv2', icon: ImageIcon },
+  { id: 'qr', name: 'Generator QR', badge: 'Bersih', color: 'bg-cyan-50', path: '/qr', icon: QrCode },
+  { id: 'fakett', name: 'TikTok Comment', badge: 'Mockup', color: 'bg-amber-50', path: '/fakett', icon: MessageCircle },
+  { id: 'meme', name: 'Meme Indonesia', badge: 'Populer', color: 'bg-orange-50', path: '/meme', icon: Laugh },
+  { id: 'sarcasm', name: 'Sarkasme AI', badge: 'Gemini', color: 'bg-rose-100', path: '/sarcastic', icon: Sparkles },
+  { id: 'tiktok', name: 'TikTok Downloader', badge: 'HD', color: 'bg-violet-50', path: '/tiktok', icon: Download },
 ];
 
 export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarProps) {
@@ -208,12 +210,15 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
                     <AnimatePresence>
                       {isToolsExpanded && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden pl-4 mt-1 space-y-1">
-                          {TOOLS_CONFIG.filter((t) => t.id !== 'all').map((t) => (
-                            <Link key={t.id} href={t.path} onClick={() => { if (setActiveTab) setActiveTab(t.id); closeSidebar(); }} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${pathname === t.path ? 'glass-btn-purple text-white font-semibold shadow-md' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}>
-                              <div className={`w-1.5 h-1.5 rounded-full ${pathname === t.path ? 'bg-white' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
-                              <span className="text-[11px] font-bold uppercase tracking-tight">{t.name}</span>
-                            </Link>
-                          ))}
+                          {TOOLS_CONFIG.filter((t) => t.id !== 'all').map((t) => {
+                            const Icon = t.icon;
+                            return (
+                              <Link key={t.id} href={t.path} onClick={() => { if (setActiveTab) setActiveTab(t.id); closeSidebar(); }} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${pathname === t.path ? 'glass-btn-purple text-white font-semibold shadow-md' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}>
+                                <Icon className={`w-4 h-4 ${pathname === t.path ? 'text-white' : 'text-zinc-400'}`} />
+                                <span className="text-[11px] font-bold uppercase tracking-tight">{t.name}</span>
+                              </Link>
+                            );
+                          })}
                         </motion.div>
                       )}
                     </AnimatePresence>

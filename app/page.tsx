@@ -14,7 +14,7 @@ import TiktokDownloaderTool from '@/components/tools/TiktokDownloaderTool';
 import SubnetCalculator from '@/components/tools/SubnetCalculator';
 import LinkExpanderTool from '@/components/tools/LinkExpanderTool';
 import { testConnection } from '@/lib/firebase';
-import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Download, Link as LinkIcon } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Download, Link as LinkIcon, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
 
@@ -139,29 +139,32 @@ export default function HomePage() {
             {activeTab === 'all' && !searchQuery && (
               <div className="mb-20">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {filteredTools.filter(t => MAIN_MENUS.includes(t.id)).map((t) => (
-                    <motion.button key={t.id} onClick={() => setActiveTab(t.id)} whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} className="modern-glass-card text-left rounded-2xl p-6 group flex flex-col justify-between h-full cursor-pointer">
-                      <div>
-                        <div className="flex items-center justify-between mb-5">
-                          <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center text-zinc-700 dark:text-zinc-200 group-hover:scale-110 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all">
-                            {t.id === 'subnet' ? <Network className="w-4 h-4" /> : t.id === 'tiktok' ? <Download className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                  {filteredTools.filter(t => MAIN_MENUS.includes(t.id)).map((t) => {
+                    const Icon = t.icon;
+                    return (
+                      <motion.button key={t.id} onClick={() => setActiveTab(t.id)} whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} className="modern-glass-card text-left rounded-2xl p-6 group flex flex-col justify-between h-full cursor-pointer">
+                        <div>
+                          <div className="flex items-center justify-between mb-5">
+                            <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center text-zinc-700 dark:text-zinc-200 group-hover:scale-110 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all">
+                              <Icon className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{t.id}</span>
                           </div>
-                          <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{t.id}</span>
+                          <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-2 leading-tight">{t.name}</h3>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-normal mb-6">
+                            {t.id === 'iqc' && 'Kartu kutipan pesan WhatsApp gaya iPhone dengan efek blur glassmorphism yang estetik.'}
+                            {t.id === 'iqcv2' && 'Generator kartu media iOS dengan pemotongan foto otomatis dan menu konteks interaktif.'}
+                            {t.id === 'subnet' && 'Kalkulator subnet IP (IPv4) untuk menghitung Network ID, Broadcast, dan Host Range secara instan.'}
+                            {t.id === 'tiktok' && 'Unduh video TikTok tanpa watermark dan audio MP3 kualitas tinggi secara gratis.'}
+                          </p>
                         </div>
-                        <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-2 leading-tight">{t.name}</h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-normal mb-6">
-                          {t.id === 'iqc' && 'Kartu kutipan pesan WhatsApp gaya iPhone dengan efek blur glassmorphism yang estetik.'}
-                          {t.id === 'iqcv2' && 'Generator kartu media iOS dengan pemotongan foto otomatis dan menu konteks interaktif.'}
-                          {t.id === 'subnet' && 'Kalkulator subnet IP (IPv4) untuk menghitung Network ID, Broadcast, dan Host Range secara instan.'}
-                          {t.id === 'tiktok' && 'Unduh video TikTok tanpa watermark dan audio MP3 kualitas tinggi secara gratis.'}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800/60">
-                        <span className="text-[10px] font-bold text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors uppercase tracking-widest">Buka Alat</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </motion.button>
-                  ))}
+                        <div className="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800/60">
+                          <span className="text-[10px] font-bold text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors uppercase tracking-widest">Buka Alat</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                        </div>
+                      </motion.button>
+                    );
+                  })}
                 </div>
               </div>
             )}
