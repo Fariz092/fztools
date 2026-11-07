@@ -72,6 +72,10 @@ export default function Navbar({
     return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
   }, []);
 
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
+
   const handleLogout = async () => {
     const confirmed = await brutalistConfirm(
       'KELUAR DARI SESI',
@@ -100,6 +104,7 @@ export default function Navbar({
     if (pathname === '/tentang') return 'TENTANG';
     if (pathname === '/faq') return 'FAQ';
     if (pathname === '/privasi') return 'PRIVASI';
+    if (pathname === '/fake-call') return 'FAKE CALL';
     return 'FZ SUITE';
   };
 
@@ -217,7 +222,15 @@ export default function Navbar({
 
                 <div className="space-y-1">
                   <p className="px-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-2">Navigasi Utama</p>
-                  <Link href="/fake-call" className="flex items-center gap-3 p-3 rounded-xl bg-red-500 text-white font-bold text-xs">TES123</Link>
+                  
+                  <Link href="/fake-call" onClick={() => setIsSidebarOpen(false)} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/fake-call' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
+                    <div className="flex items-center gap-3">
+                      <ShieldCheck className={`w-4 h-4 transition-colors ${pathname === '/fake-call' ? 'text-green-500' : 'group-hover:text-green-500'}`} />
+                      <span className="text-xs font-bold uppercase tracking-tight">Fake Call</span>
+                    </div>
+                    {pathname === '/fake-call' && <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
+                  </Link>
+
                   <Link href="/" onClick={() => setIsSidebarOpen(false)} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
                     <div className="flex items-center gap-3">
                       <Home className={`w-4 h-4 transition-colors ${pathname === '/' ? 'text-indigo-500' : 'group-hover:text-indigo-500'}`} />
@@ -238,7 +251,7 @@ export default function Navbar({
                     <AnimatePresence>
                       {isToolsExpanded && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden pl-4 mt-1 space-y-1">
-                          {TOOLS_CONFIG.filter((t) => t.id !== 'all').map((t) => (
+                          {TOOLS_CONFIG.filter((t) => t.id !== 'all' && t.id !== 'fake-call').map((t) => (
                             <Link key={t.id} href={t.path} onClick={() => { if (setActiveTab) setActiveTab(t.id); setIsSidebarOpen(false); }} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${pathname === t.path ? 'glass-btn-purple text-white font-semibold shadow-md' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}>
                               <div className={`w-1.5 h-1.5 rounded-full ${pathname === t.path ? 'bg-white' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
                               <span className="text-[11px] font-bold uppercase tracking-tight">{t.name}</span>
