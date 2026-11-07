@@ -105,13 +105,7 @@ export default function IgNoteTool() {
           
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Teks Note:</label>
-            <textarea 
-              rows={3} 
-              value={noteText} 
-              onChange={(e) => setNoteText(e.target.value)} 
-              placeholder="Tulis note..." 
-              className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-4 text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all resize-none" 
-            />
+            <textarea rows={3} value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="Tulis note..." className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-5 py-4 text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all resize-none" />
           </div>
 
           <div className="space-y-3">
@@ -129,9 +123,7 @@ export default function IgNoteTool() {
           </div>
 
           <div className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-              <Type className="w-3 h-3" /> Pilih Jenis Font:
-            </label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5"><Type className="w-3 h-3" /> Pilih Jenis Font:</label>
             <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl w-max">
               <button onClick={() => setFontFamily('myriad')} className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${fontFamily === 'myriad' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>Myriad (Default)</button>
               <button onClick={() => setFontFamily('sfpro')} className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${fontFamily === 'sfpro' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}>SF Pro (iOS)</button>
@@ -152,11 +144,7 @@ export default function IgNoteTool() {
 
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="w-full max-w-[400px] mx-auto">
-            <div 
-              ref={previewRef}
-              className="relative w-full aspect-[9/16] flex flex-col items-center justify-center overflow-hidden bg-[#0f0f12]"
-              style={{ fontFamily: getFontFamily() }}
-            >
+            <div ref={previewRef} className="relative w-full aspect-[9/16] flex flex-col items-center justify-center overflow-hidden bg-[#0f0f12]" style={{ fontFamily: getFontFamily() }}>
               <div className="flex flex-col items-center relative">
                   <div className="relative w-full flex justify-center mb-[-5px] z-20">
                       <div className="relative bg-[#2a2b30] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.4)] rounded-[22px] px-5 py-3">
@@ -185,15 +173,9 @@ export default function IgNoteTool() {
                   </div>
 
                   <div className="flex items-center gap-4 mt-2">
-                      <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center">
-                          <svg className="w-6 h-6 text-[#ff3b5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-                      </div>
-                      <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center">
-                          <svg className="w-6 h-6 text-[#a259ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                      </div>
-                      <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center">
-                          <svg className="w-6 h-6 text-[#ff3b5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                      </div>
+                      <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center"><svg className="w-6 h-6 text-[#ff3b5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></div>
+                      <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center"><svg className="w-6 h-6 text-[#a259ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
+                      <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center"><svg className="w-6 h-6 text-[#ff3b5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>
                   </div>
               </div>
             </div>
