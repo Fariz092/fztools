@@ -27,6 +27,7 @@ export const TOOLS_CONFIG = [
   { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/', icon: Layers },
   { id: 'link-expander', name: 'Link Expander', badge: 'Baru', color: 'bg-blue-50', path: '/link-expander', icon: LinkIcon },
   { id: 'ig-note', name: 'IG Note', badge: 'Baru', color: 'bg-pink-50', path: '/ig-note', icon: Instagram },
+  { id: 'iqc-tiktok', name: 'IQC TikTok', badge: 'Baru', color: 'bg-zinc-200', path: '/iqc-tiktok', icon: MessageSquare },
   { id: 'subnet', name: 'Subnet Calculator', badge: 'TJKT', color: 'bg-cyan-50', path: '/subnet', icon: Network },
   { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter', icon: FileImage },
   { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat', icon: Sticker },
@@ -68,6 +69,7 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
   const getCurrentSectionTitle = () => {
     if (pathname === '/link-expander') return 'LINK EXPANDER';
     if (pathname === '/ig-note') return 'IG NOTE';
+    if (pathname === '/iqc-tiktok') return 'IQC TIKTOK';
     if (pathname === '/subnet') return 'SUBNET';
     if (pathname === '/iqcv2') return 'IQC MEDIA';
     if (pathname === '/iqc' || pathname === '/iqctool') return 'IQC TEKS';
