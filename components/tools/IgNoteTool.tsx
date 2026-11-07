@@ -13,7 +13,6 @@ export default function IgNoteTool() {
   const [copiedSuccess, setCopiedSuccess] = useState(false);
   
   const previewRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -104,7 +103,6 @@ export default function IgNoteTool() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-5 flex flex-col gap-6">
           
-          {/* Note Text Input */}
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Teks Note:</label>
             <textarea 
@@ -116,7 +114,6 @@ export default function IgNoteTool() {
             />
           </div>
 
-          {/* Profile Photo Upload */}
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Foto Profil:</label>
             <div className="flex items-center gap-3">
@@ -131,7 +128,6 @@ export default function IgNoteTool() {
             </div>
           </div>
 
-          {/* Font Selection */}
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
               <Type className="w-3 h-3" /> Pilih Jenis Font:
@@ -142,7 +138,6 @@ export default function IgNoteTool() {
             </div>
           </div>
 
-          {/* Buttons */}
           <div className="flex flex-col gap-3 pt-6 border-t border-zinc-100 dark:border-zinc-900">
             <motion.button onClick={handleDownload} disabled={isDownloading} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="w-full py-4 bg-pink-600 text-white font-bold text-xs rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3 uppercase tracking-[0.2em] disabled:opacity-50">
               <Download className="w-5 h-5" />
@@ -155,25 +150,17 @@ export default function IgNoteTool() {
           </div>
         </div>
 
-        {/* Preview Area */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="w-full max-w-[400px] mx-auto">
-            
-            {/* AREA YANG DI CAPTURE */}
             <div 
               ref={previewRef}
               className="relative w-full aspect-[9/16] flex flex-col items-center justify-center overflow-hidden bg-[#0f0f12]"
               style={{ fontFamily: getFontFamily() }}
             >
-              {/* Main Container */}
               <div className="flex flex-col items-center relative">
-                  
-                  {/* Chat Bubble */}
                   <div className="relative w-full flex justify-center mb-[-5px] z-20">
                       <div className="relative bg-[#2a2b30] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.4)] rounded-[22px] px-5 py-3">
-                          {/* Custom Tail */}
                           <div className="absolute bottom-[-6px] left-[22px] w-5 h-5 bg-[#2a2b30] rounded-br-[6px] -z-10" style={{ transform: 'skew(-20deg) rotate(45deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.2)' }}></div>
-                          
                           <p className="text-[#f1f1f1] text-[17px] font-medium leading-[1.3] text-center whitespace-pre-wrap">
                               {noteText}
                               <span className="inline-block w-[2px] h-[1.1em] bg-[#4b89ff] align-middle ml-[2px] mb-[2px] animate-[blink_1s_step-end_infinite]"></span>
@@ -181,20 +168,15 @@ export default function IgNoteTool() {
                       </div>
                   </div>
 
-                  {/* Profile Picture Container */}
                   <div className="relative z-10 mb-6 mt-1">
-                      {/* Tiny Black Dot Indicator */}
                       <div className="absolute top-[18px] left-[4px] w-2.5 h-2.5 bg-[#0f0f12] rounded-full z-30 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
                           <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
                       </div>
-
-                      {/* Avatar Circle */}
                       <div className="w-[140px] h-[140px] bg-[#f3f4f6] rounded-full overflow-hidden flex flex-col items-center justify-end relative shadow-2xl">
                           {photoUrl ? (
                             <img src={photoUrl} alt="Profile" className="w-full h-full object-cover" />
                           ) : (
                             <>
-                              {/* Default Silhouette */}
                               <div className="w-[52px] h-[52px] bg-[#8c929d] rounded-full absolute top-[30px]"></div>
                               <div className="w-[115px] h-[55px] bg-[#8c929d] rounded-t-[55px] mb-[-5px]"></div>
                             </>
@@ -202,28 +184,19 @@ export default function IgNoteTool() {
                       </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex items-center gap-4 mt-2">
-                      {/* Music Button */}
                       <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center">
                           <svg className="w-6 h-6 text-[#ff3b5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
                       </div>
-
-                      {/* Location Button */}
                       <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center">
                           <svg className="w-6 h-6 text-[#a259ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                       </div>
-
-                      {/* Camera Button */}
                       <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center">
                           <svg className="w-6 h-6 text-[#ff3b5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                       </div>
                   </div>
-
               </div>
             </div>
-            {/* END AREA CAPTURE */}
-
           </div>
         </div>
       </div>
