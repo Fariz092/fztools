@@ -72,9 +72,7 @@ export default function Navbar({
     return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
   }, []);
 
-  useEffect(() => {
-    setIsSidebarOpen(false);
-  }, [pathname]);
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   const handleLogout = async () => {
     const confirmed = await brutalistConfirm(
@@ -84,7 +82,7 @@ export default function Navbar({
     if (confirmed) {
       clearUserSession();
       brutalistToast('Sesi akun berhasil dihapus.', 'info');
-      setIsSidebarOpen(false);
+      closeSidebar();
     }
   };
 
@@ -129,7 +127,7 @@ export default function Navbar({
               <ThemeSwitcher />
               {userSession ? (
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href="/akun" className="flex items-center gap-2 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15" title={`Akun: @${userSession.username}`}>
+                  <Link href="/akun" onClick={closeSidebar} className="flex items-center gap-2 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15" title={`Akun: @${userSession.username}`}>
                     <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
                       <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
@@ -145,7 +143,7 @@ export default function Navbar({
                 </motion.div>
               ) : (
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href="/daftar" className="flex items-center gap-1.5 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15">
+                  <Link href="/daftar" onClick={closeSidebar} className="flex items-center gap-1.5 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15">
                     <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
                       <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white">
@@ -168,14 +166,14 @@ export default function Navbar({
       <AnimatePresence>
         {isSidebarOpen && (
           <div className="fixed inset-0 z-[100] flex justify-end">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeSidebar} className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity" />
             <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 26, stiffness: 220 }} className="relative z-10 w-full max-w-xs sm:max-w-sm bg-white/80 dark:bg-zinc-950/85 backdrop-blur-3xl border-l border-white/20 dark:border-white/10 h-full shadow-[-20px_0_60px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden will-change-transform transform-gpu">
               <div className="p-5 flex items-center justify-between border-b border-zinc-200/40 dark:border-zinc-800/40">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full glass-circle flex items-center justify-center text-zinc-900 dark:text-white"><Layers className="w-4 h-4" /></div>
                   <span className="font-bold text-xs uppercase text-zinc-900 dark:text-white tracking-widest">Menu Aplikasi</span>
                 </div>
-                <button onClick={() => setIsSidebarOpen(false)} className="w-8 h-8 glass-circle text-zinc-400 rounded-full flex items-center justify-center hover:text-rose-500 transition-all cursor-pointer"><X className="w-4 h-4" /></button>
+                <button onClick={closeSidebar} className="w-8 h-8 glass-circle text-zinc-400 rounded-full flex items-center justify-center hover:text-rose-500 transition-all cursor-pointer"><X className="w-4 h-4" /></button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-5">
@@ -201,7 +199,7 @@ export default function Navbar({
                         </div>
                         <button onClick={handleLogout} className="p-2 glass-circle text-rose-500 rounded-xl hover:scale-105 transition-all cursor-pointer shadow-xs" title="Keluar Akun"><LogOut className="w-4 h-4" /></button>
                       </div>
-                      <Link href="/akun" onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center justify-center py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-[10px] uppercase tracking-wider hover:opacity-90 transition-opacity shadow-sm">Lihat Profil</Link>
+                      <Link href="/akun" onClick={closeSidebar} className="w-full flex items-center justify-center py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-[10px] uppercase tracking-wider hover:opacity-90 transition-opacity shadow-sm">Lihat Profil</Link>
                     </div>
                   ) : (
                     <div className="p-4 rounded-2xl modern-glass-card">
@@ -215,7 +213,7 @@ export default function Navbar({
                           <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Daftar instan untuk menyimpan sesi</p>
                         </div>
                       </div>
-                      <Link href="/daftar" onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center justify-center py-2.5 glass-btn-purple rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-md">Mulai Sekarang</Link>
+                      <Link href="/daftar" onClick={closeSidebar} className="w-full flex items-center justify-center py-2.5 glass-btn-purple rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-md">Mulai Sekarang</Link>
                     </div>
                   )}
                 </div>
@@ -223,7 +221,7 @@ export default function Navbar({
                 <div className="space-y-1">
                   <p className="px-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-2">Navigasi Utama</p>
                   
-                  <Link href="/fake-call" onClick={() => setIsSidebarOpen(false)} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/fake-call' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
+                  <Link href="/fake-call" onClick={closeSidebar} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/fake-call' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
                     <div className="flex items-center gap-3">
                       <ShieldCheck className={`w-4 h-4 transition-colors ${pathname === '/fake-call' ? 'text-green-500' : 'group-hover:text-green-500'}`} />
                       <span className="text-xs font-bold uppercase tracking-tight">Fake Call</span>
@@ -231,7 +229,7 @@ export default function Navbar({
                     {pathname === '/fake-call' && <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
                   </Link>
 
-                  <Link href="/" onClick={() => setIsSidebarOpen(false)} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
+                  <Link href="/" onClick={closeSidebar} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
                     <div className="flex items-center gap-3">
                       <Home className={`w-4 h-4 transition-colors ${pathname === '/' ? 'text-indigo-500' : 'group-hover:text-indigo-500'}`} />
                       <span className="text-xs font-bold uppercase tracking-tight">Beranda</span>
@@ -252,7 +250,7 @@ export default function Navbar({
                       {isToolsExpanded && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden pl-4 mt-1 space-y-1">
                           {TOOLS_CONFIG.filter((t) => t.id !== 'all' && t.id !== 'fake-call').map((t) => (
-                            <Link key={t.id} href={t.path} onClick={() => { if (setActiveTab) setActiveTab(t.id); setIsSidebarOpen(false); }} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${pathname === t.path ? 'glass-btn-purple text-white font-semibold shadow-md' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}>
+                            <Link key={t.id} href={t.path} onClick={() => { if (setActiveTab) setActiveTab(t.id); closeSidebar(); }} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${pathname === t.path ? 'glass-btn-purple text-white font-semibold shadow-md' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}>
                               <div className={`w-1.5 h-1.5 rounded-full ${pathname === t.path ? 'bg-white' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
                               <span className="text-[11px] font-bold uppercase tracking-tight">{t.name}</span>
                             </Link>
@@ -262,7 +260,7 @@ export default function Navbar({
                     </AnimatePresence>
                   </div>
 
-                  <Link href="/akun" onClick={() => setIsSidebarOpen(false)} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/akun' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
+                  <Link href="/akun" onClick={closeSidebar} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${pathname === '/akun' ? 'glass-circle text-zinc-900 dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'}`}>
                     <div className="flex items-center gap-3">
                       <User className={`w-4 h-4 transition-colors ${pathname === '/akun' ? 'text-indigo-500' : 'group-hover:text-indigo-500'}`} />
                       <span className="text-xs font-bold uppercase tracking-tight">Profil Akun</span>
@@ -271,22 +269,22 @@ export default function Navbar({
 
                   <div className="pt-4 pb-2">
                     <p className="px-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-2">Informasi</p>
-                    <Link href="/tentang" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 p-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white transition-all group">
+                    <Link href="/tentang" onClick={closeSidebar} className="flex items-center gap-3 p-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white transition-all group">
                       <Info className="w-4 h-4 group-hover:text-indigo-500" />
                       <span className="text-xs font-bold uppercase tracking-tight">Tentang</span>
                     </Link>
-                    <Link href="/faq" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 p-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white transition-all group">
+                    <Link href="/faq" onClick={closeSidebar} className="flex items-center gap-3 p-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white transition-all group">
                       <HelpCircle className="w-4 h-4 group-hover:text-indigo-500" />
                       <span className="text-xs font-bold uppercase tracking-tight">FAQ</span>
                     </Link>
-                    <Link href="/privasi" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 p-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white transition-all group">
+                    <Link href="/privasi" onClick={closeSidebar} className="flex items-center gap-3 p-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white transition-all group">
                       <ShieldCheck className="w-4 h-4 group-hover:text-indigo-500" />
                       <span className="text-xs font-bold uppercase tracking-tight">Privasi</span>
                     </Link>
                   </div>
 
                   {openHistory && (
-                    <button onClick={() => { setIsSidebarOpen(false); openHistory(); }} className="w-full flex items-center justify-between p-3 rounded-xl glass-btn-teal transition-all group cursor-pointer mt-3">
+                    <button onClick={() => { closeSidebar(); openHistory(); }} className="w-full flex items-center justify-between p-3 rounded-xl glass-btn-teal transition-all group cursor-pointer mt-3">
                       <div className="flex items-center gap-3">
                         <Clock className="w-4 h-4 text-white" />
                         <span className="text-xs font-bold uppercase tracking-tight text-white">Riwayat Log</span>
