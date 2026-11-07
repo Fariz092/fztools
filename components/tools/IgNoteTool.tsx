@@ -83,6 +83,8 @@ export default function IgNoteTool() {
     }
   };
 
+  const lines = noteText.split('\n');
+
   return (
     <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-6 sm:p-10 mb-12 shadow-xl border border-zinc-200/80 dark:border-zinc-800/80">
       <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-zinc-100 dark:border-zinc-900 mb-10">
@@ -145,21 +147,34 @@ export default function IgNoteTool() {
         <div className="lg:col-span-7 flex flex-col gap-6">
           <div className="w-full max-w-[400px] mx-auto">
             <div ref={previewRef} className="relative w-full aspect-[9/16] flex flex-col items-center justify-center overflow-hidden bg-[#0f0f12]" style={{ fontFamily: getFontFamily() }}>
-              <div className="flex flex-col items-center relative">
+              
+              <div className="flex flex-col items-center relative w-full px-6">
+                  
+                  {/* Chat Bubble (Auto Width) */}
                   <div className="relative w-full flex justify-center mb-[-5px] z-20">
-                      <div className="relative bg-[#2a2b30] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.4)] rounded-[22px] px-5 py-3">
+                      {/* max-w-max bikin buble ngikutin panjang teks, px-5 py-3 buat padding */}
+                      <div className="relative bg-[#2a2b30] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.4)] rounded-[22px] px-5 py-3 max-w-max">
                           <div className="absolute bottom-[-6px] left-[22px] w-5 h-5 bg-[#2a2b30] rounded-br-[6px] -z-10" style={{ transform: 'skew(-20deg) rotate(45deg)', boxShadow: '2px 2px 5px rgba(0,0,0,0.2)' }}></div>
-                          <p className="text-[#f1f1f1] text-[17px] font-medium leading-[1.3] text-center whitespace-pre-wrap">
-                              {noteText}
-                              <span className="inline-block w-[2px] h-[1.1em] bg-[#4b89ff] align-middle ml-[2px] mb-[2px] animate-[blink_1s_step-end_infinite]"></span>
-                          </p>
+                          
+                          <div className="text-[#f1f1f1] text-[17px] font-medium leading-[1.3] text-center flex flex-col items-center">
+                              {lines.map((line, i) => (
+                                <div key={i} className="flex items-center justify-center">
+                                  <span>{line}</span>
+                                  {i === lines.length - 1 && (
+                                    <span className="inline-block w-[2px] h-[1.1em] bg-[#4b89ff] align-middle ml-[2px] mb-[2px] animate-[blink_1s_step-end_infinite]"></span>
+                                  )}
+                                </div>
+                              ))}
+                          </div>
                       </div>
                   </div>
 
+                  {/* Profile Picture Container */}
                   <div className="relative z-10 mb-6 mt-1">
-                      <div className="absolute top-[18px] left-[4px] w-2.5 h-2.5 bg-[#0f0f12] rounded-full z-30 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                      <div className="absolute top-[12px] left-0 w-2.5 h-2.5 bg-[#0f0f12] rounded-full z-30 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
                           <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
                       </div>
+
                       <div className="w-[140px] h-[140px] bg-[#f3f4f6] rounded-full overflow-hidden flex flex-col items-center justify-end relative shadow-2xl">
                           {photoUrl ? (
                             <img src={photoUrl} alt="Profile" className="w-full h-full object-cover" />
@@ -172,6 +187,7 @@ export default function IgNoteTool() {
                       </div>
                   </div>
 
+                  {/* Action Buttons */}
                   <div className="flex items-center gap-4 mt-2">
                       <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center"><svg className="w-6 h-6 text-[#ff3b5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></div>
                       <div className="w-[52px] h-[44px] rounded-[18px] border border-[#2a2b30] bg-[#141519] flex items-center justify-center"><svg className="w-6 h-6 text-[#a259ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
