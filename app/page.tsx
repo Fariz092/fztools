@@ -12,8 +12,9 @@ import IndoMemeTool from '@/components/tools/IndoMemeTool';
 import SarcasticMemeTool from '@/components/tools/SarcasticMemeTool';
 import TiktokDownloaderTool from '@/components/tools/TiktokDownloaderTool';
 import SubnetCalculator from '@/components/tools/SubnetCalculator';
+import FakeCallTool from '@/components/tools/FakeCallTool';
 import { testConnection } from '@/lib/firebase';
-import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, Layers, Search, Network, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from '@/components/AppShell';
 
@@ -31,6 +32,7 @@ export default function HomePage() {
   const [subtitleIndex, setSubtitleIndex] = useState<number>(0);
 
   useEffect(() => { testConnection(); }, []);
+
   useEffect(() => {
     const t = setInterval(() => setTargetIndex((p) => (p + 1) % ROTATING_TARGETS.length), 3200);
     const s = setInterval(() => setSubtitleIndex((p) => (p + 1) % ROTATING_SUBTITLES.length), 5500);
@@ -81,7 +83,6 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-white/20 dark:border-white/10 mb-8">
               <h2 className="text-[10px] font-extrabold uppercase tracking-[0.3em] text-white drop-shadow-md">Direktori Alat</h2>
               <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -122,7 +123,7 @@ export default function HomePage() {
                       <div>
                         <div className="flex items-center justify-between mb-5">
                           <div className="w-10 h-10 rounded-xl glass-circle flex items-center justify-center text-zinc-700 dark:text-zinc-200 group-hover:scale-110 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all">
-                            {t.id === 'subnet' ? <Network className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                            {t.id === 'subnet' ? <Network className="w-4 h-4" /> : t.id === 'fake-call' ? <Phone className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
                           </div>
                           <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{t.id}</span>
                         </div>
@@ -133,6 +134,7 @@ export default function HomePage() {
                           {t.id === 'iqc' && 'Kartu kutipan pesan WhatsApp gaya iPhone dengan efek blur glassmorphism yang estetik.'}
                           {t.id === 'iqcv2' && 'Generator kartu media iOS dengan pemotongan foto otomatis dan menu konteks interaktif.'}
                           {t.id === 'subnet' && 'Kalkulator subnet IP (IPv4) untuk menghitung Network ID, Broadcast, dan Host Range secara instan.'}
+                          {t.id === 'fake-call' && 'Buat screenshot panggilan masuk iOS yang realistis dengan nama, durasi, dan foto profil kustom.'}
                           {t.id === 'qr' && 'Buat kode QR modern untuk URL, teks, atau WiFi dengan desain poster yang bersih dan minimalis.'}
                           {t.id === 'fakett' && 'Mockup komentar TikTok realistis dengan foto profil kustom dan metrik interaksi viral.'}
                           {t.id === 'meme' && 'Template meme Indonesia populer untuk pembuatan konten instan.'}
@@ -160,6 +162,7 @@ export default function HomePage() {
             {activeTab === 'sarcasm' && <SarcasticMemeTool />}
             {activeTab === 'tiktok' && <TiktokDownloaderTool />}
             {activeTab === 'subnet' && <SubnetCalculator />}
+            {activeTab === 'fake-call' && <FakeCallTool />}
           </motion.div>
         </AnimatePresence>
       </section>
