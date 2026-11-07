@@ -40,7 +40,6 @@ interface NavbarProps {
 
 export const TOOLS_CONFIG = [
   { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/' },
-  { id: 'fake-call', name: 'Fake Call', badge: 'Baru', color: 'bg-green-50', path: '/fake-call' },
   { id: 'subnet', name: 'Subnet Calculator', badge: 'TJKT', color: 'bg-cyan-50', path: '/subnet' },
   { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter' },
   { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat' },
@@ -102,7 +101,6 @@ export default function Navbar({
     if (pathname === '/tentang') return 'TENTANG';
     if (pathname === '/faq') return 'FAQ';
     if (pathname === '/privasi') return 'PRIVASI';
-    if (pathname === '/fake-call') return 'FAKE CALL';
     return 'FZ SUITE';
   };
 
