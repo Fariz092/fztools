@@ -4,28 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  User,
-  UserPlus,
-  Menu,
-  X,
-  Home,
-  Wrench,
-  HelpCircle,
-  ShieldCheck,
-  Info,
-  Clock,
-  LogOut,
-  ChevronRight,
-  Layers,
+  User, UserPlus, Menu, X, Home, Wrench, HelpCircle, ShieldCheck, Info, Clock, LogOut, ChevronRight, Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
-import {
-  UserSession,
-  getStoredUserSession,
-  clearUserSession,
-  AUTH_CHANGE_EVENT,
-} from '@/lib/auth-session';
+import { UserSession, getStoredUserSession, clearUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { brutalistToast, brutalistConfirm } from '@/lib/popup-service';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { LiquidGlassPill } from '@/components/ui/liquid-glass-pill';
@@ -40,6 +23,7 @@ interface NavbarProps {
 
 export const TOOLS_CONFIG = [
   { id: 'all', name: 'Semua Alat', badge: 'Suite', color: 'bg-zinc-100', path: '/' },
+  { id: 'ig-note', name: 'IG Note', badge: 'Baru', color: 'bg-pink-50', path: '/ig-note' },
   { id: 'subnet', name: 'Subnet Calculator', badge: 'TJKT', color: 'bg-cyan-50', path: '/subnet' },
   { id: 'converter', name: 'Konverter File', badge: 'Cepat', color: 'bg-indigo-50', path: '/converter' },
   { id: 'brat', name: 'Brat Generator', badge: 'Viral', color: 'bg-lime-50', path: '/brat' },
@@ -52,11 +36,7 @@ export const TOOLS_CONFIG = [
   { id: 'tiktok', name: 'TikTok Downloader', badge: 'HD', color: 'bg-violet-50', path: '/tiktok' },
 ];
 
-export default function Navbar({
-  activeTab,
-  setActiveTab,
-  openHistory,
-}: NavbarProps) {
+export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarProps) {
   const pathname = usePathname();
   const [userSession, setUserSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -74,10 +54,7 @@ export default function Navbar({
   const closeSidebar = () => setIsSidebarOpen(false);
 
   const handleLogout = async () => {
-    const confirmed = await brutalistConfirm(
-      'KELUAR DARI SESI',
-      'Apakah Anda yakin ingin keluar dari akun ini? Sesi lokal akan dihapus.'
-    );
+    const confirmed = await brutalistConfirm('KELUAR DARI SESI', 'Apakah Anda yakin ingin keluar dari akun ini? Sesi lokal akan dihapus.');
     if (confirmed) {
       clearUserSession();
       brutalistToast('Sesi akun berhasil dihapus.', 'info');
@@ -101,6 +78,7 @@ export default function Navbar({
     if (pathname === '/tentang') return 'TENTANG';
     if (pathname === '/faq') return 'FAQ';
     if (pathname === '/privasi') return 'PRIVASI';
+    if (pathname === '/ig-note') return 'IG NOTE';
     return 'FZ SUITE';
   };
 
@@ -129,11 +107,7 @@ export default function Navbar({
                     <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
                       <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
-                        {(userSession as any).avatarUrl ? (
-                          <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" />
-                        ) : (
-                          userSession.initials
-                        )}
+                        {(userSession as any).avatarUrl ? <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" /> : userSession.initials}
                       </div>
                     </div>
                     <span className="text-[10px] font-bold max-w-[65px] truncate">@{userSession.username}</span>
@@ -144,15 +118,12 @@ export default function Navbar({
                   <Link href="/daftar" className="flex items-center gap-1.5 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15">
                     <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
-                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white">
-                        <UserPlus className="w-3.5 h-3.5" />
-                      </div>
+                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white"><UserPlus className="w-3.5 h-3.5" /></div>
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Join</span>
                   </Link>
                 </motion.div>
               )}
-
               <motion.button onClick={() => setIsSidebarOpen(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="p-2 rounded-full glass-circle text-zinc-900 dark:text-white transition-all cursor-pointer" aria-label="Buka Menu">
                 <Menu className="w-4 h-4" strokeWidth={2} />
               </motion.button>
@@ -183,11 +154,7 @@ export default function Navbar({
                           <div className="relative w-11 h-11 rounded-full p-[2.5px] flex items-center justify-center overflow-hidden shrink-0 shadow-md">
                             <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
                             <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-sm text-white overflow-hidden">
-                              {(userSession as any).avatarUrl ? (
-                                <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" />
-                              ) : (
-                                userSession.initials
-                              )}
+                              {(userSession as any).avatarUrl ? <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" /> : userSession.initials}
                             </div>
                           </div>
                           <div>
