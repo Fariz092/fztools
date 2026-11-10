@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2, Code2, Cloud, Globe } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2 } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
@@ -400,14 +400,6 @@ export default function AccountPage() {
               )}
             </div>
             <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
-            
-            {(session.isVerified || session.role === 'DEVELOPER') && (
-              <div className="flex flex-col gap-1 mt-2.5">
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400"><Code2 size={13}/> programmer.verified</span>
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400"><Cloud size={13}/> cloud.engineer.verified</span>
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400"><Globe size={13}/> Verified Developer</span>
-              </div>
-            )}
           </div>
 
           <div className="relative shrink-0">
