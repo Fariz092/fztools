@@ -85,6 +85,7 @@ export default function AccountPage() {
   useEffect(() => {
     if (!activeNoteText) return;
     let idx = 0;
+    setDisplayedNote('');
     const timer = setInterval(() => {
       idx++;
       setDisplayedNote(activeNoteText.slice(0, idx));
@@ -267,10 +268,10 @@ export default function AccountPage() {
         </AnimatePresence>
       </div>
 
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 z-10 overflow-visible">
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-14 z-10 overflow-visible">
         
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="flex-1 pb-1">
+        <div className="flex justify-between items-start gap-4">
+          <div className="pt-12 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
@@ -291,20 +292,14 @@ export default function AccountPage() {
                 <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400"><Globe size={14}/> Verified Developer</span>
               </div>
             )}
-
-            <div className="flex items-center gap-6 font-bold text-zinc-900 dark:text-white mt-2">
-              <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
-              <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-              <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
-              <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-              <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
-            </div>
           </div>
 
-          <div className="relative shrink-0 self-start sm:self-end mt-2 sm:mt-0">
-            <motion.div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }} className="absolute -top-14 left-1/2 -translate-x-1/2 z-30 cursor-pointer select-none">
-              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[150px] shadow-lg border border-zinc-200/60 dark:border-zinc-700/60 whitespace-nowrap">
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/60 dark:border-zinc-700/60 rotate-45 transform" />
+          <div className="relative shrink-0">
+            <motion.div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }} className="absolute -top-14 right-2 z-30 cursor-pointer select-none">
+              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[140px] shadow-md">
+                <span className="absolute -top-1.5 left-2.5 w-3 h-3 rounded-full bg-white dark:bg-zinc-800" />
+                <span className="absolute -top-2 left-6 w-4 h-4 rounded-full bg-white dark:bg-zinc-800" />
+                <span className="absolute -bottom-1 left-4 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800" />
                 <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? (displayedNote || activeNoteText) : '+ Catatan'}</span>
               </div>
             </motion.div>
@@ -316,7 +311,7 @@ export default function AccountPage() {
                   <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#aurora)" strokeWidth="3.5" strokeLinecap="round" animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
                 </motion.svg>
               </motion.div>
-              <div onClick={handleAvatarTap} className="relative z-10 w-24 h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
+              <div onClick={handleAvatarTap} className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[4px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
                 {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-2xl font-bold text-white">{session.initials}</div>}
               </div>
             </div>
@@ -325,7 +320,15 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="mt-4 mb-5">
+        <div className="flex items-center gap-4 mt-2 font-bold text-zinc-900 dark:text-white">
+          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
+          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
+          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+        </div>
+
+        <div className="mt-3 mb-5">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
