@@ -231,9 +231,9 @@ export default function AccountPage() {
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      {/* Banner Section dengan Transisi Halus (Tanpa Garis Bug Seam) */}
-      <div className="relative w-full h-48 sm:h-60 bg-zinc-950 overflow-hidden">
+    <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
+      {/* HEADER BANNER SEAMLESS BACKDROP (Tinggi Penuh, Larut Alami ke Background Tanpa Garis Potong) */}
+      <div className="absolute top-0 inset-x-0 h-80 sm:h-96 overflow-hidden pointer-events-none z-0">
         {bannerType === 'video' ? (
           <video
             key={currentBannerUrl}
@@ -251,45 +251,50 @@ export default function AccountPage() {
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
 
-        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-black/15" />
 
-        {/* Gradien Turun Lembut yang Menyatu Sempurna ke Warna Latar Belakang */}
-        <div className="absolute inset-x-0 bottom-0 h-32 sm:h-44 bg-gradient-to-b from-transparent via-white/50 via-white/95 to-white dark:via-zinc-950/50 dark:via-zinc-950/95 dark:to-zinc-950 pointer-events-none" />
-
-        <AnimatePresence>
-          {!isCleanMode && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-4 left-4 right-4 flex justify-between z-20">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-                >
-                  <Edit2 size={16} />
-                </button>
-                {bannerType === 'video' && (
-                  <button
-                    onClick={toggleSound}
-                    className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-                  >
-                    {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="text-emerald-400" />}
-                  </button>
-                )}
-              </div>
-              <Link
-                href="/"
-                className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-              >
-                <ArrowLeft size={20} />
-              </Link>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Gradien Vertikal Halus: Mengalir Alami ke Putih/Gelap Tanpa Garis Seam */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 via-white/90 to-white dark:via-zinc-950/50 dark:via-zinc-950/90 dark:to-zinc-950" />
       </div>
 
-      {/* Profil Header: Avatar & Nama Sejajar Horizontal */}
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-16 sm:-mt-20 z-10 overflow-visible">
+      {/* Action Buttons Top Bar */}
+      <AnimatePresence>
+        {!isCleanMode && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-20 px-4 sm:px-6 max-w-4xl mx-auto pt-4 flex justify-between items-center">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
+                title="Edit Profil"
+              >
+                <Edit2 size={16} />
+              </button>
+              {bannerType === 'video' && (
+                <button
+                  onClick={toggleSound}
+                  className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
+                  title="Suara Banner"
+                >
+                  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="text-emerald-400" />}
+                </button>
+              )}
+            </div>
+            <Link
+              href="/"
+              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
+              title="Kembali"
+            >
+              <ArrowLeft size={20} />
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Profil Card & Content: Mengalir Natural di Atas Gradien */}
+      <div className="relative z-10 px-4 sm:px-6 max-w-4xl mx-auto pt-20 sm:pt-28">
+        {/* Row Nama & Foto Profil (Sejajar Sempurna) */}
         <div className="flex items-center justify-between gap-4">
-          {/* Kolom Kiri: Nama Besar & Username */}
+          {/* Sisi Kiri: Nama Besar & Username */}
           <div className="min-w-0 flex-1 pr-2">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
@@ -310,7 +315,7 @@ export default function AccountPage() {
             <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">{displayAtUsername}</p>
           </div>
 
-          {/* Kolom Kanan: Foto Profil Sejajar + Catatan Bubble */}
+          {/* Sisi Kanan: Foto Profil Sejajar + Catatan Bubble */}
           <div className="relative shrink-0 flex items-center justify-center">
             {/* Note Bubble (di atas avatar) */}
             <div
@@ -371,7 +376,7 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* Developer Badges (Di Bawah Nama, Tidak Mengganggu Posisi Sejajar) */}
+        {/* Developer Badges */}
         {(session.isVerified || session.role === 'DEVELOPER') && (
           <div className="flex flex-col gap-0.5 mt-2.5 mb-2">
             <span className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-400">
@@ -386,7 +391,7 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* Statistik Ramping (Tanpa Garis Pemisah, Spasi Lebih Padat) */}
+        {/* Statistik Ramping (Tanpa Garis Pemisah, Spasi Padat & Tidak Melar ke Kanan) */}
         <div className="flex items-center gap-4 sm:gap-5 mt-3 text-zinc-900 dark:text-white">
           <div className="flex items-baseline gap-1.5">
             <span className="text-sm sm:text-base font-extrabold tracking-tight">214</span>
@@ -402,7 +407,7 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* Bio */}
+        {/* Bio Kreator */}
         <div className="mt-3 mb-5">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
