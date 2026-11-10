@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2, Code2, Cloud, Globe } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
