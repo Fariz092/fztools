@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import HistoryModal from '@/components/HistoryModal';
@@ -26,6 +26,18 @@ export default function AppShell({
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const pathname = usePathname();
   const isProfile = pathname === '/akun';
+
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem('fztools_theme') || 'light';
+      const root = document.documentElement;
+      root.classList.remove('light', 'dark', 'dim');
+      root.classList.add(savedTheme);
+      if (savedTheme === 'dark' || savedTheme === 'dim') {
+        root.classList.add('dark');
+      }
+    } catch (e) {}
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 selection:bg-indigo-100 dark:selection:bg-indigo-900 flex flex-col relative overflow-x-clip" style={{ fontFamily: 'var(--font-sfpro)' }}>

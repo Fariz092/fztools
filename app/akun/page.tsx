@@ -30,6 +30,16 @@ export default function AccountPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem('fztools_theme') || 'light';
+      const root = document.documentElement;
+      root.classList.remove('light', 'dark', 'dim');
+      root.classList.add(savedTheme);
+      if (savedTheme === 'dark' || savedTheme === 'dim') {
+        root.classList.add('dark');
+      }
+    } catch (e) {}
+
     const s = getStoredUserSession();
     if (s) {
       const formatted = s.username.startsWith('@') ? s.username : `@${s.username}`;
@@ -49,6 +59,42 @@ export default function AccountPage() {
 
     return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
   }, []);
+
+  const currentBannerUrl = session?.bannerUrl || "/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4";
+  const currentBannerType = session?.bannerType || 'video';
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || currentBannerType !== 'video') return;
+
+    video.muted = isMuted;
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        video.muted = true;
+        setIsMuted(true);
+        video.play().catch(() => {});
+      });
+    }
+  }, [currentBannerUrl, currentBannerType]);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      const video = videoRef.current;
+      if (video && currentBannerType === 'video' && video.paused) {
+        video.play().catch(() => {});
+      }
+    };
+
+    window.addEventListener('click', unlockAudio, { once: true });
+    window.addEventListener('touchstart', unlockAudio, { once: true });
+
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, [currentBannerType]);
 
   const handleAvatarTap = () => {
     const now = Date.now();
@@ -156,8 +202,12 @@ export default function AccountPage() {
 
   const toggleSound = () => {
     if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
+      const nextMuted = !videoRef.current.muted;
+      videoRef.current.muted = nextMuted;
+      setIsMuted(nextMuted);
+      if (!nextMuted) {
+        videoRef.current.play().catch(() => {});
+      }
     }
   };
 
@@ -192,8 +242,6 @@ export default function AccountPage() {
     }
   } catch (e) {}
 
-  const currentBannerUrl = session.bannerUrl || "/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4";
-  const currentBannerType = session.bannerType || 'video';
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
 
   return (
@@ -201,7 +249,7 @@ export default function AccountPage() {
       
       <div className="relative w-full h-44 sm:h-56 bg-zinc-900 overflow-hidden">
         {currentBannerType === 'video' ? (
-          <video ref={videoRef} autoPlay loop muted={isMuted} playsInline className="w-full h-full object-cover">
+          <video key={currentBannerUrl} ref={videoRef} autoPlay loop muted={isMuted} playsInline preload="auto" className="w-full h-full object-cover">
             <source src={currentBannerUrl} type="video/mp4" />
           </video>
         ) : (
