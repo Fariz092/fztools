@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Video } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
@@ -12,6 +12,7 @@ export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [historyCount, setHistoryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   
   const [editUsername, setEditUsername] = useState('');
   const [editBio, setEditBio] = useState('');
@@ -20,6 +21,7 @@ export default function AccountPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const s = getStoredUserSession();
@@ -40,10 +42,6 @@ export default function AccountPage() {
 
     return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
   }, []);
-
-  const openSidebar = () => {
-    window.dispatchEvent(new CustomEvent('fztools_open_sidebar'));
-  };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,11 +65,9 @@ export default function AccountPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const minSize = 5 * 1024 * 1024;
     const maxSize = 10 * 1024 * 1024;
-
-    if (file.size < minSize || file.size > maxSize) {
-      brutalistToast('Ukuran banner harus antara 5MB sampai 10MB', 'error');
+    if (file.size > maxSize) {
+      brutalistToast('Ukuran banner maksimal 10MB', 'error');
       return;
     }
 
@@ -106,6 +102,13 @@ export default function AccountPage() {
     setSession(updatedSession);
     setIsModalOpen(false);
     brutalistToast('Profil berhasil disimpan', 'success');
+  };
+
+  const toggleSound = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
   };
 
   if (!session) {
@@ -147,7 +150,7 @@ export default function AccountPage() {
       
       <div className="relative w-full h-36 sm:h-44 bg-zinc-900 overflow-hidden">
         {currentBannerType === 'video' ? (
-          <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+          <video ref={videoRef} autoPlay loop muted={isMuted} playsInline className="w-full h-full object-cover">
             <source src={currentBannerUrl} type="video/mp4" />
           </video>
         ) : (
@@ -157,12 +160,19 @@ export default function AccountPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950" />
 
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
-          <button onClick={() => setIsModalOpen(true)} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button onClick={openSidebar} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
-            <Menu className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setIsModalOpen(true)} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
+              <Edit2 className="w-4 h-4" />
+            </button>
+            {currentBannerType === 'video' && (
+              <button onClick={toggleSound} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+              </button>
+            )}
+          </div>
+          <Link href="/" className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
         </div>
       </div>
 
@@ -260,7 +270,7 @@ export default function AccountPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2">
-                    Banner (Video / Foto 5MB - 10MB)
+                    Banner (Video / Foto Max 10MB)
                   </label>
                   <div className="relative w-full h-28 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-dashed border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center cursor-pointer" onClick={() => bannerInputRef.current?.click()}>
                     {bannerPreview ? (
@@ -274,7 +284,7 @@ export default function AccountPage() {
                     ) : (
                       <div className="flex flex-col items-center gap-1 text-zinc-400">
                         <Upload className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">Klik untuk upload (5MB - 10MB)</span>
+                        <span className="text-[10px] font-medium">Klik untuk upload (Max 10MB)</span>
                       </div>
                     )}
                   </div>
