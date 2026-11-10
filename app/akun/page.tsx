@@ -2,27 +2,42 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2, Code2, Cloud, Globe } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2 } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function AccountPage() {
-  const [session, setSession] = useState<UserSession | null>(null);
+  const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
 
   const [time, setTime] = useState({ hours: '00', minutes: '00', seconds: '00' });
-  const [activeNoteText, setActiveNoteText] = useState<string | null>(null);
+  const [activeNoteText, setActiveNoteText] = useState<string | null>(() => {
+    const s = getStoredUserSession();
+    if (s?.note?.text && s?.note?.createdAt) {
+      if (Date.now() - new Date(s.note.createdAt).getTime() < 86400000) {
+        return s.note.text;
+      }
+    }
+    return null;
+  });
   const [displayedNote, setDisplayedNote] = useState('');
 
-  const [editUsername, setEditUsername] = useState('');
-  const [editBio, setEditBio] = useState('');
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
-  const [bannerType, setBannerType] = useState<'video' | 'image'>('video');
-  const [noteInput, setNoteInput] = useState('');
+  const [editUsername, setEditUsername] = useState(() => {
+    const s = getStoredUserSession();
+    if (!s) return '';
+    return s.username.startsWith('@') ? s.username : `@${s.username}`;
+  });
+  const [editBio, setEditBio] = useState(() => {
+    const s = getStoredUserSession();
+    return s?.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀';
+  });
+  const [bannerPreview, setBannerPreview] = useState<string | null>(() => getStoredUserSession()?.bannerUrl || null);
+  const [bannerType, setBannerType] = useState<'video' | 'image'>(() => getStoredUserSession()?.bannerType || 'video');
+  const [noteInput, setNoteInput] = useState(() => getStoredUserSession()?.note?.text || '');
 
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
@@ -34,23 +49,6 @@ export default function AccountPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const currentSession = getStoredUserSession();
-    setSession(currentSession);
-    if (currentSession) {
-      setEditUsername(currentSession.username.startsWith('@') ? currentSession.username : `@${currentSession.username}`);
-      setEditBio(currentSession.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
-      if (currentSession.bannerUrl) setBannerPreview(currentSession.bannerUrl);
-      if (currentSession.bannerType) setBannerType(currentSession.bannerType);
-      if (currentSession.note?.text) setNoteInput(currentSession.note.text);
-      
-      if (currentSession.note?.text && currentSession.note?.createdAt) {
-        const diff = Date.now() - new Date(currentSession.note.createdAt).getTime();
-        if (diff < 24 * 60 * 60 * 1000) {
-          setActiveNoteText(currentSession.note.text);
-        }
-      }
-    }
-
     const updateTime = () => {
       const now = new Date();
       setTime({
@@ -289,22 +287,13 @@ export default function AccountPage() {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 select-none ml-1 inline-flex items-center">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                    <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91C2.63 9.33 1.75 10.57 1.75 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z" fill="#20D5EC" />
-                    <path d="M9 12.2l2.1 2.1 4.4-4.6" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg className="w-5 h-5 text-[#20D5EC]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7l-4.2-4.2 1.4-1.4 2.8 2.8 6.4-6.4 1.4 1.4-7.8 7.8z" />
                   </svg>
                 </span>
               )}
             </div>
             <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
-
-            {(session.isVerified || session.role === 'DEVELOPER') && (
-              <div className="flex flex-col gap-0.5 mt-2">
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400"><Code2 size={13}/> programmer.verified</span>
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400"><Cloud size={13}/> cloud.engineer.verified</span>
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400"><Globe size={13}/> Verified Developer</span>
-              </div>
-            )}
           </div>
 
           <div className="relative shrink-0">
