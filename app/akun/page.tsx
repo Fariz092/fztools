@@ -4,17 +4,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2 } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
-import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
-  const [historyCount, setHistoryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
+
+  const [time, setTime] = useState({ hours: '00', minutes: '00', seconds: '00' });
   
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
@@ -50,6 +50,20 @@ export default function AccountPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      setTime({
+        hours: String(now.getHours()).padStart(2, '0'),
+        minutes: String(now.getMinutes()).padStart(2, '0'),
+        seconds: String(now.getSeconds()).padStart(2, '0')
+      });
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     try {
       const savedTheme = localStorage.getItem('fztools_theme') || 'light';
       const root = document.documentElement;
@@ -74,8 +88,6 @@ export default function AccountPage() {
       }
     };
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
-    
-    fetchUserHistory().then(data => setHistoryCount(data.length));
 
     return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
   }, []);
@@ -311,17 +323,6 @@ export default function AccountPage() {
     );
   }
 
-  const level = Math.floor(historyCount / 5) + 1;
-  let activeDays = 1;
-  try {
-    const registered = new Date(session.registeredAt).getTime();
-    const now = new Date().getTime();
-    if (!isNaN(registered)) {
-      const days = Math.floor((now - registered) / (1000 * 3600 * 24)) + 1;
-      activeDays = days > 0 ? days : 1;
-    }
-  } catch (e) {}
-
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
   return (
     <div className="w-full min-h-[100dvh] bg-white dark:bg-zinc-950 pb-24" style={{ fontFamily: 'var(--font-sfpro)' }}>
@@ -372,9 +373,10 @@ export default function AccountPage() {
                 {session.username.replace(/^@+/, '')}
               </h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#20D5EC] text-white shrink-0 shadow-xs ml-0.5">
-                  <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
+                <span className="shrink-0 select-none ml-1 inline-flex items-center">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91C2.63 9.33 1.75 10.57 1.75 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z" fill="#20D5EC" />
+                    <path d="M9 12.2l2.1 2.1 4.4-4.6" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
               )}
@@ -470,24 +472,39 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 mt-4">
-          <div className="flex flex-col">
-            <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">{historyCount}</span>
-            <span className="text-[11px] font-medium text-zinc-500">Kreasi</span>
+        <div className="flex items-center gap-4 sm:gap-6 mt-4">
+          <div className="flex flex-col items-center">
+            <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tabular-nums h-7 sm:h-8 flex items-center">{time.hours}</span>
+            <span className="text-[11px] font-medium text-zinc-500">Jam</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">{level}</span>
-            <span className="text-[11px] font-medium text-zinc-500">Level</span>
+          <div className="h-6 w-[1px] bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+          <div className="flex flex-col items-center">
+            <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tabular-nums h-7 sm:h-8 flex items-center">{time.minutes}</span>
+            <span className="text-[11px] font-medium text-zinc-500">Menit</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">{activeDays}</span>
-            <span className="text-[11px] font-medium text-zinc-500">Hari Aktif</span>
+          <div className="h-6 w-[1px] bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+          <div className="flex flex-col items-center">
+            <div className="overflow-hidden h-7 sm:h-8 flex items-center justify-center">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={time.seconds}
+                  initial={{ y: 16, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -16, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tabular-nums block"
+                >
+                  {time.seconds}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+            <span className="text-[11px] font-medium text-zinc-500">Detik</span>
           </div>
         </div>
 
         <div className="mt-3 mb-5">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed whitespace-pre-line">
-            {session.bio || `Kreator FZTOOLS since ${session.registeredAt.split(' ')[2] || '2026'}.\nBerkarya tanpa batas 🚀`}
+            {session.bio || `Kreator FZTOOLS since 2026.\nBerkarya tanpa batas 🚀`}
           </p>
         </div>
 
