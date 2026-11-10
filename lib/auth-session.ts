@@ -8,6 +8,7 @@ export interface UserSession {
   avatarUrl?: string;
   bannerUrl?: string;
   bannerType?: 'video' | 'image';
+  isVerified?: boolean;
   stats?: {
     quotesCreated: number;
     conversions: number;

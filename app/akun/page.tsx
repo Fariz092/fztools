@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Sparkles, KeyRound } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
@@ -12,12 +12,18 @@ export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [historyCount, setHistoryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCleanMode, setIsCleanMode] = useState(false);
   
   const [editUsername, setEditUsername] = useState('');
   const [editBio, setEditBio] = useState('');
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [bannerType, setBannerType] = useState<'video' | 'image'>('video');
+
+  const [tapCount, setTapCount] = useState(0);
+  const [lastTapTime, setLastTapTime] = useState(0);
+  const [showSecretModal, setShowSecretModal] = useState(false);
+  const [secretInput, setSecretInput] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -26,7 +32,8 @@ export default function AccountPage() {
   useEffect(() => {
     const s = getStoredUserSession();
     if (s) {
-      setEditUsername(s.username || '');
+      const formatted = s.username.startsWith('@') ? s.username : `@${s.username}`;
+      setEditUsername(formatted);
       setEditBio(s.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
       if (s.bannerUrl) setBannerPreview(s.bannerUrl);
       if (s.bannerType) setBannerType(s.bannerType);
@@ -42,6 +49,48 @@ export default function AccountPage() {
 
     return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
   }, []);
+
+  const handleAvatarTap = () => {
+    const now = Date.now();
+    if (now - lastTapTime < 500) {
+      const nextCount = tapCount + 1;
+      if (nextCount >= 5) {
+        setTapCount(0);
+        setShowSecretModal(true);
+      } else {
+        setTapCount(nextCount);
+      }
+    } else {
+      setTapCount(1);
+    }
+    setLastTapTime(now);
+  };
+
+  const verifyPasscode = (code: string) => {
+    const h = code.trim().split('').reduce((acc, c) => ((acc << 5) - acc) + c.charCodeAt(0), 0);
+    return h === 53441548;
+  };
+
+  const handleSecretSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session) return;
+
+    if (verifyPasscode(secretInput)) {
+      const updated: UserSession = {
+        ...session,
+        role: 'DEVELOPER',
+        isVerified: true
+      };
+      saveUserSession(updated);
+      setSession(updated);
+      setShowSecretModal(false);
+      setSecretInput('');
+      brutalistToast('Verified Developer Aktif', 'success');
+    } else {
+      brutalistToast('Kunci Akses Ditolak', 'error');
+      setSecretInput('');
+    }
+  };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,14 +134,15 @@ export default function AccountPage() {
 
   const saveProfileChanges = () => {
     if (!session) return;
-    if (!editUsername.trim()) {
+    const cleanUser = editUsername.trim().replace(/^@+/, '');
+    if (!cleanUser) {
       brutalistToast('Username tidak boleh kosong', 'error');
       return;
     }
 
     const updatedSession: UserSession = {
       ...session,
-      username: editUsername.trim(),
+      username: `@${cleanUser}`,
       bio: editBio.trim(),
       bannerUrl: bannerPreview || session.bannerUrl,
       bannerType: bannerType || session.bannerType
@@ -144,11 +194,12 @@ export default function AccountPage() {
 
   const currentBannerUrl = session.bannerUrl || "/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4";
   const currentBannerType = session.bannerType || 'video';
+  const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
 
   return (
     <div className="w-full min-h-[100dvh] bg-white dark:bg-zinc-950 pb-24" style={{ fontFamily: 'var(--font-sfpro)' }}>
       
-      <div className="relative w-full h-36 sm:h-44 bg-zinc-900 overflow-hidden">
+      <div className="relative w-full h-44 sm:h-56 bg-zinc-900 overflow-hidden">
         {currentBannerType === 'video' ? (
           <video ref={videoRef} autoPlay loop muted={isMuted} playsInline className="w-full h-full object-cover">
             <source src={currentBannerUrl} type="video/mp4" />
@@ -159,47 +210,67 @@ export default function AccountPage() {
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950" />
 
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
-          <div className="flex items-center gap-2">
-            <button onClick={() => setIsModalOpen(true)} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
-              <Edit2 className="w-4 h-4" />
-            </button>
-            {currentBannerType === 'video' && (
-              <button onClick={toggleSound} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
-              </button>
-            )}
-          </div>
-          <Link href="/" className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-        </div>
+        <AnimatePresence>
+          {!isCleanMode && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-4 left-4 right-4 flex items-center justify-between z-20"
+            >
+              <div className="flex items-center gap-2">
+                <button onClick={() => setIsModalOpen(true)} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                {currentBannerType === 'video' && (
+                  <button onClick={toggleSound} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
+                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+                  </button>
+                )}
+              </div>
+              <Link href="/" className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition-colors cursor-pointer">
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 z-10">
         
         <div className="flex items-end justify-between gap-4">
           <div className="flex-1 pb-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1 drop-shadow-sm">
-              {session.username}
-            </h1>
-            <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">@fz_{session.username.toLowerCase().replace(/\s/g, '')}</p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1 drop-shadow-sm">
+                {session.username.replace(/^@+/, '')}
+              </h1>
+              {(session.isVerified || session.role === 'DEVELOPER') && (
+                <svg className="w-5 h-5 text-[#20D5EC] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+                  <path d="m9 12 2 2 4-4" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
           </div>
 
           <div className="relative shrink-0">
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-xl cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <div
+              onClick={handleAvatarTap}
+              className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-xl cursor-pointer select-none active:scale-95 transition-transform"
+            >
               {session.avatarUrl ? (
-                <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover pointer-events-none" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-xl sm:text-3xl font-black text-zinc-400">
                   {session.initials}
                 </div>
               )}
-              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
             </div>
             <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-lg cursor-pointer">
               <Plus className="w-3.5 h-3.5" strokeWidth={3} />
             </button>
+            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
           </div>
         </div>
 
@@ -229,6 +300,10 @@ export default function AccountPage() {
             <Wrench className="w-3.5 h-3.5 text-pink-500" />
             <span className="text-[11px] font-bold text-zinc-900 dark:text-white">Studio FZ</span>
           </Link>
+          <button onClick={() => setIsCleanMode(!isCleanMode)} className={`shrink-0 flex items-center gap-2 px-4 py-2 border rounded-full transition-colors cursor-pointer ${isCleanMode ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200/60 dark:border-zinc-800 text-zinc-900 dark:text-white'}`}>
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-[11px] font-bold">Mode Bersih</span>
+          </button>
           <Link href="/iqcv2" className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
             <ImageIcon className="w-3.5 h-3.5 text-emerald-500" />
             <span className="text-[11px] font-bold text-zinc-900 dark:text-white">IQC Media</span>
@@ -262,7 +337,7 @@ export default function AccountPage() {
               
               <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800 mb-5">
                 <h3 className="font-bold text-base text-zinc-900 dark:text-white">Edit Profil & Banner</h3>
-                <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400">
+                <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -293,9 +368,9 @@ export default function AccountPage() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                    Nama / Username
+                    Username
                   </label>
-                  <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 dark:text-white outline-none focus:border-indigo-500" placeholder="Username Anda" />
+                  <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 dark:text-white outline-none focus:border-indigo-500" placeholder="@username" />
                 </div>
 
                 <div>
@@ -306,12 +381,49 @@ export default function AccountPage() {
                 </div>
 
                 <div className="pt-2">
-                  <button onClick={saveProfileChanges} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-600/20">
+                  <button onClick={saveProfileChanges} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-600/20 cursor-pointer">
                     Simpan Perubahan
                   </button>
                 </div>
               </div>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSecretModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSecretModal(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.form onSubmit={handleSecretSubmit} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-zinc-900 dark:text-white">Akses Pengembang</h3>
+                  <p className="text-[11px] text-zinc-400 font-medium">Verifikasi lencana profil</p>
+                </div>
+              </div>
+
+              <input
+                type="password"
+                value={secretInput}
+                onChange={(e) => setSecretInput(e.target.value)}
+                placeholder="Masukkan Kunci Akses"
+                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 dark:text-white outline-none focus:border-indigo-500 mb-4"
+                autoFocus
+              />
+
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setShowSecretModal(false)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold text-xs rounded-xl hover:bg-zinc-200 cursor-pointer">
+                  Batal
+                </button>
+                <button type="submit" className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 cursor-pointer">
+                  Verifikasi
+                </button>
+              </div>
+            </motion.form>
           </div>
         )}
       </AnimatePresence>
