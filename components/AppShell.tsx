@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import HistoryModal from '@/components/HistoryModal';
 import AppPopupProvider from '@/components/AppPopupProvider';
@@ -23,21 +24,25 @@ export default function AppShell({
   setSearchQuery
 }: AppShellProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const pathname = usePathname();
+  const isProfile = pathname === '/akun';
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 selection:bg-indigo-100 dark:selection:bg-indigo-900 flex flex-col relative overflow-x-clip">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 selection:bg-indigo-100 dark:selection:bg-indigo-900 flex flex-col relative overflow-x-clip" style={{ fontFamily: 'var(--font-sfpro)' }}>
       <AppPopupProvider />
 
-      <Navbar 
-        openHistory={() => setIsHistoryOpen(true)}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
+      {!isProfile && (
+        <Navbar 
+          openHistory={() => setIsHistoryOpen(true)}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+      )}
 
       <PageTransition>
-        <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 flex-1 w-full relative z-10">
+        <main className={isProfile ? "flex-1 w-full relative z-10" : "max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 flex-1 w-full relative z-10"}>
           {children}
         </main>
       </PageTransition>

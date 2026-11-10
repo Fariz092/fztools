@@ -51,8 +51,15 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
       const custom = e as CustomEvent<UserSession | null>;
       setUserSession(custom.detail || null);
     };
+    const handleOpenSidebar = () => setIsSidebarOpen(true);
+
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
-    return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+    window.addEventListener('fztools_open_sidebar', handleOpenSidebar);
+
+    return () => {
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+      window.removeEventListener('fztools_open_sidebar', handleOpenSidebar);
+    };
   }, []);
 
   const closeSidebar = () => setIsSidebarOpen(false);

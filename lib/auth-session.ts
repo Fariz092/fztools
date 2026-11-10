@@ -6,6 +6,8 @@ export interface UserSession {
   role: string;
   bio?: string;
   avatarUrl?: string;
+  bannerUrl?: string;
+  bannerType?: 'video' | 'image';
   stats?: {
     quotesCreated: number;
     conversions: number;
