@@ -323,7 +323,6 @@ export default function AccountPage() {
   } catch (e) {}
 
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
-
   return (
     <div className="w-full min-h-[100dvh] bg-white dark:bg-zinc-950 pb-24" style={{ fontFamily: 'var(--font-sfpro)' }}>
       
@@ -374,7 +373,7 @@ export default function AccountPage() {
               </h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <svg className="w-5 h-5 text-[#20D5EC] shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+                  <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 6.74 0 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
                   <path d="m9 12 2 2 4-4" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                 </svg>
               )}
@@ -390,7 +389,7 @@ export default function AccountPage() {
               }}
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }}
-              className="absolute -top-11 sm:-top-12 right-2 sm:right-4 z-20 cursor-pointer select-none"
+              className="absolute -top-11 sm:-top-13 right-2 sm:right-4 z-20 cursor-pointer select-none"
             >
               <div className="relative bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-lg border border-zinc-200/80 dark:border-zinc-700/80 max-w-[130px] sm:max-w-[160px] text-center flex items-center justify-center">
                 <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
@@ -400,19 +399,62 @@ export default function AccountPage() {
               </div>
             </motion.div>
 
-            <div
-              onClick={handleAvatarTap}
-              className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-xl cursor-pointer select-none active:scale-95 transition-transform"
-            >
-              {session.avatarUrl ? (
-                <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover pointer-events-none" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xl sm:text-3xl font-black text-zinc-400">
-                  {session.initials}
-                </div>
-              )}
+            <div className="relative">
+              <motion.div
+                animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute -inset-1.5 sm:-inset-2 pointer-events-none z-0"
+              >
+                <motion.svg
+                  className="w-full h-full"
+                  viewBox="0 0 100 100"
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                >
+                  <defs>
+                    <linearGradient id="prismatic-aurora" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#4338CA" />
+                      <stop offset="35%" stopColor="#6366F1" />
+                      <stop offset="70%" stopColor="#FB7185" />
+                      <stop offset="100%" stopColor="#FDBA74" />
+                    </linearGradient>
+                  </defs>
+                  <motion.circle
+                    cx="50"
+                    cy="50"
+                    r="44"
+                    fill="none"
+                    stroke="url(#prismatic-aurora)"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    animate={{
+                      strokeDasharray: ['25 255', '190 90', '280 0', '130 150', '25 255'],
+                      strokeDashoffset: [0, -120, -280, -420, -560],
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: [0.4, 0, 0.2, 1],
+                    }}
+                  />
+                </motion.svg>
+              </motion.div>
+
+              <div
+                onClick={handleAvatarTap}
+                className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-xl cursor-pointer select-none active:scale-95 transition-transform"
+              >
+                {session.avatarUrl ? (
+                  <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover pointer-events-none" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xl sm:text-3xl font-black text-zinc-400">
+                    {session.initials}
+                  </div>
+                )}
+              </div>
             </div>
-            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-lg cursor-pointer">
+
+            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 z-20 w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-lg cursor-pointer">
               <Plus className="w-3.5 h-3.5" strokeWidth={3} />
             </button>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
