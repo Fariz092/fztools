@@ -372,10 +372,11 @@ export default function AccountPage() {
                 {session.username.replace(/^@+/, '')}
               </h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
-                <svg className="w-5 h-5 text-[#20D5EC] shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 6.74 0 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
-                  <path d="m9 12 2 2 4-4" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                </svg>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#20D5EC] text-white shrink-0 shadow-xs ml-0.5">
+                  <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
               )}
             </div>
             <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
@@ -389,14 +390,22 @@ export default function AccountPage() {
               }}
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }}
-              className="absolute -top-11 sm:-top-13 right-2 sm:right-4 z-20 cursor-pointer select-none"
+              className="absolute -top-12 sm:-top-14 right-2 sm:right-4 z-30 cursor-pointer select-none filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
             >
-              <div className="relative bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-lg border border-zinc-200/80 dark:border-zinc-700/80 max-w-[130px] sm:max-w-[160px] text-center flex items-center justify-center">
-                <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[130px] sm:max-w-[160px]">
+                <span className="absolute -top-1.5 left-2.5 w-3.5 h-3.5 rounded-full bg-white dark:bg-zinc-800" />
+                <span className="absolute -top-2 left-6 w-4.5 h-4.5 rounded-full bg-white dark:bg-zinc-800" />
+                <span className="absolute -top-1.5 right-3 w-3.5 h-3.5 rounded-full bg-white dark:bg-zinc-800" />
+                <span className="absolute -bottom-1 left-4 w-3 h-3 rounded-full bg-white dark:bg-zinc-800" />
+                <span className="absolute -bottom-1 right-6 w-3 h-3 rounded-full bg-white dark:bg-zinc-800" />
+
+                <span className="relative z-10 text-[11px] font-bold truncate">
                   {isNoteValid ? (displayedNote || activeNoteText) : '+ Catatan'}
                 </span>
-                <div className="absolute -bottom-1 right-7 sm:right-8 w-2.5 h-2.5 bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
               </div>
+
+              <span className="absolute -bottom-1.5 right-7 w-2 h-2 rounded-full bg-white dark:bg-zinc-800" />
+              <span className="absolute -bottom-3 right-5 w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-800" />
             </motion.div>
 
             <div className="relative">
