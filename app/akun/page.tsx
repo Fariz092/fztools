@@ -41,7 +41,7 @@ export default function AccountPage() {
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
     if (!s) return '';
-    return s.username.startsWith('@') ? s.username : `@${s.username}`;
+    return s.username.startsWith('@') ? s.username.substring(1) : s.username;
   });
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
@@ -76,7 +76,7 @@ export default function AccountPage() {
       const updated = custom.detail || null;
       setSession(updated);
       if (updated) {
-        setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
+        setEditUsername(updated.username.startsWith('@') ? updated.username.substring(1) : updated.username);
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
         if (updated.bannerUrl) {
           setBannerPreview(updated.bannerUrl);
@@ -168,7 +168,7 @@ export default function AccountPage() {
     reader.onloadend = () => {
       const result = reader.result as string;
       setBannerPreview(result);
-      brutalistToast('Banner berhasil dimuat di preview', 'success');
+      brutalistToast('Banner berhasil dimuat ke editor', 'success');
     };
     reader.readAsDataURL(file);
   };
@@ -184,8 +184,8 @@ export default function AccountPage() {
       ...session,
       username: `@${cleanUser}`,
       bio: editBio.trim(),
-      bannerUrl: bannerPreview || session.bannerUrl,
-      bannerType: bannerType || session.bannerType
+      bannerUrl: bannerPreview !== null ? bannerPreview : session.bannerUrl,
+      bannerType: bannerType
     };
     saveUserSession(updated);
     setSession(updated);
@@ -262,7 +262,8 @@ export default function AccountPage() {
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
         
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white dark:from-zinc-950 to-transparent backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950 opacity-90" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white dark:from-zinc-950 via-white/40 dark:via-zinc-950/40 to-transparent pointer-events-none" />
 
         <AnimatePresence>
           {!isCleanMode && (
@@ -281,7 +282,7 @@ export default function AccountPage() {
 
       <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-16 sm:-mt-20 z-10 overflow-visible">
         <div className="flex items-end justify-between gap-4">
-          <div className="flex-1 pb-1 pt-4">
+          <div className="flex-1 pb-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
@@ -313,7 +314,7 @@ export default function AccountPage() {
             </div>
 
             <div className="relative">
-              <motion.div animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute -inset-2 pointer-events-none z-0">
+              <motion.div animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute -inset-1.5 pointer-events-none z-0">
                 <motion.svg className="w-full h-full" viewBox="0 0 100 100" animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}>
                   <defs><linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#20D5EC" /><stop offset="50%" stopColor="#ffffff" /><stop offset="100%" stopColor="#20D5EC" /></linearGradient></defs>
                   <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#aurora)" strokeWidth="3.5" strokeLinecap="round" animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
@@ -329,11 +330,11 @@ export default function AccountPage() {
         </div>
 
         <div className="flex items-center gap-6 mt-3 font-bold text-zinc-900 dark:text-white">
-          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
+          <div className="flex flex-col"><span className="text-base font-bold">214</span><span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
+          <div className="flex flex-col"><span className="text-base font-bold">32,33 rb</span><span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+          <div className="flex flex-col"><span className="text-base font-bold">743,21 rb</span><span className="text-xs text-zinc-500 font-normal">Suka</span></div>
         </div>
 
         <div className="mt-3 mb-5">
@@ -359,8 +360,20 @@ export default function AccountPage() {
               </div>
               <div className="space-y-4">
                 <input type="file" ref={bannerInputRef} onChange={handleBannerUpload} accept="image/*,video/*" className="hidden" />
-                <div onClick={() => bannerInputRef.current?.click()} className="w-full h-24 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center cursor-pointer border border-dashed border-zinc-400">
-                  <Upload size={20} className="text-zinc-400 mr-2"/> <span className="text-xs text-zinc-500">Upload Banner (Max 10MB)</span>
+                <div onClick={() => bannerInputRef.current?.click()} className="w-full h-24 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center cursor-pointer border border-dashed border-zinc-400 overflow-hidden">
+                  {bannerPreview ? (
+                    bannerType === 'video' ? (
+                      <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+                        <source src={bannerPreview} type="video/mp4" />
+                      </video>
+                    ) : (
+                      <img src={bannerPreview} alt="Preview" className="w-full h-full object-cover" />
+                    )
+                  ) : (
+                    <div className="flex items-center text-zinc-400">
+                      <Upload size={20} className="mr-2"/> <span className="text-xs">Upload Banner (Max 10MB)</span>
+                    </div>
+                  )}
                 </div>
                 <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700" placeholder="@username" />
                 <textarea rows={3} value={editBio} onChange={(e) => setEditBio(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3 text-xs text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 resize-none" placeholder="Bio..." />
