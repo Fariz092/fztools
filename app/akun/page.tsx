@@ -27,7 +27,7 @@ export default function AccountPage() {
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
     if (!s) return '';
-    return s.username.startsWith('@') ? s.username : `@${s.username}`;
+    return s.username.startsWith('@') ? s.username.substring(1) : s.username;
   });
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
@@ -62,7 +62,7 @@ export default function AccountPage() {
       const updated = custom.detail || null;
       setSession(updated);
       if (updated) {
-        setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
+        setEditUsername(updated.username.startsWith('@') ? updated.username.substring(1) : updated.username);
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
         if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
         if (updated.bannerType) setBannerType(updated.bannerType);
@@ -154,7 +154,7 @@ export default function AccountPage() {
     const reader = new FileReader();
     reader.onloadend = () => {
       setBannerPreview(reader.result as string);
-      brutalistToast('Banner berhasil dimuat', 'success');
+      brutalistToast('Banner berhasil dimuat, klik simpan perubahan', 'success');
     };
     reader.readAsDataURL(file);
   };
@@ -236,7 +236,6 @@ export default function AccountPage() {
         ) : (
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950" />
         
         <AnimatePresence>
           {!isCleanMode && (
@@ -287,6 +286,12 @@ export default function AccountPage() {
             </div>
 
             <div className="relative">
+              <motion.div animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute -inset-1.5 pointer-events-none z-0">
+                <motion.svg className="w-full h-full" viewBox="0 0 100 100" animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}>
+                  <defs><linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#4338CA" /><stop offset="50%" stopColor="#FB7185" /><stop offset="100%" stopColor="#FDBA74" /></linearGradient></defs>
+                  <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#aurora)" strokeWidth="3.5" strokeLinecap="round" animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
+                </motion.svg>
+              </motion.div>
               <div onClick={handleAvatarTap} className="relative z-10 w-20 h-20 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
                 {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-xl font-bold text-white">{session.initials}</div>}
               </div>
@@ -297,11 +302,11 @@ export default function AccountPage() {
         </div>
 
         <div className="flex items-center gap-6 mt-4 font-bold text-zinc-900 dark:text-white">
-          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
+          <div className="flex flex-col"><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
+          <div className="flex flex-col"><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+          <div className="flex flex-col"><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
         </div>
 
         <div className="mt-3 mb-5">

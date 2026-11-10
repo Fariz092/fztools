@@ -95,6 +95,11 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
     return 'FZ SUITE';
   };
 
+  const getCleanUsername = (uname?: string) => {
+    if (!uname) return '';
+    return uname.replace(/^@+/, '');
+  };
+
   return (
     <>
       <header className="sticky top-3 sm:top-5 z-50 px-3 sm:px-6 w-full flex justify-center pointer-events-none">
@@ -116,14 +121,14 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
               <ThemeSwitcher />
               {userSession ? (
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href="/akun" className="flex items-center gap-2 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15" title={`Akun: @${userSession.username}`}>
+                  <Link href="/akun" className="flex items-center gap-2 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15" title={`Akun: @${getCleanUsername(userSession.username)}`}>
                     <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
                       <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
                         {(userSession as any).avatarUrl ? <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" /> : userSession.initials}
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold max-w-[65px] truncate">@{userSession.username}</span>
+                    <span className="text-[10px] font-bold max-w-[65px] truncate">@{getCleanUsername(userSession.username)}</span>
                   </Link>
                 </motion.div>
               ) : (
@@ -171,7 +176,7 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
                             </div>
                           </div>
                           <div>
-                            <p className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">@{userSession.username}</p>
+                            <p className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">@{getCleanUsername(userSession.username)}</p>
                             <span className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">Sesi Aktif</span>
                           </div>
                         </div>
