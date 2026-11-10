@@ -14,6 +14,7 @@ export default function AccountPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
 
+  const [time, setTime] = useState({ hours: '00', minutes: '00', seconds: '00' });
   const [activeNoteText, setActiveNoteText] = useState<string | null>(() => {
     const s = getStoredUserSession();
     if (s?.note?.text && s?.note?.createdAt) {
@@ -23,7 +24,6 @@ export default function AccountPage() {
     }
     return null;
   });
-  const [displayedNote, setDisplayedNote] = useState('');
 
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
@@ -48,6 +48,17 @@ export default function AccountPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTime({
+        hours: String(now.getHours()).padStart(2, '0'),
+        minutes: String(now.getMinutes()).padStart(2, '0'),
+        seconds: String(now.getSeconds()).padStart(2, '0')
+      });
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+
     try {
       const savedTheme = localStorage.getItem('fztools_theme') || 'light';
       const root = document.documentElement;
@@ -78,23 +89,10 @@ export default function AccountPage() {
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
 
     return () => {
+      clearInterval(timer);
       window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
     };
   }, []);
-
-  useEffect(() => {
-    if (!activeNoteText) return;
-    let idx = 0;
-    setDisplayedNote('');
-    const timer = setInterval(() => {
-      idx++;
-      setDisplayedNote(activeNoteText.slice(0, idx));
-      if (idx >= activeNoteText.length) {
-        clearInterval(timer);
-      }
-    }, 70);
-    return () => clearInterval(timer);
-  }, [activeNoteText]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -268,10 +266,9 @@ export default function AccountPage() {
         </AnimatePresence>
       </div>
 
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-14 z-10 overflow-visible">
-        
-        <div className="flex justify-between items-start gap-4">
-          <div className="pt-12 flex-1">
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 z-10 overflow-visible">
+        <div className="flex items-end justify-between gap-4">
+          <div className="flex-1 pb-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
@@ -295,12 +292,12 @@ export default function AccountPage() {
           </div>
 
           <div className="relative shrink-0">
-            <motion.div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }} className="absolute -top-14 right-2 z-30 cursor-pointer select-none">
+            <motion.div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }} className="absolute -top-12 right-2 z-30 cursor-pointer select-none">
               <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[140px] shadow-md">
                 <span className="absolute -top-1.5 left-2.5 w-3 h-3 rounded-full bg-white dark:bg-zinc-800" />
                 <span className="absolute -top-2 left-6 w-4 h-4 rounded-full bg-white dark:bg-zinc-800" />
                 <span className="absolute -bottom-1 left-4 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800" />
-                <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? (displayedNote || activeNoteText) : '+ Catatan'}</span>
+                <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? (activeNoteText) : '+ Catatan'}</span>
               </div>
             </motion.div>
 
@@ -311,16 +308,16 @@ export default function AccountPage() {
                   <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#aurora)" strokeWidth="3.5" strokeLinecap="round" animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
                 </motion.svg>
               </motion.div>
-              <div onClick={handleAvatarTap} className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[4px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
-                {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-2xl font-bold text-white">{session.initials}</div>}
+              <div onClick={handleAvatarTap} className="relative z-10 w-20 h-20 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
+                {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-xl font-bold text-white">{session.initials}</div>}
               </div>
             </div>
-            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 z-20 w-7 h-7 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md"><Plus size={14} strokeWidth={3}/></button>
+            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 z-20 w-6 h-6 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md"><Plus size={12} strokeWidth={3}/></button>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
           </div>
         </div>
 
-        <div className="flex items-center gap-4 mt-2 font-bold text-zinc-900 dark:text-white">
+        <div className="flex items-center gap-4 mt-4 font-bold text-zinc-900 dark:text-white">
           <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
           <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
