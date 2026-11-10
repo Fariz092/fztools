@@ -335,6 +335,16 @@ export default function AccountPage() {
     );
   }
 
+  const renderDevBadges = () => {
+    if (session?.role !== "DEVELOPER") return null;
+    return (
+      <div className="flex gap-2 mt-2 mb-3">
+        <span className="flex items-center gap-1 text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100"><Code2 size={10}/>programmer.verified</span>
+        <span className="flex items-center gap-1 text-[9px] font-bold text-sky-500 bg-sky-50 px-2 py-0.5 rounded border border-sky-100"><Cloud size={10}/>cloud.engineer.verified</span>
+        <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100"><Globe size={10}/>Verified Developer</span>
+      </div>
+    );
+  };
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
@@ -394,6 +404,7 @@ export default function AccountPage() {
               )}
             </div>
             <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
+            {renderDevBadges()}
           </div>
 
           <div className="relative shrink-0">
