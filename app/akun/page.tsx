@@ -27,7 +27,7 @@ export default function AccountPage() {
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
     if (!s) return '';
-    return s.username.startsWith('@') ? s.username.substring(1) : s.username;
+    return s.username.startsWith('@') ? s.username : `@${s.username}`;
   });
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
@@ -62,7 +62,7 @@ export default function AccountPage() {
       const updated = custom.detail || null;
       setSession(updated);
       if (updated) {
-        setEditUsername(updated.username.startsWith('@') ? updated.username.substring(1) : updated.username);
+        setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
         if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
         if (updated.bannerType) setBannerType(updated.bannerType);
@@ -236,7 +236,7 @@ export default function AccountPage() {
         ) : (
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950 opacity-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950" />
         
         <AnimatePresence>
           {!isCleanMode && (
@@ -257,7 +257,7 @@ export default function AccountPage() {
         <div className="flex items-end justify-between gap-4">
           <div className="flex-1 pb-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight truncate max-w-[200px] sm:max-w-xs">{session.username.replace(/^@+/, '')}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 select-none ml-1 inline-flex items-center">
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -267,7 +267,7 @@ export default function AccountPage() {
                 </span>
               )}
             </div>
-            <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">{displayAtUsername}</p>
+            <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">{displayAtUsername}</p>
 
             {(session.isVerified || session.role === 'DEVELOPER') && (
               <div className="flex flex-col gap-0.5 mb-3">
@@ -280,9 +280,9 @@ export default function AccountPage() {
 
           <div className="relative shrink-0">
             <div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} className="absolute -top-12 right-2 z-30 cursor-pointer select-none">
-              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 rounded-full shadow-md border border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-center">
+              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[140px] shadow-md border border-zinc-200/80 dark:border-zinc-700/80">
                 <span className="absolute -bottom-1 right-5 w-2 h-2 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
-                <span className="relative z-10 text-[11px] font-bold truncate max-w-[120px]">{activeNoteText ? activeNoteText : '+ Catatan'}</span>
+                <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? activeNoteText : '+ Catatan'}</span>
               </div>
             </div>
 
@@ -296,10 +296,12 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 mt-2 font-bold text-zinc-900 dark:text-white">
-          <div className="flex flex-col"><span className="text-base font-bold">214</span><span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
-          <div className="flex flex-col"><span className="text-base font-bold">32,33 rb</span><span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
-          <div className="flex flex-col"><span className="text-base font-bold">743,21 rb</span><span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+        <div className="flex items-center gap-6 mt-4 font-bold text-zinc-900 dark:text-white">
+          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
+          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
+          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
         </div>
 
         <div className="mt-3 mb-5">
@@ -346,7 +348,7 @@ export default function AccountPage() {
               <input type="text" maxLength={60} value={noteInput} onChange={(e) => setNoteInput(e.target.value)} placeholder="Tulis status..." className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 mb-4" autoFocus />
               <div className="flex gap-2">
                 {activeNoteText && <button type="button" onClick={handleDeleteNote} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16}/></button>}
-                <button type="button" onClick={() => setIsNoteModalOpen(false)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold text-xs rounded-xl">Batal} Batal</button>
+                <button type="button" onClick={() => setIsNoteModalOpen(false)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold text-xs rounded-xl">Batal</button>
                 <button type="submit" className="flex-1 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl">Pasang</button>
               </div>
             </form>
