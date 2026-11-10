@@ -2,35 +2,22 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, Edit2, Plus, LogOut, Wrench, Sticker, Image as ImageIcon, Download, PenLine, Settings, UserPlus, FileImage, LayoutGrid } from 'lucide-react';
+import { Menu, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
-import { fetchUserHistory, HistoryItem } from '@/lib/history-service';
+import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
-import { motion } from 'motion/react';
 
 export default function AccountPage() {
-  const [session, setSession] = useState<UserSession | null>(null);
+  const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [historyCount, setHistoryCount] = useState(0);
-  const [activeDays, setActiveDays] = useState(1);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [displayName, setDisplayName] = useState('');
+  const [displayName, setDisplayName] = useState(() => {
+    const s = getStoredUserSession();
+    return s?.username || '';
+  });
   const [isEditing, setIsEditing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const s = getStoredUserSession();
-    setSession(s);
-    if (s) {
-      setDisplayName(s.username);
-      try {
-        const registered = new Date(s.registeredAt).getTime();
-        const now = new Date().getTime();
-        if (!isNaN(registered)) {
-          const days = Math.floor((now - registered) / (1000 * 3600 * 24)) + 1;
-          setActiveDays(days > 0 ? days : 1);
-        }
-      } catch (e) {}
-    }
-
     const handleAuthChange = (e: Event) => {
       const custom = e as CustomEvent<UserSession | null>;
       setSession(custom.detail || null);
@@ -98,6 +85,15 @@ export default function AccountPage() {
   }
 
   const level = Math.floor(historyCount / 5) + 1;
+  let activeDays = 1;
+  try {
+    const registered = new Date(session.registeredAt).getTime();
+    const now = new Date().getTime();
+    if (!isNaN(registered)) {
+      const days = Math.floor((now - registered) / (1000 * 3600 * 24)) + 1;
+      activeDays = days > 0 ? days : 1;
+    }
+  } catch (e) {}
 
   return (
     <div className="w-full min-h-[100dvh] bg-white dark:bg-zinc-950 pb-24">
