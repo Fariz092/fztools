@@ -14,7 +14,6 @@ export default function AccountPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
 
-  const [time, setTime] = useState({ hours: '00', minutes: '00', seconds: '00' });
   const [activeNoteText, setActiveNoteText] = useState<string | null>(() => {
     const s = getStoredUserSession();
     if (s?.note?.text && s?.note?.createdAt) {
@@ -28,7 +27,7 @@ export default function AccountPage() {
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
     if (!s) return '';
-    return s.username.startsWith('@') ? s.username : `@${s.username}`;
+    return s.username.startsWith('@') ? s.username.substring(1) : s.username;
   });
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
@@ -48,17 +47,6 @@ export default function AccountPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTime({
-        hours: String(now.getHours()).padStart(2, '0'),
-        minutes: String(now.getMinutes()).padStart(2, '0'),
-        seconds: String(now.getSeconds()).padStart(2, '0')
-      });
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-
     try {
       const savedTheme = localStorage.getItem('fztools_theme') || 'light';
       const root = document.documentElement;
@@ -74,7 +62,7 @@ export default function AccountPage() {
       const updated = custom.detail || null;
       setSession(updated);
       if (updated) {
-        setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
+        setEditUsername(updated.username.startsWith('@') ? updated.username.substring(1) : updated.username);
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
         if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
         if (updated.bannerType) setBannerType(updated.bannerType);
@@ -89,7 +77,6 @@ export default function AccountPage() {
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
 
     return () => {
-      clearInterval(timer);
       window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
     };
   }, []);
@@ -249,7 +236,7 @@ export default function AccountPage() {
         ) : (
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-white dark:to-zinc-950 opacity-0" />
         
         <AnimatePresence>
           {!isCleanMode && (
@@ -270,7 +257,7 @@ export default function AccountPage() {
         <div className="flex items-end justify-between gap-4">
           <div className="flex-1 pb-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight truncate max-w-[200px] sm:max-w-xs">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 select-none ml-1 inline-flex items-center">
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -280,34 +267,26 @@ export default function AccountPage() {
                 </span>
               )}
             </div>
-            <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">{displayAtUsername}</p>
+            <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">{displayAtUsername}</p>
 
             {(session.isVerified || session.role === 'DEVELOPER') && (
-              <div className="flex flex-col gap-1 mb-3">
-                <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400"><Code2 size={14}/> programmer.verified</span>
-                <span className="flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400"><Cloud size={14}/> cloud.engineer.verified</span>
-                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400"><Globe size={14}/> Verified Developer</span>
+              <div className="flex flex-col gap-0.5 mb-3">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-400"><Code2 size={13}/> programmer.verified</span>
+                <span className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-400"><Cloud size={13}/> cloud.engineer.verified</span>
+                <span className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-400"><Globe size={13}/> Verified Developer</span>
               </div>
             )}
           </div>
 
           <div className="relative shrink-0">
-            <motion.div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }} className="absolute -top-12 right-2 z-30 cursor-pointer select-none">
-              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[140px] shadow-md">
-                <span className="absolute -top-1.5 left-2.5 w-3 h-3 rounded-full bg-white dark:bg-zinc-800" />
-                <span className="absolute -top-2 left-6 w-4 h-4 rounded-full bg-white dark:bg-zinc-800" />
-                <span className="absolute -bottom-1 left-4 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800" />
-                <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? (activeNoteText) : '+ Catatan'}</span>
+            <div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} className="absolute -top-12 right-2 z-30 cursor-pointer select-none">
+              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 rounded-full shadow-md border border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-center">
+                <span className="absolute -bottom-1 right-5 w-2 h-2 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
+                <span className="relative z-10 text-[11px] font-bold truncate max-w-[120px]">{activeNoteText ? activeNoteText : '+ Catatan'}</span>
               </div>
-            </motion.div>
+            </div>
 
             <div className="relative">
-              <motion.div animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute -inset-1.5 pointer-events-none z-0">
-                <motion.svg className="w-full h-full" viewBox="0 0 100 100" animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}>
-                  <defs><linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#4338CA" /><stop offset="50%" stopColor="#FB7185" /><stop offset="100%" stopColor="#FDBA74" /></linearGradient></defs>
-                  <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#aurora)" strokeWidth="3.5" strokeLinecap="round" animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
-                </motion.svg>
-              </motion.div>
               <div onClick={handleAvatarTap} className="relative z-10 w-20 h-20 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
                 {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-xl font-bold text-white">{session.initials}</div>}
               </div>
@@ -317,12 +296,10 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 mt-4 font-bold text-zinc-900 dark:text-white">
-          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
-          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
-          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+        <div className="flex items-center gap-6 mt-2 font-bold text-zinc-900 dark:text-white">
+          <div className="flex flex-col"><span className="text-base font-bold">214</span><span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
+          <div className="flex flex-col"><span className="text-base font-bold">32,33 rb</span><span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
+          <div className="flex flex-col"><span className="text-base font-bold">743,21 rb</span><span className="text-xs text-zinc-500 font-normal">Suka</span></div>
         </div>
 
         <div className="mt-3 mb-5">
@@ -369,7 +346,7 @@ export default function AccountPage() {
               <input type="text" maxLength={60} value={noteInput} onChange={(e) => setNoteInput(e.target.value)} placeholder="Tulis status..." className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 mb-4" autoFocus />
               <div className="flex gap-2">
                 {activeNoteText && <button type="button" onClick={handleDeleteNote} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16}/></button>}
-                <button type="button" onClick={() => setIsNoteModalOpen(false)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold text-xs rounded-xl">Batal</button>
+                <button type="button" onClick={() => setIsNoteModalOpen(false)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold text-xs rounded-xl">Batal} Batal</button>
                 <button type="submit" className="flex-1 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl">Pasang</button>
               </div>
             </form>
