@@ -9,6 +9,10 @@ export interface UserSession {
   bannerUrl?: string;
   bannerType?: 'video' | 'image';
   isVerified?: boolean;
+  note?: {
+    text: string;
+    createdAt: string;
+  };
   stats?: {
     quotesCreated: number;
     conversions: number;

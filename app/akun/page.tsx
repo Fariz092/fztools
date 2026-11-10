@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Sparkles, KeyRound } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2 } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
@@ -12,6 +12,7 @@ export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [historyCount, setHistoryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
   
@@ -32,6 +33,12 @@ export default function AccountPage() {
     const s = getStoredUserSession();
     return s?.bannerType || 'video';
   });
+
+  const [noteInput, setNoteInput] = useState(() => {
+    const s = getStoredUserSession();
+    return s?.note?.text || '';
+  });
+  const [displayedNote, setDisplayedNote] = useState('');
 
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
@@ -63,6 +70,7 @@ export default function AccountPage() {
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
         if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
         if (updated.bannerType) setBannerType(updated.bannerType);
+        if (updated.note?.text) setNoteInput(updated.note.text);
       }
     };
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
@@ -74,6 +82,31 @@ export default function AccountPage() {
 
   const currentBannerUrl = session?.bannerUrl || "/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4";
   const currentBannerType = session?.bannerType || 'video';
+
+  const isNoteValid = Boolean(
+    session?.note?.text &&
+    session?.note?.createdAt &&
+    Date.now() - new Date(session.note.createdAt).getTime() < 24 * 60 * 60 * 1000
+  );
+
+  const activeNoteText = isNoteValid ? session?.note?.text : null;
+
+  useEffect(() => {
+    if (!activeNoteText) {
+      setDisplayedNote('');
+      return;
+    }
+    let idx = 0;
+    setDisplayedNote('');
+    const timer = setInterval(() => {
+      idx++;
+      setDisplayedNote(activeNoteText.slice(0, idx));
+      if (idx >= activeNoteText.length) {
+        clearInterval(timer);
+      }
+    }, 70);
+    return () => clearInterval(timer);
+  }, [activeNoteText]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -212,6 +245,41 @@ export default function AccountPage() {
     brutalistToast('Profil berhasil disimpan', 'success');
   };
 
+  const handleSaveNote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session) return;
+    if (!noteInput.trim()) {
+      brutalistToast('Catatan tidak boleh kosong', 'error');
+      return;
+    }
+
+    const updatedSession: UserSession = {
+      ...session,
+      note: {
+        text: noteInput.trim().slice(0, 60),
+        createdAt: new Date().toISOString()
+      }
+    };
+
+    saveUserSession(updatedSession);
+    setSession(updatedSession);
+    setIsNoteModalOpen(false);
+    brutalistToast('Catatan 24 jam berhasil disimpan', 'success');
+  };
+
+  const handleDeleteNote = () => {
+    if (!session) return;
+    const updatedSession: UserSession = {
+      ...session,
+      note: undefined
+    };
+    saveUserSession(updatedSession);
+    setSession(updatedSession);
+    setNoteInput('');
+    setIsNoteModalOpen(false);
+    brutalistToast('Catatan berhasil dihapus', 'info');
+  };
+
   const toggleSound = () => {
     if (videoRef.current) {
       const nextMuted = !videoRef.current.muted;
@@ -315,6 +383,23 @@ export default function AccountPage() {
           </div>
 
           <div className="relative shrink-0">
+            <motion.div
+              onClick={() => {
+                setNoteInput(activeNoteText || '');
+                setIsNoteModalOpen(true);
+              }}
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }}
+              className="absolute -top-11 sm:-top-12 right-2 sm:right-4 z-20 cursor-pointer select-none"
+            >
+              <div className="relative bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-lg border border-zinc-200/80 dark:border-zinc-700/80 max-w-[130px] sm:max-w-[160px] text-center flex items-center justify-center">
+                <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                  {isNoteValid ? (displayedNote || activeNoteText) : '+ Catatan'}
+                </span>
+                <div className="absolute -bottom-1 right-7 sm:right-8 w-2.5 h-2.5 bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
+              </div>
+            </motion.div>
+
             <div
               onClick={handleAvatarTap}
               className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-xl cursor-pointer select-none active:scale-95 transition-transform"
@@ -361,7 +446,11 @@ export default function AccountPage() {
             <span className="text-[11px] font-bold text-zinc-900 dark:text-white">Studio FZ</span>
           </Link>
           <button onClick={() => setIsCleanMode(!isCleanMode)} className={`shrink-0 flex items-center gap-2 px-4 py-2 border rounded-full transition-colors cursor-pointer ${isCleanMode ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200/60 dark:border-zinc-800 text-zinc-900 dark:text-white'}`}>
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            {isCleanMode ? (
+              <EyeOff className="w-3.5 h-3.5 text-white" />
+            ) : (
+              <Eye className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
+            )}
             <span className="text-[11px] font-bold">Mode Bersih</span>
           </button>
           <Link href="/iqcv2" className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
@@ -447,6 +536,57 @@ export default function AccountPage() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isNoteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsNoteModalOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.form onSubmit={handleSaveNote} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center">
+                    <MessageSquarePlus className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-zinc-900 dark:text-white">Catatan 24 Jam</h3>
+                    <p className="text-[10px] text-zinc-400">Tampil di gelembung awan profil</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setIsNoteModalOpen(false)} className="p-1 rounded-full text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <input
+                  type="text"
+                  maxLength={60}
+                  value={noteInput}
+                  onChange={(e) => setNoteInput(e.target.value)}
+                  placeholder="Ketik status catatan..."
+                  className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 dark:text-white outline-none focus:border-indigo-500"
+                  autoFocus
+                />
+                <span className="block text-right text-[10px] text-zinc-400 mt-1">{noteInput.length}/60</span>
+              </div>
+
+              <div className="flex gap-2">
+                {isNoteValid && (
+                  <button type="button" onClick={handleDeleteNote} className="p-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+                <button type="button" onClick={() => setIsNoteModalOpen(false)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold text-xs rounded-xl hover:bg-zinc-200 cursor-pointer">
+                  Batal
+                </button>
+                <button type="submit" className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 cursor-pointer">
+                  Pasang
+                </button>
+              </div>
+            </motion.form>
           </div>
         )}
       </AnimatePresence>
