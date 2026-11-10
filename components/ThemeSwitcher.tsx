@@ -1,18 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
+
+const subscribe = () => () => {};
 
 export default function ThemeSwitcher() {
-  const [theme, setTheme] = useState<'light' | 'dark' | 'dim'>('light');
-  const [mounted, setMounted] = useState(false);
+  const isMounted = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  );
 
-  useEffect(() => {
-    const saved = localStorage.getItem('fztools_theme') as 'light' | 'dark' | 'dim' | null;
-    if (saved) {
-      setTheme(saved);
+  const [theme, setTheme] = useState<'light' | 'dark' | 'dim'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('fztools_theme') as 'light' | 'dark' | 'dim') || 'light';
     }
-    setMounted(true);
-  }, []);
+    return 'light';
+  });
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'dim') => {
     setTheme(newTheme);
@@ -27,7 +31,7 @@ export default function ThemeSwitcher() {
     }
   };
 
-  if (!mounted) {
+  if (!isMounted) {
     return <div className="w-[112px] h-[40px]" />;
   }
 

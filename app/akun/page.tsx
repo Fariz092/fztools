@@ -15,10 +15,23 @@ export default function AccountPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
   
-  const [editUsername, setEditUsername] = useState('');
-  const [editBio, setEditBio] = useState('');
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
-  const [bannerType, setBannerType] = useState<'video' | 'image'>('video');
+  const [editUsername, setEditUsername] = useState(() => {
+    const s = getStoredUserSession();
+    if (!s) return '';
+    return s.username.startsWith('@') ? s.username : `@${s.username}`;
+  });
+  const [editBio, setEditBio] = useState(() => {
+    const s = getStoredUserSession();
+    return s?.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀';
+  });
+  const [bannerPreview, setBannerPreview] = useState<string | null>(() => {
+    const s = getStoredUserSession();
+    return s?.bannerUrl || null;
+  });
+  const [bannerType, setBannerType] = useState<'video' | 'image'>(() => {
+    const s = getStoredUserSession();
+    return s?.bannerType || 'video';
+  });
 
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
@@ -40,18 +53,17 @@ export default function AccountPage() {
       }
     } catch (e) {}
 
-    const s = getStoredUserSession();
-    if (s) {
-      const formatted = s.username.startsWith('@') ? s.username : `@${s.username}`;
-      setEditUsername(formatted);
-      setEditBio(s.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
-      if (s.bannerUrl) setBannerPreview(s.bannerUrl);
-      if (s.bannerType) setBannerType(s.bannerType);
-    }
-
     const handleAuthChange = (e: Event) => {
       const custom = e as CustomEvent<UserSession | null>;
-      setSession(custom.detail || null);
+      const updated = custom.detail || null;
+      setSession(updated);
+      if (updated) {
+        const formatted = updated.username.startsWith('@') ? updated.username : `@${updated.username}`;
+        setEditUsername(formatted);
+        setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
+        if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
+        if (updated.bannerType) setBannerType(updated.bannerType);
+      }
     };
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
     
