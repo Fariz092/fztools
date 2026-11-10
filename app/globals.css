@@ -50,6 +50,7 @@ body {
   font-family: var(--font-sfpro);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -64,6 +65,14 @@ em, i {
 html.dim body {
   background-color: #1a1a1e !important;
   color: #e4e4e7 !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .navbar-blur {

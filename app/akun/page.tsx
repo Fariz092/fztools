@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
+  const [historyCount, setHistoryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -336,7 +337,7 @@ export default function AccountPage() {
 
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
   return (
-    <div className="w-full min-h-[100dvh] bg-white dark:bg-zinc-950 pb-24" style={{ fontFamily: 'var(--font-sfpro)' }}>
+    <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
       
       <div className="relative w-full h-44 sm:h-56 bg-zinc-900 overflow-hidden">
         {currentBannerType === 'video' ? (
@@ -375,7 +376,7 @@ export default function AccountPage() {
         </AnimatePresence>
       </div>
 
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 z-10">
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 z-10 overflow-visible">
         
         <div className="flex items-end justify-between gap-4">
           <div className="flex-1 pb-1">
@@ -515,7 +516,7 @@ export default function AccountPage() {
 
         <div className="mt-3 mb-5">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed whitespace-pre-line">
-            {session.bio || `Kreator FZTOOLS since 2026.\nBerkarya tanpa batas 🚀`}
+            {session.bio || `Kreator FZTOOLS since ${session.registeredAt.split(' ')[2] || '2026'}.\nBerkarya tanpa batas 🚀`}
           </p>
         </div>
 
