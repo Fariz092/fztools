@@ -231,9 +231,9 @@ export default function AccountPage() {
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
 
   return (
-    <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      {/* HEADER BANNER SEAMLESS BACKDROP (Tinggi Penuh, Larut Alami ke Background Tanpa Garis Potong) */}
-      <div className="absolute top-0 inset-x-0 h-80 sm:h-96 overflow-hidden pointer-events-none z-0">
+    <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
+      {/* BANNER DENGAN SOFT FADE ALA TIKTOK */}
+      <div className="relative w-full h-52 sm:h-64 bg-zinc-900 overflow-hidden">
         {bannerType === 'video' ? (
           <video
             key={currentBannerUrl}
@@ -251,51 +251,50 @@ export default function AccountPage() {
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
 
-        <div className="absolute inset-0 bg-black/15" />
+        <div className="absolute inset-0 bg-black/10" />
 
-        {/* Gradien Vertikal Halus: Mengalir Alami ke Putih/Gelap Tanpa Garis Seam */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 via-white/90 to-white dark:via-zinc-950/50 dark:via-zinc-950/90 dark:to-zinc-950" />
+        {/* Gradien Kabut Halus (Soft Fade) dari Bawah Banner Menuju Transparan ke Atas */}
+        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-36 bg-gradient-to-t from-white dark:from-zinc-950 via-white/80 dark:via-zinc-950/80 via-40% to-transparent pointer-events-none" />
+
+        <AnimatePresence>
+          {!isCleanMode && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-4 left-4 right-4 flex justify-between z-20">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
+                  title="Edit Profil"
+                >
+                  <Edit2 size={16} />
+                </button>
+                {bannerType === 'video' && (
+                  <button
+                    onClick={toggleSound}
+                    className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
+                    title="Suara Banner"
+                  >
+                    {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="text-emerald-400" />}
+                  </button>
+                )}
+              </div>
+              <Link
+                href="/"
+                className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
+                title="Kembali"
+              >
+                <ArrowLeft size={20} />
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Action Buttons Top Bar */}
-      <AnimatePresence>
-        {!isCleanMode && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-20 px-4 sm:px-6 max-w-4xl mx-auto pt-4 flex justify-between items-center">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-                title="Edit Profil"
-              >
-                <Edit2 size={16} />
-              </button>
-              {bannerType === 'video' && (
-                <button
-                  onClick={toggleSound}
-                  className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-                  title="Suara Banner"
-                >
-                  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="text-emerald-400" />}
-                </button>
-              )}
-            </div>
-            <Link
-              href="/"
-              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-              title="Kembali"
-            >
-              <ArrowLeft size={20} />
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Profil Card & Content: Mengalir Natural di Atas Gradien */}
-      <div className="relative z-10 px-4 sm:px-6 max-w-4xl mx-auto pt-20 sm:pt-28">
-        {/* Row Nama & Foto Profil (Sejajar Sempurna) */}
-        <div className="flex items-center justify-between gap-4">
-          {/* Sisi Kiri: Nama Besar & Username */}
+      {/* KONTEN PROFIL: Posisi Mulai di Area Transisi Gradien Banner */}
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-16 sm:-mt-20 z-10 overflow-visible">
+        <div className="flex items-start justify-between gap-4">
+          {/* Kolom Kiri: Nama Besar, Username, Lencana Badge, & Statistik */}
           <div className="min-w-0 flex-1 pr-2">
+            {/* Nama Besar & Verified Badge */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
                 {session.username.replace(/^@+/, '')}
@@ -312,52 +311,63 @@ export default function AccountPage() {
                 </span>
               )}
             </div>
-            <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">{displayAtUsername}</p>
+
+            {/* Username */}
+            <p className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">{displayAtUsername}</p>
+
+            {/* 3 Lencana Badge Didekatkan Langsung ke Bawah Username */}
+            {(session.isVerified || session.role === 'DEVELOPER') && (
+              <div className="flex flex-col gap-0.5 mt-1.5 mb-2.5">
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                  <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
+                </span>
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                  <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
+                </span>
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                  <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
+                </span>
+              </div>
+            )}
+
+            {/* Statistik TikTok Style: Angka di Atas, Label di Bawah, Tanpa Garis Pembatas */}
+            <div className="flex items-center gap-6 sm:gap-8 mt-3">
+              <div className="flex flex-col">
+                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">11</span>
+                <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Mengikuti</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">24</span>
+                <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Pengikut</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">0</span>
+                <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Suka</span>
+              </div>
+            </div>
           </div>
 
-          {/* Sisi Kanan: Foto Profil Sejajar + Catatan Bubble */}
-          <div className="relative shrink-0 flex items-center justify-center">
-            {/* Note Bubble (di atas avatar) */}
+          {/* Kolom Kanan: Avatar TikTok Style + Bubble Catatan Berbuntut */}
+          <div className="relative shrink-0 flex flex-col items-center">
+            {/* Note Bubble (Bisik-bisik / Status) dengan Ekor Mengarah ke Avatar */}
             <div
               onClick={() => {
                 setNoteInput(activeNoteText || '');
                 setIsNoteModalOpen(true);
               }}
-              className="absolute -top-11 right-0 z-30 cursor-pointer select-none"
+              className="absolute -top-10 sm:-top-11 right-1 z-30 cursor-pointer select-none"
             >
-              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-1 rounded-[16px] flex items-center justify-center min-w-[75px] max-w-[130px] shadow-md border border-zinc-200/80 dark:border-zinc-700/80">
-                <span className="absolute -bottom-1 right-4 w-2 h-2 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
+              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1 rounded-[18px] flex items-center justify-center min-w-[70px] max-w-[130px] shadow-sm border border-zinc-200/80 dark:border-zinc-700/80">
+                <span className="absolute -bottom-1 right-5 w-2 h-2 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
                 <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? activeNoteText : '+ Catatan'}</span>
               </div>
             </div>
 
-            {/* Avatar Lingkaran */}
+            {/* Avatar Circle */}
             <div className="relative">
-              <motion.div animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute -inset-1.5 pointer-events-none z-0">
-                <motion.svg className="w-full h-full" viewBox="0 0 100 100" animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}>
-                  <defs>
-                    <linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#20D5EC" />
-                      <stop offset="50%" stopColor="#ffffff" />
-                      <stop offset="100%" stopColor="#20D5EC" />
-                    </linearGradient>
-                  </defs>
-                  <motion.circle
-                    cx="50"
-                    cy="50"
-                    r="44"
-                    fill="none"
-                    stroke="url(#aurora)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-                  />
-                </motion.svg>
-              </motion.div>
               <div
                 onClick={handleAvatarTap}
-                className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3.5px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer"
+                className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-md cursor-pointer"
               >
                 {session.avatarUrl ? (
                   <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -366,77 +376,49 @@ export default function AccountPage() {
                 )}
               </div>
             </div>
+
+            {/* Tombol Plus Biru Khas TikTok */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 z-20 w-6 h-6 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
+              className="absolute bottom-0 right-0 z-20 w-6 h-6 bg-[#00C2F3] hover:bg-[#00b0dc] rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md transition-colors"
+              title="Ganti Foto"
             >
-              <Plus size={12} strokeWidth={3} />
+              <Plus size={13} strokeWidth={3} />
             </button>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
           </div>
         </div>
 
-        {/* Developer Badges */}
-        {(session.isVerified || session.role === 'DEVELOPER') && (
-          <div className="flex flex-col gap-0.5 mt-2.5 mb-2">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              <Code2 size={13} /> programmer.verified
-            </span>
-            <span className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              <Cloud size={13} /> cloud.engineer.verified
-            </span>
-            <span className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              <Globe size={13} /> Verified Developer
-            </span>
-          </div>
-        )}
-
-        {/* Statistik Ramping (Tanpa Garis Pemisah, Spasi Padat & Tidak Melar ke Kanan) */}
-        <div className="flex items-center gap-4 sm:gap-5 mt-3 text-zinc-900 dark:text-white">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-sm sm:text-base font-extrabold tracking-tight">214</span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">Mengikuti</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-sm sm:text-base font-extrabold tracking-tight">32,33 rb</span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">Pengikut</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-sm sm:text-base font-extrabold tracking-tight">743,21 rb</span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">Suka</span>
-          </div>
-        </div>
-
         {/* Bio Kreator */}
-        <div className="mt-3 mb-5">
+        <div className="mt-3.5 mb-4">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
-        {/* Quick Action Pills */}
+        {/* Action Pills Menu (TikTok Style Pill Buttons) */}
         <div className="flex overflow-x-auto gap-2.5 no-scrollbar pb-2">
           <Link
             href="/"
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
           >
             <Wrench size={14} className="text-pink-500" />
             Studio FZ
           </Link>
           <button
             onClick={() => setIsCleanMode(!isCleanMode)}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
           >
             {isCleanMode ? <EyeOff size={14} /> : <Eye size={14} />} Mode Bersih
           </button>
           <Link
             href="/iqcv2"
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
           >
             <ImageIcon size={14} className="text-emerald-500" />
             IQC Media
           </Link>
           <Link
             href="/brat"
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
           >
             <Sticker size={14} className="text-lime-500" />
             Brat Gen
