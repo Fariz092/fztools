@@ -1,5 +1,6 @@
 export interface UserSession {
   username: string;
+  name?: string;
   initials: string;
   avatarColor: string;
   registeredAt: string;
@@ -33,15 +34,15 @@ const AVATAR_COLORS = [
   'bg-violet-400 text-white',
 ];
 
-export function computeInitials(username: string): string {
-  const clean = username.trim().replace(/^@+/, '');
-  if (!clean) return 'FZ';
-  const parts = clean.split(/[._\s-]+/).filter(Boolean);
+export function computeInitials(username: string, name?: string): string {
+  const source = (name && name.trim()) || username.trim().replace(/^@+/, '');
+  if (!source) return 'FZ';
+  const parts = source.split(/[._\s-]+/).filter(Boolean);
   if (parts.length >= 2 && parts[0] && parts[1]) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
-  if (clean.length === 1) return clean.toUpperCase();
-  return clean.slice(0, 2).toUpperCase();
+  if (source.length === 1) return source.toUpperCase();
+  return source.slice(0, 2).toUpperCase();
 }
 
 export function pickAvatarColor(username: string): string {

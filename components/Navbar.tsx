@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   User, UserPlus, Menu, X, Home, Wrench, HelpCircle, ShieldCheck, Info, Clock, LogOut, ChevronRight, Layers,
-  Link as LinkIcon, Sticker, Network, FileImage, Type, MessageSquare, Image as ImageIcon, QrCode, MessageCircle,
+  Link as LinkIcon, Sticker, Network, FileImage, MessageSquare, Image as ImageIcon, QrCode, MessageCircle,
   Laugh, Sparkles, Download, Instagram
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -102,47 +102,73 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
 
   return (
     <>
-      <header className="sticky top-3 sm:top-5 z-50 px-3 sm:px-6 w-full flex justify-center pointer-events-none">
+      <header className="sticky top-2.5 sm:top-5 z-50 px-2 sm:px-6 w-full flex justify-center pointer-events-none">
         <LiquidGlassPill className="pointer-events-auto max-w-2xl w-full">
-          <div className="py-2 px-3 sm:px-5 flex items-center justify-between gap-3 sm:gap-6">
-            <Link href="/" className="flex items-center gap-2.5 group cursor-pointer select-none" title="Beranda FZTOOLS">
-              <div className="relative w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-transform shadow-xs group-hover:scale-105 bg-white shrink-0">
+          <div className="py-1.5 sm:py-2 px-2.5 sm:px-5 flex items-center justify-between gap-2 sm:gap-4">
+            {/* Logo Kiri */}
+            <Link href="/" className="flex items-center gap-2 group cursor-pointer select-none shrink-0" title="Beranda FZTOOLS">
+              <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-transform shadow-xs group-hover:scale-105 bg-white shrink-0">
                 <Image src="/assets/aistudio/Alice_ac18f5a2.jpeg" alt="FZ Logo" fill className="object-cover" referrerPolicy="no-referrer" />
               </div>
-              <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-white group-hover:text-indigo-500 transition-colors">FZTOOLS</span>
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-white group-hover:text-indigo-500 transition-colors">FZTOOLS</span>
             </Link>
 
-            <div className="hidden xs:flex items-center gap-2 px-3 py-1 rounded-full glass-circle text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
+            {/* Title Section (Hanya Tampil di Layar Sedang ke Atas) */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full glass-circle text-[10px] font-bold text-zinc-600 dark:text-zinc-300">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
               <span className="tracking-widest uppercase">{getCurrentSectionTitle()}</span>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <ThemeSwitcher />
+            {/* Grup Kanan: Theme Switcher, Profil Badge, & Hamburger */}
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+              <div className="shrink-0 scale-90 sm:scale-100 origin-right">
+                <ThemeSwitcher />
+              </div>
+
               {userSession ? (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href="/akun" className="flex items-center gap-2 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15" title={`Akun: @${getCleanUsername(userSession.username)}`}>
-                    <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="shrink-0">
+                  <Link
+                    href="/akun"
+                    className="flex items-center gap-1.5 p-1 pr-2 sm:pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15"
+                    title={`Akun: @${getCleanUsername(userSession.username)}`}
+                  >
+                    <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
-                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[10px] text-white overflow-hidden">
-                        {(userSession as any).avatarUrl ? <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" /> : userSession.initials}
+                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center font-bold text-[9px] sm:text-[10px] text-white overflow-hidden">
+                        {(userSession as any).avatarUrl ? (
+                          <img key={(userSession as any).avatarUrl} src={(userSession as any).avatarUrl} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                          userSession.initials
+                        )}
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold max-w-[65px] truncate">@{getCleanUsername(userSession.username)}</span>
+                    <span className="text-[10px] font-bold max-w-[55px] sm:max-w-[85px] truncate">
+                      @{getCleanUsername(userSession.username)}
+                    </span>
                   </Link>
                 </motion.div>
               ) : (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href="/daftar" className="flex items-center gap-1.5 p-1 pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15">
-                    <div className="relative w-7 h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="shrink-0">
+                  <Link href="/daftar" className="flex items-center gap-1.5 p-1 pr-2.5 sm:pr-3 bg-zinc-900/90 dark:bg-zinc-900/90 hover:bg-zinc-900 text-white rounded-full transition-all cursor-pointer shadow-md border border-white/15">
+                    <div className="relative w-6 h-6 sm:w-7 sm:h-7 rounded-full p-[2px] flex items-center justify-center overflow-hidden shrink-0">
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="absolute -inset-[100%] bg-[conic-gradient(from_0deg,#6366f1,#ec4899,#8b5cf6,#06b6d4,#6366f1)]" />
-                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white"><UserPlus className="w-3.5 h-3.5" /></div>
+                      <div className="relative z-10 w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white">
+                        <UserPlus className="w-3.5 h-3.5" />
+                      </div>
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Join</span>
                   </Link>
                 </motion.div>
               )}
-              <motion.button onClick={() => setIsSidebarOpen(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="p-2 rounded-full glass-circle text-zinc-900 dark:text-white transition-all cursor-pointer" aria-label="Buka Menu">
+
+              {/* Tombol Garis 3 (Fix: shrink-0 & w-8 h-8 tegas agar tidak pernah tenggelam/terpotong) */}
+              <motion.button
+                onClick={() => setIsSidebarOpen(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-8 h-8 shrink-0 rounded-full glass-circle text-zinc-900 dark:text-white transition-all cursor-pointer flex items-center justify-center"
+                aria-label="Buka Menu"
+              >
                 <Menu className="w-4 h-4" strokeWidth={2} />
               </motion.button>
             </div>
@@ -150,6 +176,7 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
         </LiquidGlassPill>
       </header>
 
+      {/* Drawer Sidebar Menu */}
       <AnimatePresence>
         {isSidebarOpen && (
           <div className="fixed inset-0 z-[100] flex justify-end">
@@ -176,8 +203,12 @@ export default function Navbar({ activeTab, setActiveTab, openHistory }: NavbarP
                             </div>
                           </div>
                           <div>
-                            <p className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">@{getCleanUsername(userSession.username)}</p>
-                            <span className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">Sesi Aktif</span>
+                            <p className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
+                              {userSession.name || `@${getCleanUsername(userSession.username)}`}
+                            </p>
+                            <span className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">
+                              @{getCleanUsername(userSession.username)}
+                            </span>
                           </div>
                         </div>
                         <button onClick={handleLogout} className="p-2 glass-circle text-rose-500 rounded-xl hover:scale-105 transition-all cursor-pointer shadow-xs" title="Keluar Akun"><LogOut className="w-4 h-4" /></button>

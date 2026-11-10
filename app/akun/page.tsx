@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, X, Upload, Volume2, VolumeX, Eye, EyeOff, Trash2, Code2, Cloud, Globe } from 'lucide-react';
-import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
+import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT, computeInitials } from '@/lib/auth-session';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -24,15 +24,23 @@ export default function AccountPage() {
     return null;
   });
 
+  // Nama Besar (Display Name) Terpisah dari Username
+  const [editName, setEditName] = useState(() => {
+    const s = getStoredUserSession();
+    return s?.name || s?.username.replace(/^@+/, '') || 'urxyn';
+  });
+
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
     if (!s) return '';
     return s.username.startsWith('@') ? s.username : `@${s.username}`;
   });
+
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
     return s?.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀';
   });
+
   const [bannerPreview, setBannerPreview] = useState<string | null>(() => getStoredUserSession()?.bannerUrl || null);
   const [bannerType, setBannerType] = useState<'video' | 'image'>(() => getStoredUserSession()?.bannerType || 'video');
   const [noteInput, setNoteInput] = useState(() => getStoredUserSession()?.note?.text || '');
@@ -62,6 +70,7 @@ export default function AccountPage() {
       const updated = custom.detail || null;
       setSession(updated);
       if (updated) {
+        setEditName(updated.name || updated.username.replace(/^@+/, ''));
         setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
         if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
@@ -166,9 +175,12 @@ export default function AccountPage() {
       brutalistToast('Username tidak boleh kosong', 'error');
       return;
     }
-    const updated = {
+    const cleanName = editName.trim() || cleanUser;
+    const updated: UserSession = {
       ...session,
+      name: cleanName,
       username: `@${cleanUser}`,
+      initials: computeInitials(cleanUser, cleanName),
       bio: editBio.trim(),
       bannerUrl: bannerPreview || session.bannerUrl,
       bannerType: bannerType || session.bannerType,
@@ -229,6 +241,7 @@ export default function AccountPage() {
     session.bannerUrl ||
     '/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4';
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
+  const displayName = session.name || session.username.replace(/^@+/, '');
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
@@ -253,7 +266,7 @@ export default function AccountPage() {
 
         <div className="absolute inset-0 bg-black/10" />
 
-        {/* Gradien Fade Halus Dibuat Lebih Rendah Agar Detail Bawah Banner Tetap Terlihat */}
+        {/* Gradien Fade Halus Ramping */}
         <div className="absolute inset-x-0 bottom-0 h-16 sm:h-22 bg-gradient-to-t from-white dark:from-zinc-950 via-white/70 dark:via-zinc-950/70 to-transparent pointer-events-none" />
 
         <AnimatePresence>
@@ -294,10 +307,10 @@ export default function AccountPage() {
         <div className="flex items-start justify-between gap-4">
           {/* Kolom Kiri: Nama Besar, Username, Lencana Badge, & Statistik */}
           <div className="min-w-0 flex-1 pr-2">
-            {/* Nama Besar & Verified Badge */}
+            {/* Nama Besar (Display Name Mandiri, Tidak Mengikuti Username) */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
-                {session.username.replace(/^@+/, '')}
+                {displayName}
               </h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 select-none inline-flex items-center">
@@ -312,7 +325,7 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* Username */}
+            {/* Username (@handle) */}
             <p className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">{displayAtUsername}</p>
 
             {/* 3 Lencana Badge Dekat Di Bawah Username */}
@@ -347,7 +360,7 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* Kolom Kanan: Avatar Lebih Besar + Bubble Catatan Berbuntut */}
+          {/* Kolom Kanan: Avatar TikTok Style + Bubble Catatan Berbuntut */}
           <div className="relative shrink-0 flex flex-col items-center">
             {/* Note Bubble (Bisik-bisik / Status) dengan Ekor Mengarah ke Avatar */}
             <div
@@ -363,7 +376,7 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Avatar Circle (Diperbesar Menjadi w-24 sm:w-28) */}
+            {/* Avatar Circle */}
             <div className="relative">
               <div
                 onClick={handleAvatarTap}
@@ -394,7 +407,7 @@ export default function AccountPage() {
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
-        {/* Action Pills Menu (TikTok Style Pill Buttons) */}
+        {/* Action Pills Menu */}
         <div className="flex overflow-x-auto gap-2.5 no-scrollbar pb-2">
           <Link
             href="/"
@@ -426,7 +439,7 @@ export default function AccountPage() {
         </div>
       </div>
 
-      {/* Modal Edit Profile */}
+      {/* Modal Edit Profile dengan Kolom Nama Besar & Username Terpisah */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -458,20 +471,49 @@ export default function AccountPage() {
                     </div>
                   )}
                 </div>
-                <input
-                  type="text"
-                  value={editUsername}
-                  onChange={(e) => setEditUsername(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700"
-                  placeholder="@username"
-                />
-                <textarea
-                  rows={3}
-                  value={editBio}
-                  onChange={(e) => setEditBio(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3 text-xs text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 resize-none"
-                  placeholder="Bio..."
-                />
+
+                {/* Input Nama Tampilan (Nama Besar) */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1.5">
+                    Nama Tampilan (Nama Besar)
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 focus:border-indigo-500 transition-colors"
+                    placeholder="Nama tampilan (cth: urxyn)"
+                  />
+                </div>
+
+                {/* Input Username (@handle) */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1.5">
+                    Username (@handle)
+                  </label>
+                  <input
+                    type="text"
+                    value={editUsername}
+                    onChange={(e) => setEditUsername(e.target.value)}
+                    className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 focus:border-indigo-500 transition-colors"
+                    placeholder="@username"
+                  />
+                </div>
+
+                {/* Input Bio */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1.5">
+                    Bio
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3 text-xs text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 resize-none focus:border-indigo-500 transition-colors"
+                    placeholder="Bio..."
+                  />
+                </div>
+
                 <button onClick={saveProfileChanges} className="w-full py-3 bg-indigo-600 text-white font-bold text-xs uppercase rounded-xl hover:bg-indigo-500 transition-colors">
                   Simpan Perubahan
                 </button>
