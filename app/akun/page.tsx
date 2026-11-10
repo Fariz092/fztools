@@ -11,8 +11,22 @@ export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isCleanMode, setIsCleanMode] = useState(false);
+  
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('fztools_banner_muted');
+      return saved !== null ? saved === 'true' : false;
+    }
+    return false;
+  });
+
+  const [isCleanMode, setIsCleanMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('fztools_clean_mode');
+      return saved === 'true';
+    }
+    return false;
+  });
 
   const [activeNoteText, setActiveNoteText] = useState<string | null>(() => {
     const s = getStoredUserSession();
@@ -27,7 +41,7 @@ export default function AccountPage() {
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
     if (!s) return '';
-    return s.username.startsWith('@') ? s.username.substring(1) : s.username;
+    return s.username.startsWith('@') ? s.username : `@${s.username}`;
   });
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
@@ -62,10 +76,12 @@ export default function AccountPage() {
       const updated = custom.detail || null;
       setSession(updated);
       if (updated) {
-        setEditUsername(updated.username.startsWith('@') ? updated.username.substring(1) : updated.username);
+        setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
-        if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
-        if (updated.bannerType) setBannerType(updated.bannerType);
+        if (updated.bannerUrl) {
+          setBannerPreview(updated.bannerUrl);
+          if (updated.bannerType) setBannerType(updated.bannerType);
+        }
         if (updated.note?.text) {
           setNoteInput(updated.note.text);
           setActiveNoteText(updated.note.text);
@@ -75,10 +91,7 @@ export default function AccountPage() {
       }
     };
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
-
-    return () => {
-      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
-    };
+    return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
   }, []);
 
   useEffect(() => {
@@ -153,8 +166,9 @@ export default function AccountPage() {
     setBannerType(isVid ? 'video' : 'image');
     const reader = new FileReader();
     reader.onloadend = () => {
-      setBannerPreview(reader.result as string);
-      brutalistToast('Banner berhasil dimuat, klik simpan perubahan', 'success');
+      const result = reader.result as string;
+      setBannerPreview(result);
+      brutalistToast('Banner berhasil dimuat di preview', 'success');
     };
     reader.readAsDataURL(file);
   };
@@ -206,9 +220,20 @@ export default function AccountPage() {
 
   const toggleSound = () => {
     if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
+      const nextMuted = !videoRef.current.muted;
+      videoRef.current.muted = nextMuted;
+      setIsMuted(nextMuted);
+      localStorage.setItem('fztools_banner_muted', String(nextMuted));
+      if (!nextMuted) {
+        videoRef.current.play().catch(() => {});
+      }
     }
+  };
+
+  const toggleCleanMode = () => {
+    const nextClean = !isCleanMode;
+    setIsCleanMode(nextClean);
+    localStorage.setItem('fztools_clean_mode', String(nextClean));
   };
 
   if (!session) {
@@ -223,12 +248,12 @@ export default function AccountPage() {
     );
   }
 
-  const currentBannerUrl = session.bannerUrl || "/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4";
+  const currentBannerUrl = bannerPreview || session.bannerUrl || "/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4";
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      <div className="relative w-full h-44 sm:h-56 bg-zinc-900 overflow-hidden">
+      <div className="relative w-full h-48 sm:h-64 bg-zinc-900 overflow-hidden">
         {bannerType === 'video' ? (
           <video key={currentBannerUrl} ref={videoRef} autoPlay loop muted={isMuted} playsInline preload="auto" className="w-full h-full object-cover">
             <source src={currentBannerUrl} type="video/mp4" />
@@ -237,6 +262,8 @@ export default function AccountPage() {
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
         
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white dark:from-zinc-950 to-transparent backdrop-blur-[2px]" />
+
         <AnimatePresence>
           {!isCleanMode && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-4 left-4 right-4 flex justify-between z-20">
@@ -252,9 +279,9 @@ export default function AccountPage() {
         </AnimatePresence>
       </div>
 
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 z-10 overflow-visible">
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-16 sm:-mt-20 z-10 overflow-visible">
         <div className="flex items-end justify-between gap-4">
-          <div className="flex-1 pb-1">
+          <div className="flex-1 pb-1 pt-4">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
@@ -286,27 +313,27 @@ export default function AccountPage() {
             </div>
 
             <div className="relative">
-              <motion.div animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute -inset-1.5 pointer-events-none z-0">
+              <motion.div animate={{ scale: [1, 1.05, 0.98, 1.04, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} className="absolute -inset-2 pointer-events-none z-0">
                 <motion.svg className="w-full h-full" viewBox="0 0 100 100" animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}>
-                  <defs><linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#4338CA" /><stop offset="50%" stopColor="#FB7185" /><stop offset="100%" stopColor="#FDBA74" /></linearGradient></defs>
+                  <defs><linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#20D5EC" /><stop offset="50%" stopColor="#ffffff" /><stop offset="100%" stopColor="#20D5EC" /></linearGradient></defs>
                   <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#aurora)" strokeWidth="3.5" strokeLinecap="round" animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
                 </motion.svg>
               </motion.div>
-              <div onClick={handleAvatarTap} className="relative z-10 w-20 h-20 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
-                {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-xl font-bold text-white">{session.initials}</div>}
+              <div onClick={handleAvatarTap} className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[4px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
+                {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-2xl font-bold text-white">{session.initials}</div>}
               </div>
             </div>
-            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 z-20 w-6 h-6 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md"><Plus size={12} strokeWidth={3}/></button>
+            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 z-20 w-7 h-7 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md"><Plus size={14} strokeWidth={3}/></button>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
           </div>
         </div>
 
-        <div className="flex items-center gap-6 mt-4 font-bold text-zinc-900 dark:text-white">
-          <div className="flex flex-col"><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
+        <div className="flex items-center gap-6 mt-3 font-bold text-zinc-900 dark:text-white">
+          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div className="flex flex-col"><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
+          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div className="flex flex-col"><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
         </div>
 
         <div className="mt-3 mb-5">
@@ -315,7 +342,7 @@ export default function AccountPage() {
 
         <div className="flex overflow-x-auto gap-2.5 no-scrollbar pb-2">
           <Link href="/" className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white"><Wrench size={14} className="text-pink-500"/>Studio FZ</Link>
-          <button onClick={() => setIsCleanMode(!isCleanMode)} className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer">{isCleanMode ? <EyeOff size={14}/> : <Eye size={14}/>} Mode Bersih</button>
+          <button onClick={toggleCleanMode} className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer">{isCleanMode ? <EyeOff size={14}/> : <Eye size={14}/>} Mode Bersih</button>
           <Link href="/iqcv2" className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white"><ImageIcon size={14} className="text-emerald-500"/>IQC Media</Link>
           <Link href="/brat" className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white"><Sticker size={14} className="text-lime-500"/>Brat Gen</Link>
         </div>
