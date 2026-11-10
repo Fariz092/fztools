@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2, Code2, Cloud, Globe } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
@@ -14,7 +14,6 @@ export default function AccountPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
 
-  const [time, setTime] = useState({ hours: '00', minutes: '00', seconds: '00' });
   const [activeNoteText, setActiveNoteText] = useState<string | null>(() => {
     const s = getStoredUserSession();
     if (s?.note?.text && s?.note?.createdAt) {
@@ -49,17 +48,6 @@ export default function AccountPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTime({
-        hours: String(now.getHours()).padStart(2, '0'),
-        minutes: String(now.getMinutes()).padStart(2, '0'),
-        seconds: String(now.getSeconds()).padStart(2, '0')
-      });
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-
     try {
       const savedTheme = localStorage.getItem('fztools_theme') || 'light';
       const root = document.documentElement;
@@ -90,7 +78,6 @@ export default function AccountPage() {
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
 
     return () => {
-      clearInterval(timer);
       window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
     };
   }, []);
@@ -281,27 +268,43 @@ export default function AccountPage() {
       </div>
 
       <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 z-10 overflow-visible">
-        <div className="flex items-end justify-between gap-4">
+        
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="flex-1 pb-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">{session.username.replace(/^@+/, '')}</h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 select-none ml-1 inline-flex items-center">
-                  <svg className="w-5 h-5 text-[#20D5EC]" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7l-4.2-4.2 1.4-1.4 2.8 2.8 6.4-6.4 1.4 1.4-7.8 7.8z" />
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91C2.63 9.33 1.75 10.57 1.75 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z" fill="#20D5EC" />
+                    <path d="M9 12.2l2.1 2.1 4.4-4.6" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
               )}
             </div>
-            <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
+            <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">{displayAtUsername}</p>
+
+            {(session.isVerified || session.role === 'DEVELOPER') && (
+              <div className="flex flex-col gap-1 mb-3">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400"><Code2 size={14}/> programmer.verified</span>
+                <span className="flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400"><Cloud size={14}/> cloud.engineer.verified</span>
+                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400"><Globe size={14}/> Verified Developer</span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-6 font-bold text-zinc-900 dark:text-white mt-2">
+              <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
+              <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+              <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
+              <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+              <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+            </div>
           </div>
 
-          <div className="relative shrink-0">
-            <motion.div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }} className="absolute -top-12 right-2 z-30 cursor-pointer select-none">
-              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[140px] shadow-md">
-                <span className="absolute -top-1.5 left-2.5 w-3 h-3 rounded-full bg-white dark:bg-zinc-800" />
-                <span className="absolute -top-2 left-6 w-4 h-4 rounded-full bg-white dark:bg-zinc-800" />
-                <span className="absolute -bottom-1 left-4 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800" />
+          <div className="relative shrink-0 self-start sm:self-end mt-2 sm:mt-0">
+            <motion.div onClick={() => { setNoteInput(activeNoteText || ''); setIsNoteModalOpen(true); }} animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }} className="absolute -top-14 left-1/2 -translate-x-1/2 z-30 cursor-pointer select-none">
+              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[85px] max-w-[150px] shadow-lg border border-zinc-200/60 dark:border-zinc-700/60 whitespace-nowrap">
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/60 dark:border-zinc-700/60 rotate-45 transform" />
                 <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? (displayedNote || activeNoteText) : '+ Catatan'}</span>
               </div>
             </motion.div>
@@ -313,24 +316,16 @@ export default function AccountPage() {
                   <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#aurora)" strokeWidth="3.5" strokeLinecap="round" animate={{ strokeDasharray: ['25 255', '280 0', '25 255'], strokeDashoffset: [0, -280, -560] }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
                 </motion.svg>
               </motion.div>
-              <div onClick={handleAvatarTap} className="relative z-10 w-20 h-20 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
-                {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-xl font-bold text-white">{session.initials}</div>}
+              <div onClick={handleAvatarTap} className="relative z-10 w-24 h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-xl cursor-pointer">
+                {session.avatarUrl ? <img src={session.avatarUrl} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-2xl font-bold text-white">{session.initials}</div>}
               </div>
             </div>
-            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 z-20 w-6 h-6 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer"><Plus size={12} strokeWidth={3}/></button>
+            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 z-20 w-7 h-7 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md"><Plus size={14} strokeWidth={3}/></button>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
           </div>
         </div>
 
-        <div className="flex items-center gap-4 mt-4 font-bold text-zinc-900 dark:text-white">
-          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
-          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
-          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
-        </div>
-
-        <div className="mt-3 mb-5">
+        <div className="mt-4 mb-5">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
