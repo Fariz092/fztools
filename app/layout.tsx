@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   },
   description:
     'Paket alat utilitas modern dan minimalis untuk kreator: konversi file, generator media sosial, kode QR, dan kreasi meme bertenaga AI.',
+  keywords: ['FZTOOLS', 'Alat Kreator', 'Konverter File', 'Generator Meme', 'IQC WhatsApp', 'Brat Generator', 'Unduh TikTok', 'M Fariz Alfauzi', 'Riz Universe', 'Utilitas Web'],
   authors: [
     {
       name: 'M. Fariz Alfauzi',
@@ -28,12 +29,21 @@ export const metadata: Metadata = {
     type: 'website',
     url: SITE_URL,
     siteName: 'FZTOOLS',
+    images: [
+      {
+        url: '/icon.png',
+        width: 800,
+        height: 800,
+        alt: 'FZTOOLS Preview Image',
+      }
+    ]
   },
   twitter: {
     card: 'summary_large_image',
     title: 'FZTOOLS - Minimalist Creative & Utility Suite',
     description:
       'Paket alat utilitas modern dan minimalis untuk kreator: konversi file, generator media sosial, kode QR, dan kreasi meme bertenaga AI.',
+    images: ['/icon.png'],
   },
   robots: {
     index: true,
