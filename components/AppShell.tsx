@@ -6,7 +6,6 @@ import HistoryModal from '@/components/HistoryModal';
 import AppPopupProvider from '@/components/AppPopupProvider';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
-import FloatingChat from '@/components/FloatingChat';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -49,9 +48,6 @@ export default function AppShell({
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
       />
-
-      <FloatingChat />
     </div>
   );
 }
-
