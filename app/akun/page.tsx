@@ -405,6 +405,11 @@ export default function AccountPage() {
             </div>
             <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
             {renderDevBadges()}
+        <div className="flex items-center gap-6 mt-4 font-bold text-zinc-900 dark:text-white">
+          <div><span className="text-base">214</span> <span className="text-[10px] text-zinc-500 font-medium">Mengikuti</span></div>
+          <div><span className="text-base">32,33 rb</span> <span className="text-[10px] text-zinc-500 font-medium">Pengikut</span></div>
+          <div><span className="text-base">743,21 rb</span> <span className="text-[10px] text-zinc-500 font-medium">Suka</span></div>
+        </div>
           </div>
 
           <div className="relative shrink-0">
