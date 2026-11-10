@@ -232,7 +232,7 @@ export default function AccountPage() {
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      {/* BANNER DENGAN SOFT FADE ALA TIKTOK */}
+      {/* BANNER DENGAN FADE RENDAH AGAR BANNER BAWAH LEBIH TERLIHAT */}
       <div className="relative w-full h-52 sm:h-64 bg-zinc-900 overflow-hidden">
         {bannerType === 'video' ? (
           <video
@@ -253,8 +253,8 @@ export default function AccountPage() {
 
         <div className="absolute inset-0 bg-black/10" />
 
-        {/* Gradien Kabut Halus (Soft Fade) dari Bawah Banner Menuju Transparan ke Atas */}
-        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-36 bg-gradient-to-t from-white dark:from-zinc-950 via-white/80 dark:via-zinc-950/80 via-40% to-transparent pointer-events-none" />
+        {/* Gradien Fade Halus Dibuat Lebih Rendah Agar Detail Bawah Banner Tetap Terlihat */}
+        <div className="absolute inset-x-0 bottom-0 h-16 sm:h-22 bg-gradient-to-t from-white dark:from-zinc-950 via-white/70 dark:via-zinc-950/70 to-transparent pointer-events-none" />
 
         <AnimatePresence>
           {!isCleanMode && (
@@ -289,8 +289,8 @@ export default function AccountPage() {
         </AnimatePresence>
       </div>
 
-      {/* KONTEN PROFIL: Posisi Mulai di Area Transisi Gradien Banner */}
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-16 sm:-mt-20 z-10 overflow-visible">
+      {/* KONTEN PROFIL */}
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 sm:-mt-12 z-10 overflow-visible">
         <div className="flex items-start justify-between gap-4">
           {/* Kolom Kiri: Nama Besar, Username, Lencana Badge, & Statistik */}
           <div className="min-w-0 flex-1 pr-2">
@@ -315,7 +315,7 @@ export default function AccountPage() {
             {/* Username */}
             <p className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">{displayAtUsername}</p>
 
-            {/* 3 Lencana Badge Didekatkan Langsung ke Bawah Username */}
+            {/* 3 Lencana Badge Dekat Di Bawah Username */}
             {(session.isVerified || session.role === 'DEVELOPER') && (
               <div className="flex flex-col gap-0.5 mt-1.5 mb-2.5">
                 <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
@@ -330,24 +330,24 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* Statistik TikTok Style: Angka di Atas, Label di Bawah, Tanpa Garis Pembatas */}
+            {/* Statistik TikTok Style: Mengikuti 547 | Pengikut 67,3 rb | Suka 547,2 rb */}
             <div className="flex items-center gap-6 sm:gap-8 mt-3">
               <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">11</span>
+                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">547</span>
                 <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Mengikuti</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">24</span>
+                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">67,3 rb</span>
                 <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Pengikut</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">0</span>
+                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">547,2 rb</span>
                 <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Suka</span>
               </div>
             </div>
           </div>
 
-          {/* Kolom Kanan: Avatar TikTok Style + Bubble Catatan Berbuntut */}
+          {/* Kolom Kanan: Avatar Lebih Besar + Bubble Catatan Berbuntut */}
           <div className="relative shrink-0 flex flex-col items-center">
             {/* Note Bubble (Bisik-bisik / Status) dengan Ekor Mengarah ke Avatar */}
             <div
@@ -355,7 +355,7 @@ export default function AccountPage() {
                 setNoteInput(activeNoteText || '');
                 setIsNoteModalOpen(true);
               }}
-              className="absolute -top-10 sm:-top-11 right-1 z-30 cursor-pointer select-none"
+              className="absolute -top-11 sm:-top-12 right-1 sm:right-2 z-30 cursor-pointer select-none"
             >
               <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1 rounded-[18px] flex items-center justify-center min-w-[70px] max-w-[130px] shadow-sm border border-zinc-200/80 dark:border-zinc-700/80">
                 <span className="absolute -bottom-1 right-5 w-2 h-2 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
@@ -363,16 +363,16 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Avatar Circle */}
+            {/* Avatar Circle (Diperbesar Menjadi w-24 sm:w-28) */}
             <div className="relative">
               <div
                 onClick={handleAvatarTap}
-                className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-md cursor-pointer"
+                className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3.5px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-md cursor-pointer"
               >
                 {session.avatarUrl ? (
                   <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="flex items-center justify-center h-full text-xl font-bold text-white">{session.initials}</div>
+                  <div className="flex items-center justify-center h-full text-2xl font-bold text-white">{session.initials}</div>
                 )}
               </div>
             </div>
@@ -380,17 +380,17 @@ export default function AccountPage() {
             {/* Tombol Plus Biru Khas TikTok */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 z-20 w-6 h-6 bg-[#00C2F3] hover:bg-[#00b0dc] rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md transition-colors"
+              className="absolute bottom-0 right-0 z-20 w-7 h-7 sm:w-7.5 sm:h-7.5 bg-[#00C2F3] hover:bg-[#00b0dc] rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md transition-colors"
               title="Ganti Foto"
             >
-              <Plus size={13} strokeWidth={3} />
+              <Plus size={14} strokeWidth={3} />
             </button>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
           </div>
         </div>
 
         {/* Bio Kreator */}
-        <div className="mt-3.5 mb-4">
+        <div className="mt-4 mb-4">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
