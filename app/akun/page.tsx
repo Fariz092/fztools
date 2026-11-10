@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2 } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
+import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -15,7 +16,9 @@ export default function AccountPage() {
   const [isCleanMode, setIsCleanMode] = useState(false);
 
   const [time, setTime] = useState({ hours: '00', minutes: '00', seconds: '00' });
-  
+  const [activeNoteText, setActiveNoteText] = useState<string | null>(null);
+  const [displayedNote, setDisplayedNote] = useState('');
+
   const [editUsername, setEditUsername] = useState(() => {
     const s = getStoredUserSession();
     if (!s) return '';
@@ -38,7 +41,6 @@ export default function AccountPage() {
     const s = getStoredUserSession();
     return s?.note?.text || '';
   });
-  const [displayedNote, setDisplayedNote] = useState('');
 
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
@@ -74,10 +76,24 @@ export default function AccountPage() {
       }
     } catch (e) {}
 
+    const checkNote = (s: UserSession | null) => {
+      if (s?.note?.text && s?.note?.createdAt) {
+        const diff = Date.now() - new Date(s.note.createdAt).getTime();
+        if (diff < 24 * 60 * 60 * 1000) {
+          setActiveNoteText(s.note.text);
+          return;
+        }
+      }
+      setActiveNoteText(null);
+    };
+
+    checkNote(getStoredUserSession());
+
     const handleAuthChange = (e: Event) => {
       const custom = e as CustomEvent<UserSession | null>;
       const updated = custom.detail || null;
       setSession(updated);
+      checkNote(updated);
       if (updated) {
         const formatted = updated.username.startsWith('@') ? updated.username : `@${updated.username}`;
         setEditUsername(formatted);
@@ -95,28 +111,21 @@ export default function AccountPage() {
   const currentBannerUrl = session?.bannerUrl || "/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4";
   const currentBannerType = session?.bannerType || 'video';
 
-  const isNoteValid = Boolean(
-    session?.note?.text &&
-    session?.note?.createdAt &&
-    Date.now() - new Date(session.note.createdAt).getTime() < 24 * 60 * 60 * 1000
-  );
-
-  const activeNoteText = isNoteValid ? session?.note?.text : null;
-
   useEffect(() => {
-    if (!activeNoteText) {
-      setDisplayedNote('');
-      return;
-    }
     let idx = 0;
-    setDisplayedNote('');
     const timer = setInterval(() => {
+      if (!activeNoteText) {
+        setDisplayedNote('');
+        clearInterval(timer);
+        return;
+      }
       idx++;
       setDisplayedNote(activeNoteText.slice(0, idx));
       if (idx >= activeNoteText.length) {
         clearInterval(timer);
       }
     }, 70);
+
     return () => clearInterval(timer);
   }, [activeNoteText]);
 
@@ -275,6 +284,7 @@ export default function AccountPage() {
 
     saveUserSession(updatedSession);
     setSession(updatedSession);
+    setActiveNoteText(noteInput.trim().slice(0, 60));
     setIsNoteModalOpen(false);
     brutalistToast('Catatan 24 jam berhasil disimpan', 'success');
   };
@@ -287,6 +297,7 @@ export default function AccountPage() {
     };
     saveUserSession(updatedSession);
     setSession(updatedSession);
+    setActiveNoteText(null);
     setNoteInput('');
     setIsNoteModalOpen(false);
     brutalistToast('Catatan berhasil dihapus', 'info');
@@ -402,7 +413,7 @@ export default function AccountPage() {
                 <span className="absolute -bottom-1 right-6 w-3 h-3 rounded-full bg-white dark:bg-zinc-800" />
 
                 <span className="relative z-10 text-[11px] font-bold truncate">
-                  {isNoteValid ? (displayedNote || activeNoteText) : '+ Catatan'}
+                  {activeNoteText ? (displayedNote || activeNoteText) : '+ Catatan'}
                 </span>
               </div>
 
@@ -642,7 +653,7 @@ export default function AccountPage() {
               </div>
 
               <div className="flex gap-2">
-                {isNoteValid && (
+                {activeNoteText && (
                   <button type="button" onClick={handleDeleteNote} className="p-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer">
                     <Trash2 className="w-4 h-4" />
                   </button>
