@@ -4,13 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, Download, UserPlus, FileImage, LayoutGrid, X, Upload, Volume2, VolumeX, Eye, EyeOff, KeyRound, MessageSquarePlus, Trash2, Code2, Cloud, Globe } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT } from '@/lib/auth-session';
-import { fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
-  const [historyCount, setHistoryCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -343,7 +341,7 @@ export default function AccountPage() {
     );
   }
 
-  const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
+  const displayAtUsername = session.username.startsWith('@' ) ? session.username : `@${session.username}`;
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
       
@@ -394,8 +392,9 @@ export default function AccountPage() {
               </h1>
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 select-none ml-1 inline-flex items-center">
-                  <svg className="w-5 h-5 text-[#20D5EC]" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7l-4.2-4.2 1.4-1.4 2.8 2.8 6.4-6.4 1.4 1.4-7.8 7.8z" />
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91C2.63 9.33 1.75 10.57 1.75 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z" fill="#20D5EC" />
+                    <path d="M9 12.2l2.1 2.1 4.4-4.6" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
               )}
@@ -403,7 +402,7 @@ export default function AccountPage() {
             <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400">{displayAtUsername}</p>
             
             {(session.isVerified || session.role === 'DEVELOPER') && (
-              <div className="flex flex-col gap-0.5 mt-2">
+              <div className="flex flex-col gap-1 mt-2.5">
                 <span className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400"><Code2 size={13}/> programmer.verified</span>
                 <span className="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400"><Cloud size={13}/> cloud.engineer.verified</span>
                 <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400"><Globe size={13}/> Verified Developer</span>
@@ -499,10 +498,34 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 mt-4 font-bold text-zinc-900 dark:text-white">
-          <div><span className="text-base">214</span> <span className="text-xs text-zinc-500 font-normal">Mengikuti</span></div>
-          <div><span className="text-base">32,33 rb</span> <span className="text-xs text-zinc-500 font-normal">Pengikut</span></div>
-          <div><span className="text-base">743,21 rb</span> <span className="text-xs text-zinc-500 font-normal">Suka</span></div>
+        <div className="flex items-center gap-4 sm:gap-6 mt-4">
+          <div className="flex flex-col items-center">
+            <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tabular-nums h-7 sm:h-8 flex items-center">{time.hours}</span>
+            <span className="text-[11px] font-medium text-zinc-500">Jam</span>
+          </div>
+          <div className="h-6 w-[1px] bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+          <div className="flex flex-col items-center">
+            <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tabular-nums h-7 sm:h-8 flex items-center">{time.minutes}</span>
+            <span className="text-[11px] font-medium text-zinc-500">Menit</span>
+          </div>
+          <div className="h-6 w-[1px] bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+          <div className="flex flex-col items-center">
+            <div className="overflow-hidden h-7 sm:h-8 flex items-center justify-center">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={time.seconds}
+                  initial={{ y: 16, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -16, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tabular-nums block"
+                >
+                  {time.seconds}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+            <span className="text-[11px] font-medium text-zinc-500">Detik</span>
+          </div>
         </div>
 
         <div className="mt-3 mb-5">
