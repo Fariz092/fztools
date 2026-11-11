@@ -388,8 +388,8 @@ export default function AccountPage() {
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-          {/* BANNER RINGKAS (155px): Video Selalu Dominan Tepat di Tengah (object-center) */}
-          <div className="absolute top-0 inset-x-0 h-[155px] sm:h-[175px] bg-zinc-950 overflow-hidden select-none z-0">
+          {/* BANNER RINGKAS: Video Fokus Tengah dengan Feather Halus di 160px */}
+          <div className="absolute top-0 inset-x-0 h-[160px] sm:h-[180px] bg-zinc-950 overflow-hidden select-none z-0">
             {bannerType === 'video' ? (
               <video
                 key={currentBannerUrl}
@@ -401,8 +401,8 @@ export default function AccountPage() {
                 preload="auto"
                 className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
                 style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
                 }}
               >
                 <source src={currentBannerUrl} type="video/mp4" />
@@ -413,8 +413,8 @@ export default function AccountPage() {
                 alt="Banner"
                 className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
                 style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
                 }}
               />
             )}
@@ -476,14 +476,15 @@ export default function AccountPage() {
             </div>
           </header>
 
-          {/* MAIN PROFILE DETAILS (PERBATASAN SMOOTH BANNER) */}
-          <div className="px-5 pt-7 sm:pt-9 relative z-20">
-            {/* ROW PROFIL UTAMA: Blok Kiri Rapat & Avatar Kanan Besar Membingkai Sejajar */}
+          {/* MAIN PROFILE DETAILS */}
+          {/* pt-[100px] memposisikan NAMA tepat di garis perbatasan smooth, sehingga USERNAME & BADGE tampil utuh di bawahnya */}
+          <div className="px-5 pt-[100px] sm:pt-[115px] relative z-20">
+            {/* ROW PROFIL UTAMA: Nama & Avatar di perbatasan smooth */}
             <div className="flex items-start justify-between gap-3 relative">
               
-              {/* BLOK KIRI: NAMA, USERNAME, & 3 BADGE TERSUSUN RAPAT TANPA JARAK JAUH */}
+              {/* BLOK KIRI: NAMA di perbatasan smooth, USERNAME & BADGE di kawasan profil bawah */}
               <div className="flex-1 min-w-0 pr-1">
-                {/* Nama Besar + Red Badge 3 */}
+                {/* 1. Nama Besar: Tepat di perbatasan garis smooth banner */}
                 <div className="flex items-center space-x-1.5 flex-wrap">
                   <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight text-slate-900 dark:text-white leading-tight font-sans line-clamp-1">
                     {displayName}
@@ -493,13 +494,14 @@ export default function AccountPage() {
                   </span>
                 </div>
 
-                {/* Handle (@username) + Ceklis Biru Hexagon */}
-                <div className="flex items-center gap-1 mt-0.5">
+                {/* 2. Username (@handle) tepat di bawah nama */}
+                <div className="flex items-center gap-1 mt-1">
                   <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                     {displayAtUsername}
                   </span>
                   {(session.isVerified || session.role === 'DEVELOPER') && (
                     <span className="shrink-0 inline-flex items-center ml-0.5" title="Terverifikasi">
+                      {/* Hexagon Verified Badge */}
                       <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
                         <path
                           d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
@@ -517,17 +519,17 @@ export default function AccountPage() {
                   )}
                 </div>
 
-                {/* 3 Lencana Badge Rapat Langsung Menempel di Bawah Username */}
+                {/* 3. Lencana Badge: Utuh dan jelas di area profil solid tanpa tertutup banner */}
                 {(session.isVerified || session.role === 'DEVELOPER') && (
-                  <div className="flex flex-col gap-0.5 mt-1 mb-2">
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 leading-tight">
-                      <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
+                  <div className="flex flex-col gap-1 mt-2 mb-2.5">
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 leading-tight">
+                      <Code2 size={13} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
                     </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 leading-tight">
-                      <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 leading-tight">
+                      <Cloud size={13} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
                     </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 leading-tight">
-                      <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 leading-tight">
+                      <Globe size={13} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
                     </span>
                   </div>
                 )}
@@ -535,7 +537,7 @@ export default function AccountPage() {
 
               {/* BLOK KANAN: AVATAR BESAR DENGAN BUBBLE MELAYANG DI ATASNYA */}
               <div className="relative shrink-0 flex flex-col items-center">
-                {/* Bubble Chat Melayang di Atas Kepala Avatar */}
+                {/* Bubble Chat Melayang */}
                 <div
                   onClick={() => {
                     setNoteInput(activeNoteText || '');
@@ -550,7 +552,7 @@ export default function AccountPage() {
                   </div>
                 </div>
 
-                {/* Lingkaran Avatar Besar (Tinggi Menyeimbangi Seluruh Blok Kiri) */}
+                {/* Lingkaran Avatar */}
                 <div className="relative z-10">
                   <div
                     onClick={handleAvatarTap}
@@ -648,7 +650,6 @@ export default function AccountPage() {
                 <span>Brat Gen</span>
               </Link>
             </div>
-
           </div>
 
           {/* CONTENT TABS SECTION (TIKTOK STYLE) */}
