@@ -90,7 +90,7 @@ export default function AccountPage() {
 
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
-    return s?.bio || '魚座';
+    return s?.bio || 'Development';
   });
 
   const [bannerPreview, setBannerPreview] = useState<string | null>(() => getStoredUserSession()?.bannerUrl || null);
@@ -138,7 +138,7 @@ export default function AccountPage() {
       if (updated) {
         setEditName(updated.name || updated.username.replace(/^@+/, ''));
         setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
-        setEditBio(updated.bio || '魚座');
+        setEditBio(updated.bio || 'Development');
         if (updated.bannerUrl && updated.bannerUrl !== 'idb://custom_banner_media') {
           setBannerPreview(updated.bannerUrl);
         }
@@ -388,8 +388,8 @@ export default function AccountPage() {
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-          {/* BANNER DIPERPENDEK (H-170px) AGAR PROFIL LEBIH DOMINAN */}
-          <div className="absolute top-0 inset-x-0 h-[170px] sm:h-[190px] bg-white dark:bg-zinc-950 overflow-hidden select-none z-0">
+          {/* BANNER RINGKAS (155px): Video Selalu Dominan Tepat di Tengah (object-center) */}
+          <div className="absolute top-0 inset-x-0 h-[155px] sm:h-[175px] bg-zinc-950 overflow-hidden select-none z-0">
             {bannerType === 'video' ? (
               <video
                 key={currentBannerUrl}
@@ -399,10 +399,10 @@ export default function AccountPage() {
                 muted={isMuted}
                 playsInline
                 preload="auto"
-                className="w-full h-full object-cover object-top filter brightness-[0.98] contrast-[1.05]"
+                className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
                 style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
                 }}
               >
                 <source src={currentBannerUrl} type="video/mp4" />
@@ -411,17 +411,17 @@ export default function AccountPage() {
               <img
                 src={currentBannerUrl}
                 alt="Banner"
-                className="w-full h-full object-cover object-top filter brightness-[0.98] contrast-[1.05]"
+                className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
                 style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 98%)',
                 }}
               />
             )}
           </div>
 
-          {/* TOP BAR NAVIGATION ICONS */}
-          <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-3 z-30 mb-2">
+          {/* TOP BAR ICONS */}
+          <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-3 z-30 mb-1">
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -476,43 +476,85 @@ export default function AccountPage() {
             </div>
           </header>
 
-          {/* MAIN PROFILE DETAILS (DIMULAI DI PERBATASAN SMOOTH BANNER) */}
-          <div className="px-5 pt-10 sm:pt-14 relative z-20">
-            {/* ROW NAMA & AVATAR SEJAJAR SECARA PRESISI */}
-            <div className="flex items-center justify-between gap-3 relative">
+          {/* MAIN PROFILE DETAILS (PERBATASAN SMOOTH BANNER) */}
+          <div className="px-5 pt-7 sm:pt-9 relative z-20">
+            {/* ROW PROFIL UTAMA: Blok Kiri Rapat & Avatar Kanan Besar Membingkai Sejajar */}
+            <div className="flex items-start justify-between gap-3 relative">
               
-              {/* NAMA BESAR + BADGE MERAH 3 (SEJAJAR DENGAN AVATAR) */}
-              <div className="flex items-center space-x-2 min-w-0 flex-1 pr-2">
-                <h1 className="text-[28px] sm:text-[32px] font-black tracking-tight text-slate-900 dark:text-white leading-none font-sans line-clamp-1">
-                  {displayName}
-                </h1>
-                <span className="bg-[#ff2c55] text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0">
-                  3
-                </span>
+              {/* BLOK KIRI: NAMA, USERNAME, & 3 BADGE TERSUSUN RAPAT TANPA JARAK JAUH */}
+              <div className="flex-1 min-w-0 pr-1">
+                {/* Nama Besar + Red Badge 3 */}
+                <div className="flex items-center space-x-1.5 flex-wrap">
+                  <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight text-slate-900 dark:text-white leading-tight font-sans line-clamp-1">
+                    {displayName}
+                  </h1>
+                  <span className="bg-[#ff2c55] text-white text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0">
+                    3
+                  </span>
+                </div>
+
+                {/* Handle (@username) + Ceklis Biru Hexagon */}
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                    {displayAtUsername}
+                  </span>
+                  {(session.isVerified || session.role === 'DEVELOPER') && (
+                    <span className="shrink-0 inline-flex items-center ml-0.5" title="Terverifikasi">
+                      <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
+                          fill="#20D5EC"
+                        />
+                        <path
+                          d="M8.5 12.3l2.4 2.4 4.8-4.8"
+                          stroke="#FFFFFF"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </div>
+
+                {/* 3 Lencana Badge Rapat Langsung Menempel di Bawah Username */}
+                {(session.isVerified || session.role === 'DEVELOPER') && (
+                  <div className="flex flex-col gap-0.5 mt-1 mb-2">
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 leading-tight">
+                      <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 leading-tight">
+                      <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 leading-tight">
+                      <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* AVATAR + BUBBLE CATATAN MELAYANG DI ATASNYA */}
-              <div className="relative shrink-0 flex items-center">
+              {/* BLOK KANAN: AVATAR BESAR DENGAN BUBBLE MELAYANG DI ATASNYA */}
+              <div className="relative shrink-0 flex flex-col items-center">
                 {/* Bubble Chat Melayang di Atas Kepala Avatar */}
                 <div
                   onClick={() => {
                     setNoteInput(activeNoteText || '');
                     setIsNoteModalOpen(true);
                   }}
-                  className="absolute -top-11 right-1 z-30 cursor-pointer select-none after:content-[''] after:absolute after:-bottom-[6px] after:right-[26px] after:w-3 after:h-3 after:bg-white dark:after:bg-zinc-800 after:rotate-45 after:border-r after:border-b after:border-slate-100 dark:after:border-zinc-700 after:rounded-[2px]"
+                  className="relative z-30 mb-[-10px] cursor-pointer select-none after:content-[''] after:absolute after:-bottom-[5px] after:right-[26px] after:w-2.5 after:h-2.5 after:bg-white dark:after:bg-zinc-800 after:rotate-45 after:border-r after:border-b after:border-slate-100 dark:after:border-zinc-700 after:rounded-[2px]"
                 >
-                  <div className="bg-white dark:bg-zinc-800 px-3.5 py-1.5 rounded-2xl border border-slate-100 dark:border-zinc-700 shadow-md min-w-[75px] max-w-[130px] text-center">
-                    <p className="text-xs font-bold text-slate-600 dark:text-zinc-200 leading-tight">
+                  <div className="bg-white dark:bg-zinc-800 px-3 py-1 rounded-[16px] border border-slate-100 dark:border-zinc-700 shadow-sm min-w-[70px] max-w-[125px] text-center">
+                    <p className="text-[11px] font-bold text-slate-600 dark:text-zinc-200 leading-tight">
                       {activeNoteText ? activeNoteText : <>Ada yang<br />seru?</>}
                     </p>
                   </div>
                 </div>
 
-                {/* Lingkaran Avatar Sejajar Horizontal dengan Nama Besar */}
-                <div className="relative group cursor-pointer z-20">
+                {/* Lingkaran Avatar Besar (Tinggi Menyeimbangi Seluruh Blok Kiri) */}
+                <div className="relative z-10">
                   <div
                     onClick={handleAvatarTap}
-                    className="w-[88px] h-[88px] sm:w-[98px] sm:h-[98px] rounded-full p-[3px] bg-white dark:bg-zinc-900 shadow-lg overflow-hidden border border-slate-100 dark:border-zinc-800"
+                    className="w-[104px] h-[104px] sm:w-[114px] sm:h-[114px] rounded-full p-[3px] bg-white dark:bg-zinc-900 shadow-lg overflow-hidden border border-slate-100 dark:border-zinc-800 cursor-pointer"
                   >
                     {session.avatarUrl ? (
                       <img
@@ -542,110 +584,69 @@ export default function AccountPage() {
 
             </div>
 
-            {/* USERNAME & BADGE TETAP DI KAWASAN PROFIL DI BAWAH NAMA */}
-            <div className="mt-1.5">
-              {/* Handle (@username) with hexagonal verified badge */}
-              <div className="flex items-center space-x-1.5 mb-2">
-                <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 tracking-normal">
-                  {displayAtUsername}
-                </p>
-                {(session.isVerified || session.role === 'DEVELOPER') && (
-                  <span title="Terverifikasi" className="inline-flex items-center shrink-0">
-                    <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
-                        fill="#20D5EC"
-                      />
-                      <path
-                        d="M8.5 12.3l2.4 2.4 4.8-4.8"
-                        stroke="#FFFFFF"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                )}
+            {/* KAWASAN LANJUTAN PROFIL DI BAWAHNYA */}
+            {/* Stats Row */}
+            <div className="flex items-center space-x-6 my-2.5 text-left">
+              <div className="cursor-pointer">
+                <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547</div>
+                <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Mengikuti</div>
               </div>
-
-              {/* Developer badges */}
-              {(session.isVerified || session.role === 'DEVELOPER') && (
-                <div className="flex flex-col gap-0.5 mb-3">
-                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                    <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
-                  </span>
-                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                    <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
-                  </span>
-                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                    <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
-                  </span>
-                </div>
-              )}
-
-              {/* Stats Row */}
-              <div className="flex items-center space-x-6 my-2 text-left">
-                <div className="cursor-pointer">
-                  <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547</div>
-                  <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Mengikuti</div>
-                </div>
-                <div className="cursor-pointer">
-                  <div className="text-xl font-black text-slate-900 dark:text-white leading-none">67,3 rb</div>
-                  <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Pengikut</div>
-                </div>
-                <div className="cursor-pointer">
-                  <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547,2 rb</div>
-                  <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Suka</div>
-                </div>
+              <div className="cursor-pointer">
+                <div className="text-xl font-black text-slate-900 dark:text-white leading-none">67,3 rb</div>
+                <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Pengikut</div>
               </div>
-
-              {/* Bio */}
-              <div className="mt-4 mb-3 text-slate-900 dark:text-zinc-100 font-extrabold text-sm sm:text-base tracking-wide whitespace-pre-line">
-                {session.bio || '魚座'}
+              <div className="cursor-pointer">
+                <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547,2 rb</div>
+                <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Suka</div>
               </div>
+            </div>
 
-              {/* Action Pill Buttons */}
-              <div className="flex flex-wrap items-center gap-2 mt-2">
-                <Link
-                  href="/"
-                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
-                >
-                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#FE2C55] to-[#FF85A0] flex items-center justify-center text-white shrink-0">
-                    <Wrench size={9} strokeWidth={2.5} />
-                  </span>
-                  <span>Studio FZ</span>
-                </Link>
+            {/* Bio */}
+            <div className="mt-3.5 mb-3 text-slate-900 dark:text-zinc-100 font-extrabold text-sm sm:text-base tracking-wide whitespace-pre-line">
+              {session.bio || 'Development'}
+            </div>
 
-                <button
-                  onClick={() => setIsCleanMode(!isCleanMode)}
-                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white cursor-pointer"
-                >
-                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#C084FC] flex items-center justify-center text-white shrink-0">
-                    {isCleanMode ? <EyeOff size={9} strokeWidth={2.5} /> : <Eye size={9} strokeWidth={2.5} />}
-                  </span>
-                  <span>{isCleanMode ? 'Mode Biasa' : 'Mode Bersih'}</span>
-                </button>
+            {/* Action Pill Buttons */}
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <Link
+                href="/"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+              >
+                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#FE2C55] to-[#FF85A0] flex items-center justify-center text-white shrink-0">
+                  <Wrench size={9} strokeWidth={2.5} />
+                </span>
+                <span>Studio FZ</span>
+              </Link>
 
-                <Link
-                  href="/iqcv2"
-                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
-                >
-                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#10B981] to-[#34D399] flex items-center justify-center text-white shrink-0">
-                    <ImageIcon size={9} strokeWidth={2.5} />
-                  </span>
-                  <span>IQC Media</span>
-                </Link>
+              <button
+                onClick={() => setIsCleanMode(!isCleanMode)}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white cursor-pointer"
+              >
+                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#C084FC] flex items-center justify-center text-white shrink-0">
+                  {isCleanMode ? <EyeOff size={9} strokeWidth={2.5} /> : <Eye size={9} strokeWidth={2.5} />}
+                </span>
+                <span>{isCleanMode ? 'Mode Biasa' : 'Mode Bersih'}</span>
+              </button>
 
-                <Link
-                  href="/brat"
-                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
-                >
-                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#84CC16] to-[#A3E635] flex items-center justify-center text-black shrink-0">
-                    <Sticker size={9} strokeWidth={2.5} />
-                  </span>
-                  <span>Brat Gen</span>
-                </Link>
-              </div>
+              <Link
+                href="/iqcv2"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+              >
+                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#10B981] to-[#34D399] flex items-center justify-center text-white shrink-0">
+                  <ImageIcon size={9} strokeWidth={2.5} />
+                </span>
+                <span>IQC Media</span>
+              </Link>
+
+              <Link
+                href="/brat"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+              >
+                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#84CC16] to-[#A3E635] flex items-center justify-center text-black shrink-0">
+                  <Sticker size={9} strokeWidth={2.5} />
+                </span>
+                <span>Brat Gen</span>
+              </Link>
             </div>
 
           </div>
