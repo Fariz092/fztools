@@ -334,7 +334,7 @@ export default function AccountPage() {
       {/* KONTEN PROFIL */}
       <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 sm:-mt-12 z-10 overflow-visible">
         <div className="flex items-start justify-between gap-4">
-          {/* Kolom Kiri: Nama Besar, Username + Ceklis Biru, Lencana Badge, & Statistik */}
+          {/* Kolom Kiri: Nama Besar, Username + Ceklis Biru Hexagon, Lencana Badge, & Statistik */}
           <div className="min-w-0 flex-1 pr-2">
             {/* Nama Besar (Display Name Mandiri) */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -343,22 +343,22 @@ export default function AccountPage() {
               </h1>
             </div>
 
-            {/* Username (@handle) Ditemani Ceklis Biru Hexagonal (Contoh Davina Karamoy) */}
-            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+            {/* Username (@handle) Ditemani Ceklis Biru Hexagon (Segi Enam) */}
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                 {displayAtUsername}
               </span>
 
               {(session.isVerified || session.role === 'DEVELOPER') && (
-                <span className="shrink-0 inline-flex items-center ml-0.5" title="Terverifikasi">
-                  {/* Ceklis Biru Rosette / Scalloped Circle Khas TikTok */}
-                  <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
+                <span className="shrink-0 inline-flex items-center" title="Terverifikasi">
+                  {/* Ceklis Biru Berbentuk Hexagon (Segi Enam) Presisi */}
+                  <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none">
                     <path
-                      d="M12 2.5l1.6 1.9 2.5-.2.8 2.3 2.4.7-.1 2.5 1.8 1.7-.9 2.3 1 2.3-1.8 1.7.1 2.5-2.4.7-.8 2.3-2.5-.2L12 21.5l-1.6-1.9-2.5.2-.8-2.3-2.4-.7.1-2.5-1.8-1.7.9-2.3-1-2.3 1.8-1.7-.1-2.5 2.4-.7.8-2.3 2.5.2L12 2.5z"
+                      d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
                       fill="#20D5EC"
                     />
                     <path
-                      d="M8.5 12l2.5 2.5 5-5"
+                      d="M8.5 12.3l2.4 2.4 4.8-4.8"
                       stroke="#FFFFFF"
                       strokeWidth="2.2"
                       strokeLinecap="round"
