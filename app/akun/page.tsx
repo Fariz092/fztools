@@ -245,7 +245,7 @@ export default function AccountPage() {
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      {/* BANNER DENGAN FADE RENDAH AGAR BANNER BAWAH LEBIH TERLIHAT */}
+      {/* BANNER DENGAN FADE RENDAH */}
       <div className="relative w-full h-52 sm:h-64 bg-zinc-900 overflow-hidden">
         {bannerType === 'video' ? (
           <video
@@ -266,7 +266,7 @@ export default function AccountPage() {
 
         <div className="absolute inset-0 bg-black/10" />
 
-        {/* Gradien Fade Halus Menuju Transparan */}
+        {/* Gradien Fade Halus */}
         <div className="absolute inset-x-0 bottom-0 h-16 sm:h-22 bg-gradient-to-t from-white dark:from-zinc-950 via-white/70 dark:via-zinc-950/70 to-transparent pointer-events-none" />
 
         {/* TOP BAR ICONS: EDIT PENSIL, KOIN P, USER VISITS, USER+, DAN MENU GARIS 3 */}
@@ -298,7 +298,6 @@ export default function AccountPage() {
 
               {/* Sisi Kanan: Kunjungan Profil (Pajangan), User+ (Pajangan), dan Garis Tiga (Kembali) */}
               <div className="flex items-center gap-2">
-                {/* 1. Kunjungan Profil dengan Angka 5 (Pajangan Mockup) */}
                 <div
                   className="relative w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
                   title="Kunjungan Profil"
@@ -309,7 +308,6 @@ export default function AccountPage() {
                   </span>
                 </div>
 
-                {/* 2. Tambah Teman UserPlus (Pajangan Mockup) */}
                 <div
                   className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
                   title="Temukan Teman"
@@ -317,7 +315,6 @@ export default function AccountPage() {
                   <UserPlus size={16} />
                 </div>
 
-                {/* 3. Tombol Garis Tiga (Fungsinya Kembali ke Beranda) */}
                 <Link
                   href="/"
                   className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/65 transition-colors shadow-sm"
@@ -336,23 +333,23 @@ export default function AccountPage() {
         <div className="flex items-start justify-between gap-4">
           {/* Kolom Kiri: Nama Besar, Username + Ceklis Biru Hexagon, Lencana Badge, & Statistik */}
           <div className="min-w-0 flex-1 pr-2">
-            {/* Nama Besar (Display Name Mandiri) */}
+            {/* Nama Besar */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
                 {displayName}
               </h1>
             </div>
 
-            {/* Username (@handle) Ditemani Ceklis Biru Hexagon (Segi Enam) */}
-            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+            {/* Username (@handle) Ditemani Ceklis Biru Hexagon (Lebih Kecil & Dekat) */}
+            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
               <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                 {displayAtUsername}
               </span>
 
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 inline-flex items-center" title="Terverifikasi">
-                  {/* Ceklis Biru Berbentuk Hexagon (Segi Enam) Presisi */}
-                  <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none">
+                  {/* Ceklis Biru Hexagon Kecil & Rapat (Skala Proporsional 13px) */}
+                  <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
                       fill="#20D5EC"
@@ -360,7 +357,7 @@ export default function AccountPage() {
                     <path
                       d="M8.5 12.3l2.4 2.4 4.8-4.8"
                       stroke="#FFFFFF"
-                      strokeWidth="2.2"
+                      strokeWidth="2.4"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -403,7 +400,7 @@ export default function AccountPage() {
 
           {/* Kolom Kanan: Avatar TikTok + Bubble Chat Menutupi Bagian Atas Foto Profil */}
           <div className="relative shrink-0 flex flex-col items-center">
-            {/* Note Speech Bubble: Menutupi Sebagian Atas Avatar dengan Ekor Bulat ke Bawah */}
+            {/* Note Speech Bubble: Menutupi Sebagian Atas Avatar */}
             <div
               onClick={() => {
                 setNoteInput(activeNoteText || '');
@@ -412,7 +409,6 @@ export default function AccountPage() {
               className="relative z-30 mb-[-12px] cursor-pointer select-none"
             >
               <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[75px] max-w-[135px] shadow-md border border-zinc-200/90 dark:border-zinc-700/90">
-                {/* Ekor Chat Mengarah ke Kepala Avatar */}
                 <span className="absolute -bottom-1 right-6 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/90 dark:border-zinc-700/90 rotate-45 transform" />
                 <span className="relative z-10 text-[11px] font-bold truncate">
                   {activeNoteText ? activeNoteText : 'Ada yang seru?'}
@@ -420,7 +416,7 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Avatar Circle (Bagian Atas Sedikit Tertutup Bubble) */}
+            {/* Avatar Circle */}
             <div className="relative z-10">
               <div
                 onClick={handleAvatarTap}
@@ -434,7 +430,7 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Tombol Plus Biru Muda Khas TikTok */}
+            {/* Tombol Plus Biru Muda */}
             <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 z-20 w-7 h-7 sm:w-7.5 sm:h-7.5 bg-[#00C2F3] hover:bg-[#00b0dc] rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md transition-colors"
@@ -451,33 +447,49 @@ export default function AccountPage() {
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
-        {/* Action Pills Menu */}
+        {/* Action Pills Menu: Icon Dibungkus Lingkaran Gradient Merah Muda & Putih Khas TikTok */}
         <div className="flex overflow-x-auto gap-2.5 no-scrollbar pb-2">
+          {/* Studio FZ (TikTok Studio Style: Gradient Pink & White) */}
           <Link
             href="/"
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
           >
-            <Wrench size={14} className="text-pink-500" />
+            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#FE2C55] via-[#FF3B5C] to-[#FF85A0] flex items-center justify-center text-white shrink-0 shadow-xs">
+              <Wrench size={9} strokeWidth={2.5} />
+            </span>
             Studio FZ
           </Link>
+
+          {/* Mode Bersih */}
           <button
             onClick={() => setIsCleanMode(!isCleanMode)}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
           >
-            {isCleanMode ? <EyeOff size={14} /> : <Eye size={14} />} Mode Bersih
+            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#C084FC] flex items-center justify-center text-white shrink-0 shadow-xs">
+              {isCleanMode ? <EyeOff size={9} strokeWidth={2.5} /> : <Eye size={9} strokeWidth={2.5} />}
+            </span>
+            Mode Bersih
           </button>
+
+          {/* IQC Media */}
           <Link
             href="/iqcv2"
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
           >
-            <ImageIcon size={14} className="text-emerald-500" />
+            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#10B981] to-[#34D399] flex items-center justify-center text-white shrink-0 shadow-xs">
+              <ImageIcon size={9} strokeWidth={2.5} />
+            </span>
             IQC Media
           </Link>
+
+          {/* Brat Gen */}
           <Link
             href="/brat"
-            className="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
           >
-            <Sticker size={14} className="text-lime-500" />
+            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#84CC16] to-[#A3E635] flex items-center justify-center text-black shrink-0 shadow-xs">
+              <Sticker size={9} strokeWidth={2.5} />
+            </span>
             Brat Gen
           </Link>
         </div>
