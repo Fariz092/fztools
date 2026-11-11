@@ -7,7 +7,7 @@ import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT, 
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
-// IndexedDB Helper untuk file banner besar / video agar tidak terkena limit localStorage 5MB
+// IndexedDB Storage untuk Banner Besar / Video agar tidak terkena limit localStorage
 const IDB_NAME = 'fztools_media_db';
 const IDB_STORE = 'banners';
 
@@ -71,9 +71,10 @@ export default function AccountPage() {
     return null;
   });
 
+  // Nama Besar (Display Name) Terpisah dari Username
   const [editName, setEditName] = useState(() => {
     const s = getStoredUserSession();
-    return s?.name || s?.username.replace(/^@+/, '') || 'urxyn';
+    return s?.name || s?.username.replace(/^@+/, '') || 'UrxynnPedia';
   });
 
   const [editUsername, setEditUsername] = useState(() => {
@@ -84,7 +85,7 @@ export default function AccountPage() {
 
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
-    return s?.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀';
+    return s?.bio || 'Development';
   });
 
   const [bannerPreview, setBannerPreview] = useState<string | null>(() => getStoredUserSession()?.bannerUrl || null);
@@ -100,7 +101,7 @@ export default function AccountPage() {
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Muat banner tersimpan (termasuk dari IndexedDB jika ukurannya besar)
+  // Muat banner tersimpan (dari IndexedDB jika media besar)
   useEffect(() => {
     const s = getStoredUserSession();
     if (s?.bannerUrl === 'idb://custom_banner_media') {
@@ -131,7 +132,7 @@ export default function AccountPage() {
       if (updated) {
         setEditName(updated.name || updated.username.replace(/^@+/, ''));
         setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
-        setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
+        setEditBio(updated.bio || 'Development');
         if (updated.bannerUrl && updated.bannerUrl !== 'idb://custom_banner_media') {
           setBannerPreview(updated.bannerUrl);
         }
@@ -225,7 +226,7 @@ export default function AccountPage() {
     reader.readAsDataURL(file);
   };
 
-  // Upload Banner dengan Kompresi Otomatis (Mencegah Crash LocalStorage Quota)
+  // Upload Banner dengan Kompresi Otomatis (Mencegah Crash LocalStorage)
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -241,7 +242,6 @@ export default function AccountPage() {
     const reader = new FileReader();
 
     if (!isVid) {
-      // Kompresi Kanvas untuk Foto agar file ringan (~150KB) dan 100% bisa disimpan
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
@@ -272,7 +272,6 @@ export default function AccountPage() {
       };
       reader.readAsDataURL(file);
     } else {
-      // Video langsung dibaca Data URL
       reader.onload = () => {
         const vidUrl = reader.result as string;
         setBannerPreview(vidUrl);
@@ -282,7 +281,6 @@ export default function AccountPage() {
     }
   };
 
-  // Simpan Perubahan dengan Fallback Aman ke IndexedDB jika Melebihi Kuota LocalStorage
   const saveProfileChanges = async () => {
     if (!session) return;
     const cleanUser = editUsername.trim().replace(/^@+/, '');
@@ -308,7 +306,6 @@ export default function AccountPage() {
     try {
       saveUserSession(updated);
     } catch {
-      // Jika browser menolak karena ukuran banner terlalu besar di localStorage
       try {
         if (newBanner) {
           await saveLargeMedia('custom_banner_media', newBanner);
@@ -380,13 +377,13 @@ export default function AccountPage() {
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      {/* BANNER DENGAN EFEK USAP (WIPE) 90° & FEATHER ALA ALIGHT MOTION */}
+      {/* BANNER: Bebas kabut putih tebal. 84% solid tajam, feather halus tipis HANYA di batas bawah (garis biru) */}
       <div
-        className="relative w-full h-56 sm:h-72 bg-zinc-950 overflow-hidden"
+        className="relative w-full h-52 sm:h-64 bg-zinc-950 overflow-hidden"
         style={{
-          // Menerapkan Feather Transisi Vertikal 90° (Seperti efek Usap Alight Motion: 65% solid -> 100% feather fade-out)
-          WebkitMaskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%)',
-          maskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%)',
+          // Feather 90° tipis hanya di 16% ujung bawah perbatasan
+          WebkitMaskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 84%, rgba(0,0,0,0) 100%)',
+          maskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 84%, rgba(0,0,0,0) 100%)',
         }}
       >
         {bannerType === 'video' ? (
@@ -406,7 +403,7 @@ export default function AccountPage() {
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
 
-        <div className="absolute inset-0 bg-black/15 pointer-events-none" />
+        <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
         {/* TOP BAR ICONS */}
         <AnimatePresence>
@@ -466,23 +463,27 @@ export default function AccountPage() {
         </AnimatePresence>
       </div>
 
-      {/* KONTEN PROFIL: Posisi Mulai Tepat di Area Feather Alight Motion */}
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-12 sm:-mt-14 z-10 overflow-visible">
+      {/* KONTEN PROFIL: Berada Tepat di Garis Batas Feather (Garis Biru) */}
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-8 sm:-mt-10 z-10 overflow-visible">
         <div className="flex items-start justify-between gap-4">
-          {/* Kolom Kiri */}
+          {/* Kolom Kiri: Nama Besar, Username + Ceklis Biru Hexagon, Lencana Badge, & Statistik */}
           <div className="min-w-0 flex-1 pr-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
-              {displayName}
-            </h1>
+            {/* Nama Besar (Display Name Mandiri) */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
+                {displayName}
+              </h1>
+            </div>
 
-            {/* Username + Ceklis Biru Hexagon Kecil & Rapat */}
+            {/* Username (@handle) Ditemani Ceklis Biru Hexagon (Kecil & Rapat) */}
             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
               <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                 {displayAtUsername}
               </span>
 
               {(session.isVerified || session.role === 'DEVELOPER') && (
-                <span className="shrink-0 inline-flex items-center" title="Terverifikasi">
+                <span className="shrink-0 inline-flex items-center ml-0.5" title="Terverifikasi">
+                  {/* Hexagon TikTok Style Ceklis Biru */}
                   <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
@@ -581,8 +582,9 @@ export default function AccountPage() {
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
-        {/* Action Pills Menu: Icon Gradient Merah Muda & Putih TikTok */}
+        {/* Action Pills Menu */}
         <div className="flex overflow-x-auto gap-2.5 no-scrollbar pb-2">
+          {/* Studio FZ (TikTok Studio: Gradient Pink & White) */}
           <Link
             href="/"
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -593,6 +595,7 @@ export default function AccountPage() {
             Studio FZ
           </Link>
 
+          {/* Mode Bersih */}
           <button
             onClick={() => setIsCleanMode(!isCleanMode)}
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -603,6 +606,7 @@ export default function AccountPage() {
             Mode Bersih
           </button>
 
+          {/* IQC Media */}
           <Link
             href="/iqcv2"
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -613,6 +617,7 @@ export default function AccountPage() {
             IQC Media
           </Link>
 
+          {/* Brat Gen */}
           <Link
             href="/brat"
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -668,7 +673,7 @@ export default function AccountPage() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 focus:border-indigo-500 transition-colors"
-                    placeholder="Nama tampilan (cth: urxyn)"
+                    placeholder="Nama tampilan (cth: UrxynnPedia)"
                   />
                 </div>
 
