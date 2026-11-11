@@ -388,8 +388,8 @@ export default function AccountPage() {
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-          {/* BANNER DENGAN FADE HALUS SEMPURNA */}
-          <div className="absolute top-0 inset-x-0 h-[165px] sm:h-[185px] bg-transparent overflow-hidden select-none z-0">
+          {/* BANNER DENGAN FADE TIPIS (Gambar 85%+ Jelas Terlihat, Tanpa Kabut Tebal) */}
+          <div className="absolute top-0 inset-x-0 h-[160px] sm:h-[180px] bg-transparent overflow-hidden select-none z-0">
             {bannerType === 'video' ? (
               <video
                 key={currentBannerUrl}
@@ -411,13 +411,12 @@ export default function AccountPage() {
               />
             )}
 
-            {/* Gradien Fade Halus Alami: Menghilangkan Garis Tajam */}
-            <div className="absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-b from-transparent via-white/70 to-white dark:via-zinc-950/70 dark:to-zinc-950 pointer-events-none z-10" />
+            {/* Gradien Tipis (~28px) Hanya di Ujung Paling Bawah agar Banner Tetap Jelas */}
+            <div className="absolute inset-x-0 bottom-0 h-7 sm:h-9 bg-gradient-to-b from-transparent via-white/60 to-white dark:via-zinc-950/60 dark:to-zinc-950 pointer-events-none z-10" />
           </div>
 
           {/* TOP BAR ICONS: EDIT PENSIL (KIRI), FOTO ANIME AUDIO 98/99+, USER+, MENU KEMBALI */}
           <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-3.5 z-30 mb-1">
-            {/* Sisi Kiri: Hanya Tombol Pensil Edit */}
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -429,7 +428,6 @@ export default function AccountPage() {
               </button>
             </div>
 
-            {/* Sisi Kanan: Foto Profil Anime Audio (Muted = 98, Suara On = 99+), User+, Menu */}
             <div className="flex items-center space-x-2">
               {/* Profil Anime Pengunjung (Trigger Suara Banner Video) */}
               <div className="relative">
@@ -448,7 +446,6 @@ export default function AccountPage() {
                     }}
                   />
                 </button>
-                {/* Badge Angka: 98 jika Muted, 99+ Merah jika Suara Menyala */}
                 <span className={`absolute -bottom-1 -right-1 font-extrabold text-[9px] leading-none px-1.5 py-0.5 rounded-full shadow-sm border border-slate-200 dark:border-zinc-700 select-none ${
                   isMuted ? 'bg-white text-black' : 'bg-[#ff2c55] text-white animate-pulse'
                 }`}>
@@ -550,9 +547,8 @@ export default function AccountPage() {
                 )}
               </div>
 
-              {/* BLOK KANAN: BUBBLE CATATAN GEMUK (CHUBBY) DENGAN BULATAN DI KIRI MENUJU AVATAR */}
+              {/* BLOK KANAN: BUBBLE CATATAN GEMUK DENGAN BULATAN DI KIRI */}
               <div className="relative shrink-0 flex flex-col items-center">
-                {/* Bubble Catatan Gemuk */}
                 <div
                   onClick={() => {
                     setNoteInput(activeNoteText || '');
@@ -565,13 +561,13 @@ export default function AccountPage() {
                       {activeNoteText ? activeNoteText : <>Ada yang<br />seru?</>}
                     </p>
 
-                    {/* Bulatan-bulatan kecil di sebelah KIRI yang mengarah ke dalam foto profil */}
+                    {/* Bulatan-bulatan kecil di sebelah KIRI mengarah ke foto profil */}
                     <span className="w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-2xs absolute -bottom-1.5 left-4" />
                     <span className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-2xs absolute -bottom-3 left-2.5" />
                   </div>
                 </div>
 
-                {/* Lingkaran Avatar Besar */}
+                {/* Lingkaran Avatar */}
                 <div className="relative z-10">
                   <div
                     onClick={handleAvatarTap}
