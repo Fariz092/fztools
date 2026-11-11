@@ -388,8 +388,8 @@ export default function AccountPage() {
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-          {/* BANNER RINGKAS: Video Fokus Tengah dengan Feather Halus di 160px */}
-          <div className="absolute top-0 inset-x-0 h-[160px] sm:h-[180px] bg-zinc-950 overflow-hidden select-none z-0">
+          {/* BANNER DENGAN FADE HALUS SEMPURNA DI MODE TERANG & GELAP */}
+          <div className="absolute top-0 inset-x-0 h-[165px] sm:h-[185px] bg-transparent overflow-hidden select-none z-0">
             {bannerType === 'video' ? (
               <video
                 key={currentBannerUrl}
@@ -400,10 +400,6 @@ export default function AccountPage() {
                 playsInline
                 preload="auto"
                 className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
-                style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
-                }}
               >
                 <source src={currentBannerUrl} type="video/mp4" />
               </video>
@@ -412,12 +408,11 @@ export default function AccountPage() {
                 src={currentBannerUrl}
                 alt="Banner"
                 className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
-                style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0) 96%)',
-                }}
               />
             )}
+
+            {/* Gradien Fade Halus Alami: Menghilangkan Garis Tajam di Mode Terang & Gelap */}
+            <div className="absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-b from-transparent via-white/70 to-white dark:via-zinc-950/70 dark:to-zinc-950 pointer-events-none z-10" />
           </div>
 
           {/* TOP BAR ICONS */}
@@ -477,12 +472,11 @@ export default function AccountPage() {
           </header>
 
           {/* MAIN PROFILE DETAILS */}
-          {/* pt-[100px] memposisikan NAMA tepat di garis perbatasan smooth, sehingga USERNAME & BADGE tampil utuh di bawahnya */}
-          <div className="px-5 pt-[100px] sm:pt-[115px] relative z-20">
+          <div className="px-5 pt-[98px] sm:pt-[110px] relative z-20">
             {/* ROW PROFIL UTAMA: Nama & Avatar di perbatasan smooth */}
             <div className="flex items-start justify-between gap-3 relative">
               
-              {/* BLOK KIRI: NAMA di perbatasan smooth, USERNAME & BADGE di kawasan profil bawah */}
+              {/* BLOK KIRI: NAMA DI PERBATASAN, USERNAME & BADGE JELAS DI KAWASAN BAWAH */}
               <div className="flex-1 min-w-0 pr-1">
                 {/* 1. Nama Besar: Tepat di perbatasan garis smooth banner */}
                 <div className="flex items-center space-x-1.5 flex-wrap">
@@ -494,18 +488,34 @@ export default function AccountPage() {
                   </span>
                 </div>
 
-                {/* 2. Username (@handle) tepat di bawah nama */}
-                <div className="flex items-center gap-1 mt-1">
+                {/* 2. Username + Ceklis Biru Hexagon 3D Berkilau Sejajar Rapat */}
+                <div className="inline-flex items-center mt-1 flex-wrap align-middle">
                   <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                     {displayAtUsername}
                   </span>
+
                   {(session.isVerified || session.role === 'DEVELOPER') && (
-                    <span className="shrink-0 inline-flex items-center ml-0.5" title="Terverifikasi">
-                      {/* Hexagon Verified Badge */}
-                      <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
+                    <span className="shrink-0 inline-flex items-center ml-1 align-middle" title="Terverifikasi">
+                      {/* Hexagon 3D dengan Kilauan Specular dan Drop Shadow */}
+                      <svg className="w-4 h-4 drop-shadow-[0_1px_2px_rgba(0,180,216,0.45)]" viewBox="0 0 24 24" fill="none">
+                        <defs>
+                          <linearGradient id="hex3d" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#48e5fb" />
+                            <stop offset="50%" stopColor="#20D5EC" />
+                            <stop offset="100%" stopColor="#0aa4bc" />
+                          </linearGradient>
+                          <linearGradient id="hexShine" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.75" />
+                            <stop offset="65%" stopColor="#ffffff" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
                         <path
                           d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
-                          fill="#20D5EC"
+                          fill="url(#hex3d)"
+                        />
+                        <path
+                          d="M10.8 3.8c.7-.4 1.7-.4 2.4 0l5.8 3.4c.5.3.8.8.8 1.4v2.5c-3.2-1.8-7.8-1.8-10.6 0V8.6c0-.6.3-1.1.8-1.4l5.8-3.4z"
+                          fill="url(#hexShine)"
                         />
                         <path
                           d="M8.5 12.3l2.4 2.4 4.8-4.8"
@@ -519,9 +529,9 @@ export default function AccountPage() {
                   )}
                 </div>
 
-                {/* 3. Lencana Badge: Utuh dan jelas di area profil solid tanpa tertutup banner */}
+                {/* 3. Lencana Badge: Tampil Utuh dan Jelas di Area Profil Solid */}
                 {(session.isVerified || session.role === 'DEVELOPER') && (
-                  <div className="flex flex-col gap-1 mt-2 mb-2.5">
+                  <div className="flex flex-col gap-0.5 mt-1.5 mb-2.5">
                     <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 leading-tight">
                       <Code2 size={13} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
                     </span>
@@ -535,24 +545,28 @@ export default function AccountPage() {
                 )}
               </div>
 
-              {/* BLOK KANAN: AVATAR BESAR DENGAN BUBBLE MELAYANG DI ATASNYA */}
+              {/* BLOK KANAN: BUBBLE CATATAN GEMUK (CHUBBY) DENGAN BULATAN DI KIRI MENUJU AVATAR */}
               <div className="relative shrink-0 flex flex-col items-center">
-                {/* Bubble Chat Melayang */}
+                {/* Bubble Catatan Gemuk */}
                 <div
                   onClick={() => {
                     setNoteInput(activeNoteText || '');
                     setIsNoteModalOpen(true);
                   }}
-                  className="relative z-30 mb-[-10px] cursor-pointer select-none after:content-[''] after:absolute after:-bottom-[5px] after:right-[26px] after:w-2.5 after:h-2.5 after:bg-white dark:after:bg-zinc-800 after:rotate-45 after:border-r after:border-b after:border-slate-100 dark:after:border-zinc-700 after:rounded-[2px]"
+                  className="relative z-30 mb-[-12px] cursor-pointer select-none"
                 >
-                  <div className="bg-white dark:bg-zinc-800 px-3 py-1 rounded-[16px] border border-slate-100 dark:border-zinc-700 shadow-sm min-w-[70px] max-w-[125px] text-center">
-                    <p className="text-[11px] font-bold text-slate-600 dark:text-zinc-200 leading-tight">
+                  <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-2.5 rounded-[22px] border border-slate-100/90 dark:border-zinc-700/90 shadow-md min-w-[85px] max-w-[115px] flex flex-col items-center justify-center text-center">
+                    <p className="text-[11px] font-bold text-slate-700 dark:text-zinc-200 leading-snug">
                       {activeNoteText ? activeNoteText : <>Ada yang<br />seru?</>}
                     </p>
+
+                    {/* Bulatan-bulatan kecil di sebelah KIRI yang mengarah ke dalam foto profil */}
+                    <span className="w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-2xs absolute -bottom-1.5 left-4" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-2xs absolute -bottom-3 left-2.5" />
                   </div>
                 </div>
 
-                {/* Lingkaran Avatar */}
+                {/* Lingkaran Avatar Besar */}
                 <div className="relative z-10">
                   <div
                     onClick={handleAvatarTap}
