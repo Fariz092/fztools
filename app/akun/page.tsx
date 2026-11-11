@@ -2,8 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, User, Menu, X, Upload, Eye, EyeOff, Trash2, Code2, Cloud, Globe } from 'lucide-react';
+import {
+  Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, User, Menu, X, Upload,
+  Eye, EyeOff, Trash2, Code2, Cloud, Globe, Lock, Bookmark, Heart, Film
+} from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT, computeInitials } from '@/lib/auth-session';
+import { HistoryItem, fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -60,6 +64,8 @@ export default function AccountPage() {
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isCleanMode, setIsCleanMode] = useState(false);
+  const [activeTab, setActiveTab] = useState<'grid' | 'private' | 'bookmark' | 'liked'>('grid');
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
   const [activeNoteText, setActiveNoteText] = useState<string | null>(() => {
     const s = getStoredUserSession();
@@ -71,10 +77,9 @@ export default function AccountPage() {
     return null;
   });
 
-  // Nama Besar (Display Name) Terpisah dari Username
   const [editName, setEditName] = useState(() => {
     const s = getStoredUserSession();
-    return s?.name || s?.username.replace(/^@+/, '') || 'UrxynnPedia';
+    return s?.name || s?.username.replace(/^@+/, '') || 'urxyn';
   });
 
   const [editUsername, setEditUsername] = useState(() => {
@@ -85,7 +90,7 @@ export default function AccountPage() {
 
   const [editBio, setEditBio] = useState(() => {
     const s = getStoredUserSession();
-    return s?.bio || 'Development';
+    return s?.bio || '魚座';
   });
 
   const [bannerPreview, setBannerPreview] = useState<string | null>(() => getStoredUserSession()?.bannerUrl || null);
@@ -101,7 +106,6 @@ export default function AccountPage() {
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Muat banner tersimpan (dari IndexedDB jika media besar)
   useEffect(() => {
     const s = getStoredUserSession();
     if (s?.bannerUrl === 'idb://custom_banner_media') {
@@ -112,6 +116,8 @@ export default function AccountPage() {
         }
       });
     }
+
+    fetchUserHistory().then((data) => setHistoryItems(data.slice(0, 9))).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -132,7 +138,7 @@ export default function AccountPage() {
       if (updated) {
         setEditName(updated.name || updated.username.replace(/^@+/, ''));
         setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
-        setEditBio(updated.bio || 'Development');
+        setEditBio(updated.bio || '魚座');
         if (updated.bannerUrl && updated.bannerUrl !== 'idb://custom_banner_media') {
           setBannerPreview(updated.bannerUrl);
         }
@@ -205,7 +211,7 @@ export default function AccountPage() {
     }
     const reader = new FileReader();
     reader.onload = () => {
-      const img = new Image();
+      const img = new window.Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const size = Math.min(img.width, img.height, 512);
@@ -226,7 +232,6 @@ export default function AccountPage() {
     reader.readAsDataURL(file);
   };
 
-  // Upload Banner dengan Kompresi Otomatis (Mencegah Crash LocalStorage)
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -243,7 +248,7 @@ export default function AccountPage() {
 
     if (!isVid) {
       reader.onload = (event) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
           const maxW = 1600;
           const maxH = 900;
@@ -371,266 +376,396 @@ export default function AccountPage() {
   const currentBannerUrl =
     bannerPreview ||
     session.bannerUrl ||
-    '/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4';
+    'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop';
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
   const displayName = session.name || session.username.replace(/^@+/, '');
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      {/* BANNER: Bebas kabut putih tebal. 84% solid tajam, feather halus tipis HANYA di batas bawah (garis biru) */}
-      <div
-        className="relative w-full h-52 sm:h-64 bg-zinc-950 overflow-hidden"
-        style={{
-          // Feather 90° tipis hanya di 16% ujung bawah perbatasan
-          WebkitMaskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 84%, rgba(0,0,0,0) 100%)',
-          maskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 84%, rgba(0,0,0,0) 100%)',
-        }}
-      >
-        {bannerType === 'video' ? (
-          <video
-            key={currentBannerUrl}
-            ref={videoRef}
-            autoPlay
-            loop
-            muted={isMuted}
-            playsInline
-            preload="auto"
-            className="w-full h-full object-cover"
-          >
-            <source src={currentBannerUrl} type="video/mp4" />
-          </video>
-        ) : (
-          <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
-        )}
+    <div className="w-full min-h-screen bg-[#0f0f11] flex items-center justify-center p-0 sm:p-4 text-slate-900 dark:text-white selection:bg-pink-500 selection:text-white">
+      {/* FRAME CONTAINER PROFILE REPLICA TIKTOK */}
+      <main className="w-full max-w-[420px] min-h-screen sm:min-h-[820px] sm:max-h-[900px] bg-white dark:bg-zinc-950 sm:rounded-[36px] shadow-2xl overflow-hidden relative flex flex-col justify-between border-0 sm:border-[6px] sm:border-neutral-800 transition-colors">
+        
+        {/* Scrollable Container */}
+        <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-        <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+          {/* TOP ABSOLUTE BANNER IMAGE WITH CSS FADE MASK (PERSIS REPLICA HTML) */}
+          <div className="absolute top-0 inset-x-0 h-[240px] bg-white dark:bg-zinc-950 overflow-hidden select-none z-0">
+            {bannerType === 'video' ? (
+              <video
+                key={currentBannerUrl}
+                ref={videoRef}
+                autoPlay
+                loop
+                muted={isMuted}
+                playsInline
+                preload="auto"
+                className="w-full h-full object-cover object-top filter brightness-[0.98] contrast-[1.05]"
+                style={{
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
+                }}
+              >
+                <source src={currentBannerUrl} type="video/mp4" />
+              </video>
+            ) : (
+              <img
+                src={currentBannerUrl}
+                alt="Banner"
+                className="w-full h-full object-cover object-top filter brightness-[0.98] contrast-[1.05]"
+                style={{
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
+                }}
+              />
+            )}
+          </div>
 
-        {/* TOP BAR ICONS */}
-        <AnimatePresence>
-          {!isCleanMode && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-4 left-4 right-4 flex justify-between items-center z-20">
-              {/* Sisi Kiri: Pensil Lingkaran & Koin P */}
-              <div className="flex items-center gap-2">
+          {/* TOP BAR NAVIGATION ICONS */}
+          <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-4 z-30 mb-2">
+            {/* Left Action Icons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-pointer"
+                aria-label="Edit Profile"
+                title="Edit Banner & Profil"
+              >
+                <Edit2 size={16} />
+              </button>
+
+              <button
+                onClick={toggleSound}
+                className="relative w-8 h-8 rounded-full bg-amber-400 border-[2px] border-amber-200 flex items-center justify-center shadow-sm hover:brightness-105 transition active:scale-95 cursor-pointer select-none"
+                aria-label="Points & Audio"
+                title={isMuted ? 'Nyalakan Audio' : 'Matikan Audio'}
+              >
+                <span className="text-white font-black text-xs tracking-tight drop-shadow-sm">P</span>
+                {!isMuted && (
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-white" />
+                )}
+              </button>
+            </div>
+
+            {/* Right Action Icons */}
+            <div className="flex items-center space-x-2">
+              <div className="relative">
                 <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/70 transition-colors shadow-sm"
-                  title="Edit Banner & Profil"
+                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-default select-none"
+                  aria-label="Profile views"
                 >
-                  <Edit2 size={16} />
+                  <User size={18} />
                 </button>
-
-                <button
-                  onClick={toggleSound}
-                  className="relative w-9 h-9 rounded-full bg-amber-400 text-amber-950 font-black flex items-center justify-center border-2 border-amber-300 hover:scale-105 transition-transform cursor-pointer shadow-md select-none"
-                  title={isMuted ? 'Nyalakan Suara (Koin P)' : 'Matikan Suara (Koin P)'}
-                >
-                  <span className="font-extrabold text-sm leading-none tracking-tighter">P</span>
-                  {!isMuted && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border border-white" />
-                  )}
-                </button>
+                <span className="absolute -bottom-1 -right-1 bg-white dark:bg-zinc-800 text-black dark:text-white font-extrabold text-[10px] leading-none px-1.5 py-0.5 rounded-md shadow-sm border border-slate-200 dark:border-zinc-700">
+                  5
+                </span>
               </div>
 
-              {/* Sisi Kanan: Kunjungan Profil, UserPlus, dan Garis Tiga (Kembali) */}
-              <div className="flex items-center gap-2">
-                <div
-                  className="relative w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
-                  title="Kunjungan Profil"
-                >
-                  <User size={16} />
-                  <span className="absolute -top-1 -right-1 px-1 min-w-[15px] h-3.5 bg-black text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white/40">
-                    5
+              <button
+                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-default select-none"
+                aria-label="Add friends"
+              >
+                <UserPlus size={18} />
+              </button>
+
+              <Link
+                href="/"
+                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-pointer"
+                aria-label="Menu Kembali"
+                title="Kembali ke Beranda"
+              >
+                <Menu size={18} />
+              </Link>
+            </div>
+          </header>
+
+          {/* MAIN PROFILE DETAILS */}
+          <div className="px-5 pt-8 relative z-20">
+            <div className="flex justify-between items-start">
+              
+              {/* LEFT COLUMN: USERNAME & BADGE, HANDLE, STATS */}
+              <div className="flex-1 pr-2 pt-1">
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-[32px] sm:text-[34px] font-black tracking-tight text-slate-900 dark:text-white leading-none font-sans line-clamp-1">
+                    {displayName}
+                  </h1>
+                  <span className="bg-[#ff2c55] text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0">
+                    3
                   </span>
                 </div>
 
-                <div
-                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
-                  title="Temukan Teman"
-                >
-                  <UserPlus size={16} />
+                <div className="flex items-center space-x-1.5 mt-1.5 mb-2">
+                  <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 tracking-normal">
+                    {displayAtUsername}
+                  </p>
+                  {(session.isVerified || session.role === 'DEVELOPER') && (
+                    <span title="Terverifikasi" className="inline-flex items-center shrink-0">
+                      <svg className="w-4 h-4 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
+                          fill="#20D5EC"
+                        />
+                        <path
+                          d="M8.5 12.3l2.4 2.4 4.8-4.8"
+                          stroke="#FFFFFF"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  )}
                 </div>
 
-                <Link
-                  href="/"
-                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/70 transition-colors shadow-sm"
-                  title="Kembali ke Beranda"
-                >
-                  <Menu size={18} />
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                {(session.isVerified || session.role === 'DEVELOPER') && (
+                  <div className="flex flex-col gap-0.5 mb-3">
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                      <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                      <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                      <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
+                    </span>
+                  </div>
+                )}
 
-      {/* KONTEN PROFIL: Berada Tepat di Garis Batas Feather (Garis Biru) */}
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-8 sm:-mt-10 z-10 overflow-visible">
-        <div className="flex items-start justify-between gap-4">
-          {/* Kolom Kiri: Nama Besar, Username + Ceklis Biru Hexagon, Lencana Badge, & Statistik */}
-          <div className="min-w-0 flex-1 pr-2">
-            {/* Nama Besar (Display Name Mandiri) */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
-                {displayName}
-              </h1>
+                <div className="flex items-center space-x-6 my-2 text-left">
+                  <div className="cursor-pointer">
+                    <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547</div>
+                    <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Mengikuti</div>
+                  </div>
+                  <div className="cursor-pointer">
+                    <div className="text-xl font-black text-slate-900 dark:text-white leading-none">67,3 rb</div>
+                    <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Pengikut</div>
+                  </div>
+                  <div className="cursor-pointer">
+                    <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547,2 rb</div>
+                    <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Suka</div>
+                  </div>
+                </div>
+
+                <div className="mt-5 mb-4 text-slate-900 dark:text-zinc-100 font-extrabold text-sm sm:text-base tracking-wide whitespace-pre-line">
+                  {session.bio || '魚座'}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Link
+                    href="/"
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+                  >
+                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#FE2C55] to-[#FF85A0] flex items-center justify-center text-white shrink-0">
+                      <Wrench size={9} strokeWidth={2.5} />
+                    </span>
+                    <span>Studio FZ</span>
+                  </Link>
+
+                  <button
+                    onClick={() => setIsCleanMode(!isCleanMode)}
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white cursor-pointer"
+                  >
+                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#C084FC] flex items-center justify-center text-white shrink-0">
+                      {isCleanMode ? <EyeOff size={9} strokeWidth={2.5} /> : <Eye size={9} strokeWidth={2.5} />}
+                    </span>
+                    <span>{isCleanMode ? 'Mode Biasa' : 'Mode Bersih'}</span>
+                  </button>
+
+                  <Link
+                    href="/iqcv2"
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+                  >
+                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#10B981] to-[#34D399] flex items-center justify-center text-white shrink-0">
+                      <ImageIcon size={9} strokeWidth={2.5} />
+                    </span>
+                    <span>IQC Media</span>
+                  </Link>
+
+                  <Link
+                    href="/brat"
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+                  >
+                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#84CC16] to-[#A3E635] flex items-center justify-center text-black shrink-0">
+                      <Sticker size={9} strokeWidth={2.5} />
+                    </span>
+                    <span>Brat Gen</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: SPEECH BUBBLE & AVATAR */}
+              <div className="relative flex flex-col items-end shrink-0 z-30 pt-0">
+                <div
+                  onClick={() => {
+                    setNoteInput(activeNoteText || '');
+                    setIsNoteModalOpen(true);
+                  }}
+                  className="relative mb-2 mr-1 bg-white dark:bg-zinc-800 px-4 py-2.5 rounded-2xl border border-slate-100 dark:border-zinc-700 shadow-md max-w-[130px] text-center transform transition duration-300 select-none cursor-pointer after:content-[''] after:absolute after:-bottom-[6px] after:right-[28px] after:w-3 after:h-3 after:bg-white dark:after:bg-zinc-800 after:rotate-45 after:border-r after:border-b after:border-slate-100 dark:after:border-zinc-700 after:rounded-[2px]"
+                >
+                  <p className="text-xs font-bold text-slate-600 dark:text-zinc-200 leading-tight">
+                    {activeNoteText ? activeNoteText : <>Ada yang<br />seru?</>}
+                  </p>
+                </div>
+
+                <div className="relative group cursor-pointer z-30 mt-1">
+                  <div
+                    onClick={handleAvatarTap}
+                    className="w-[104px] h-[104px] rounded-full p-[3px] bg-white dark:bg-zinc-900 shadow-lg overflow-hidden border border-slate-100 dark:border-zinc-800"
+                  >
+                    {session.avatarUrl ? (
+                      <img
+                        src={session.avatarUrl}
+                        alt="Avatar"
+                        className="w-full h-full object-cover rounded-full filter brightness-105"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-2xl font-bold text-slate-800 dark:text-white bg-slate-100 dark:bg-zinc-800 rounded-full">
+                        {session.initials}
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 transform translate-x-0.5 translate-y-0.5 w-7 h-7 rounded-full bg-[#00f2fe] border-2 border-white dark:border-zinc-900 flex items-center justify-center shadow-md hover:brightness-110 active:scale-90 transition cursor-pointer"
+                    aria-label="Ganti Avatar"
+                    title="Ganti Foto Profil"
+                  >
+                    <Plus className="w-4 h-4 text-white stroke-[3.5]" />
+                  </button>
+                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
+                </div>
+              </div>
+
             </div>
 
-            {/* Username (@handle) Ditemani Ceklis Biru Hexagon (Kecil & Rapat) */}
-            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-              <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
-                {displayAtUsername}
-              </span>
-
-              {(session.isVerified || session.role === 'DEVELOPER') && (
-                <span className="shrink-0 inline-flex items-center ml-0.5" title="Terverifikasi">
-                  {/* Hexagon TikTok Style Ceklis Biru */}
-                  <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
-                      fill="#20D5EC"
-                    />
-                    <path
-                      d="M8.5 12.3l2.4 2.4 4.8-4.8"
-                      stroke="#FFFFFF"
-                      strokeWidth="2.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+            {/* CONTENT TABS SECTION (TIKTOK STYLE) */}
+            <div className="mt-8 border-t border-slate-100 dark:border-zinc-800 pt-3">
+              <div className="flex justify-around items-center text-slate-400 dark:text-zinc-600">
+                <button
+                  onClick={() => setActiveTab('grid')}
+                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                    activeTab === 'grid'
+                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 4h5v5H3V4zm7 0h5v5h-5V4zm7 0h5v5h-5V4zM3 11h5v5H3v-5zm7 0h5v5h-5v-5zm7 0h5v5h-5v-5zM3 18h5v5H3v-5zm7 0h5v5h-5v-5zm7 0h5v5h-5v-5z"/>
                   </svg>
-                </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('private')}
+                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                    activeTab === 'private'
+                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                  }`}
+                >
+                  <Lock className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('bookmark')}
+                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                    activeTab === 'bookmark'
+                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                  }`}
+                >
+                  <Bookmark className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('liked')}
+                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                    activeTab === 'liked'
+                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                  }`}
+                >
+                  <Heart className="w-5 h-5" />
+                </button>
+              </div>
+
+              {activeTab === 'grid' && (
+                historyItems.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-0.5 mt-2 rounded-lg overflow-hidden">
+                    {historyItems.map((item) => (
+                      <div key={item.id} className="aspect-[3/4] bg-slate-100 dark:bg-zinc-900 relative group overflow-hidden">
+                        {item.previewUrl ? (
+                          <img src={item.previewUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center p-2 text-center text-[10px] text-zinc-500 font-bold">
+                            {item.title}
+                          </div>
+                        )}
+                        <span className="absolute bottom-1.5 left-1.5 text-[9px] font-bold text-white bg-black/60 px-1 py-0.5 rounded backdrop-blur-xs flex items-center gap-1">
+                          <Film className="w-2.5 h-2.5" /> {item.fileFormat?.toUpperCase()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-0.5 mt-2 bg-slate-50 dark:bg-zinc-900/60 min-h-[160px] rounded-lg items-center justify-center text-slate-300 dark:text-zinc-700">
+                    <div className="col-span-3 text-center py-10">
+                      <Film className="w-10 h-10 mx-auto text-slate-300 dark:text-zinc-700 mb-2" strokeWidth={1.5} />
+                      <p className="text-xs font-semibold text-slate-400 dark:text-zinc-500">Belum ada video atau kreasi</p>
+                    </div>
+                  </div>
+                )
+              )}
+
+              {activeTab !== 'grid' && (
+                <div className="py-12 text-center text-xs font-semibold text-slate-400 dark:text-zinc-500">
+                  Tab ini bersifat privat
+                </div>
               )}
             </div>
 
-            {/* 3 Lencana Badge */}
-            {(session.isVerified || session.role === 'DEVELOPER') && (
-              <div className="flex flex-col gap-0.5 mt-1.5 mb-2.5">
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                  <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
-                </span>
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                  <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
-                </span>
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                  <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
-                </span>
-              </div>
-            )}
-
-            {/* Statistik TikTok Style Tanpa Garis Pembatas */}
-            <div className="flex items-center gap-6 sm:gap-8 mt-3">
-              <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">547</span>
-                <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Mengikuti</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">67,3 rb</span>
-                <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Pengikut</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">547,2 rb</span>
-                <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal">Suka</span>
-              </div>
-            </div>
           </div>
 
-          {/* Kolom Kanan: Avatar TikTok + Bubble Chat Menutupi Bagian Atas Foto Profil */}
-          <div className="relative shrink-0 flex flex-col items-center">
-            {/* Note Speech Bubble: Menutupi Sebagian Atas Avatar */}
-            <div
-              onClick={() => {
-                setNoteInput(activeNoteText || '');
-                setIsNoteModalOpen(true);
-              }}
-              className="relative z-30 mb-[-12px] cursor-pointer select-none"
-            >
-              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[75px] max-w-[135px] shadow-md border border-zinc-200/90 dark:border-zinc-700/90">
-                <span className="absolute -bottom-1 right-6 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/90 dark:border-zinc-700/90 rotate-45 transform" />
-                <span className="relative z-10 text-[11px] font-bold truncate">
-                  {activeNoteText ? activeNoteText : 'Ada yang seru?'}
-                </span>
-              </div>
-            </div>
-
-            {/* Avatar Circle */}
-            <div className="relative z-10">
-              <div
-                onClick={handleAvatarTap}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3.5px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-md cursor-pointer"
-              >
-                {session.avatarUrl ? (
-                  <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-2xl font-bold text-white">{session.initials}</div>
-                )}
-              </div>
-            </div>
-
-            {/* Tombol Plus Biru TikTok */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 z-20 w-7 h-7 sm:w-7.5 sm:h-7.5 bg-[#00C2F3] hover:bg-[#00b0dc] rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md transition-colors"
-              title="Ganti Foto Profil"
-            >
-              <Plus size={14} strokeWidth={3} />
-            </button>
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
-          </div>
         </div>
 
-        {/* Bio */}
-        <div className="mt-4 mb-4">
-          <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
-        </div>
-
-        {/* Action Pills Menu */}
-        <div className="flex overflow-x-auto gap-2.5 no-scrollbar pb-2">
-          {/* Studio FZ (TikTok Studio: Gradient Pink & White) */}
-          <Link
-            href="/"
-            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
-          >
-            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#FE2C55] via-[#FF3B5C] to-[#FF85A0] flex items-center justify-center text-white shrink-0 shadow-xs">
-              <Wrench size={9} strokeWidth={2.5} />
-            </span>
-            Studio FZ
+        {/* BOTTOM NAVIGATION BAR (TIKTOK STYLE) */}
+        <nav className="border-t border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 px-4 py-2.5 flex justify-around items-center z-40 shrink-0">
+          <Link href="/" className="flex flex-col items-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span className="text-[10px] font-semibold mt-0.5">Beranda</span>
           </Link>
 
-          {/* Mode Bersih */}
-          <button
-            onClick={() => setIsCleanMode(!isCleanMode)}
-            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
-          >
-            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#C084FC] flex items-center justify-center text-white shrink-0 shadow-xs">
-              {isCleanMode ? <EyeOff size={9} strokeWidth={2.5} /> : <Eye size={9} strokeWidth={2.5} />}
-            </span>
-            Mode Bersih
+          <Link href="/iqcv2" className="flex flex-col items-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span className="text-[10px] font-semibold mt-0.5">Temukan</span>
+          </Link>
+
+          <Link href="/" className="w-11 h-7 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold relative shadow-sm hover:scale-105 active:scale-95 transition cursor-pointer">
+            <span className="text-lg leading-none">+</span>
+          </Link>
+
+          <Link href="/faq" className="flex flex-col items-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path>
+            </svg>
+            <span className="text-[10px] font-semibold mt-0.5">Bantuan</span>
+          </Link>
+
+          <button className="flex flex-col items-center text-slate-900 dark:text-white font-bold cursor-default">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span className="text-[10px] font-bold mt-0.5">Profil</span>
           </button>
+        </nav>
 
-          {/* IQC Media */}
-          <Link
-            href="/iqcv2"
-            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
-          >
-            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#10B981] to-[#34D399] flex items-center justify-center text-white shrink-0 shadow-xs">
-              <ImageIcon size={9} strokeWidth={2.5} />
-            </span>
-            IQC Media
-          </Link>
+      </main>
 
-          {/* Brat Gen */}
-          <Link
-            href="/brat"
-            className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
-          >
-            <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#84CC16] to-[#A3E635] flex items-center justify-center text-black shrink-0 shadow-xs">
-              <Sticker size={9} strokeWidth={2.5} />
-            </span>
-            Brat Gen
-          </Link>
-        </div>
-      </div>
-
-      {/* Modal Edit Profile */}
+      {/* MODAL EDIT PROFILE */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -663,7 +798,6 @@ export default function AccountPage() {
                   )}
                 </div>
 
-                {/* Input Nama Tampilan (Nama Besar) */}
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1.5">
                     Nama Tampilan (Nama Besar)
@@ -673,11 +807,10 @@ export default function AccountPage() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 focus:border-indigo-500 transition-colors"
-                    placeholder="Nama tampilan (cth: UrxynnPedia)"
+                    placeholder="Nama tampilan (cth: urxyn)"
                   />
                 </div>
 
-                {/* Input Username (@handle) */}
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1.5">
                     Username (@handle)
@@ -691,7 +824,6 @@ export default function AccountPage() {
                   />
                 </div>
 
-                {/* Input Bio */}
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1.5">
                     Bio
@@ -714,19 +846,19 @@ export default function AccountPage() {
         )}
       </AnimatePresence>
 
-      {/* Modal Catatan 24 Jam */}
+      {/* MODAL CATATAN STATUS */}
       <AnimatePresence>
         {isNoteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div onClick={() => setIsNoteModalOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
             <form onSubmit={handleSaveNote} className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800">
-              <h3 className="font-bold text-sm text-zinc-900 dark:text-white mb-3">Catatan 24 Jam</h3>
+              <h3 className="font-bold text-sm text-zinc-900 dark:text-white mb-3">Catatan Status</h3>
               <input
                 type="text"
                 maxLength={60}
                 value={noteInput}
                 onChange={(e) => setNoteInput(e.target.value)}
-                placeholder="Tulis status..."
+                placeholder="Ada yang seru?..."
                 className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 mb-4"
                 autoFocus
               />
@@ -752,7 +884,7 @@ export default function AccountPage() {
         )}
       </AnimatePresence>
 
-      {/* Modal Akses Pengembang */}
+      {/* MODAL AKSES DEVELOPER */}
       <AnimatePresence>
         {showSecretModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
