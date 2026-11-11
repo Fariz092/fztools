@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, X, Upload, Volume2, VolumeX, Eye, EyeOff, Trash2, Code2, Cloud, Globe } from 'lucide-react';
+import { Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, User, Menu, X, Upload, Volume2, VolumeX, Eye, EyeOff, Trash2, Code2, Cloud, Globe } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT, computeInitials } from '@/lib/auth-session';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
@@ -266,37 +266,66 @@ export default function AccountPage() {
 
         <div className="absolute inset-0 bg-black/10" />
 
-        {/* Gradien Fade Halus Ramping */}
+        {/* Gradien Fade Halus Menuju Transparan */}
         <div className="absolute inset-x-0 bottom-0 h-16 sm:h-22 bg-gradient-to-t from-white dark:from-zinc-950 via-white/70 dark:via-zinc-950/70 to-transparent pointer-events-none" />
 
+        {/* TOP BAR ICONS: EDIT PENSIL, KOIN P, USER VISITS, USER+, DAN MENU GARIS 3 */}
         <AnimatePresence>
           {!isCleanMode && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-4 left-4 right-4 flex justify-between z-20">
-              <div className="flex gap-2">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-4 left-4 right-4 flex justify-between items-center z-20">
+              {/* Sisi Kiri: Tombol Pensil Lingkaran & Koin P (Fungsi Audio) */}
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-                  title="Edit Profil"
+                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/65 transition-colors shadow-sm"
+                  title="Edit Banner & Profil"
                 >
                   <Edit2 size={16} />
                 </button>
-                {bannerType === 'video' && (
-                  <button
-                    onClick={toggleSound}
-                    className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-                    title="Suara Banner"
-                  >
-                    {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="text-emerald-400" />}
-                  </button>
-                )}
+
+                {/* Tombol Koin Kuning P (Fungsi Toggle Suara Video) */}
+                <button
+                  onClick={toggleSound}
+                  className="relative w-9 h-9 rounded-full bg-amber-400 text-amber-950 font-black flex items-center justify-center border-2 border-amber-300 hover:scale-105 transition-transform cursor-pointer shadow-md select-none"
+                  title={isMuted ? 'Nyalakan Suara (Koin P)' : 'Matikan Suara (Koin P)'}
+                >
+                  <span className="font-extrabold text-sm leading-none tracking-tighter">P</span>
+                  {!isMuted && (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border border-white" />
+                  )}
+                </button>
               </div>
-              <Link
-                href="/"
-                className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/60 transition-colors"
-                title="Kembali"
-              >
-                <ArrowLeft size={20} />
-              </Link>
+
+              {/* Sisi Kanan: Kunjungan Profil (Pajangan), User+ (Pajangan), dan Garis Tiga (Kembali) */}
+              <div className="flex items-center gap-2">
+                {/* 1. Kunjungan Profil dengan Angka 5 (Pajangan Mockup) */}
+                <div
+                  className="relative w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
+                  title="Kunjungan Profil"
+                >
+                  <User size={16} />
+                  <span className="absolute -top-1 -right-1 px-1 min-w-[15px] h-3.5 bg-black text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white/40">
+                    5
+                  </span>
+                </div>
+
+                {/* 2. Tambah Teman UserPlus (Pajangan Mockup) */}
+                <div
+                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
+                  title="Temukan Teman"
+                >
+                  <UserPlus size={16} />
+                </div>
+
+                {/* 3. Tombol Garis Tiga (Fungsinya Kembali ke Beranda) */}
+                <Link
+                  href="/"
+                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/65 transition-colors shadow-sm"
+                  title="Kembali ke Beranda"
+                >
+                  <Menu size={18} />
+                </Link>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -305,28 +334,40 @@ export default function AccountPage() {
       {/* KONTEN PROFIL */}
       <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 sm:-mt-12 z-10 overflow-visible">
         <div className="flex items-start justify-between gap-4">
-          {/* Kolom Kiri: Nama Besar, Username, Lencana Badge, & Statistik */}
+          {/* Kolom Kiri: Nama Besar, Username + Ceklis Biru, Lencana Badge, & Statistik */}
           <div className="min-w-0 flex-1 pr-2">
-            {/* Nama Besar (Display Name Mandiri, Tidak Mengikuti Username) */}
+            {/* Nama Besar (Display Name Mandiri) */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
                 {displayName}
               </h1>
+            </div>
+
+            {/* Username (@handle) Ditemani Ceklis Biru Hexagonal (Contoh Davina Karamoy) */}
+            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+              <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                {displayAtUsername}
+              </span>
+
               {(session.isVerified || session.role === 'DEVELOPER') && (
-                <span className="shrink-0 select-none inline-flex items-center">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                <span className="shrink-0 inline-flex items-center ml-0.5" title="Terverifikasi">
+                  {/* Ceklis Biru Rosette / Scalloped Circle Khas TikTok */}
+                  <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
                     <path
-                      d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91C2.63 9.33 1.75 10.57 1.75 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"
+                      d="M12 2.5l1.6 1.9 2.5-.2.8 2.3 2.4.7-.1 2.5 1.8 1.7-.9 2.3 1 2.3-1.8 1.7.1 2.5-2.4.7-.8 2.3-2.5-.2L12 21.5l-1.6-1.9-2.5.2-.8-2.3-2.4-.7.1-2.5-1.8-1.7.9-2.3-1-2.3 1.8-1.7-.1-2.5 2.4-.7.8-2.3 2.5.2L12 2.5z"
                       fill="#20D5EC"
                     />
-                    <path d="M9 12.2l2.1 2.1 4.4-4.6" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M8.5 12l2.5 2.5 5-5"
+                      stroke="#FFFFFF"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </span>
               )}
             </div>
-
-            {/* Username (@handle) */}
-            <p className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">{displayAtUsername}</p>
 
             {/* 3 Lencana Badge Dekat Di Bawah Username */}
             {(session.isVerified || session.role === 'DEVELOPER') && (
@@ -360,27 +401,30 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* Kolom Kanan: Avatar TikTok Style + Bubble Catatan Berbuntut */}
+          {/* Kolom Kanan: Avatar TikTok + Bubble Chat Menutupi Bagian Atas Foto Profil */}
           <div className="relative shrink-0 flex flex-col items-center">
-            {/* Note Bubble (Bisik-bisik / Status) dengan Ekor Mengarah ke Avatar */}
+            {/* Note Speech Bubble: Menutupi Sebagian Atas Avatar dengan Ekor Bulat ke Bawah */}
             <div
               onClick={() => {
                 setNoteInput(activeNoteText || '');
                 setIsNoteModalOpen(true);
               }}
-              className="absolute -top-11 sm:-top-12 right-1 sm:right-2 z-30 cursor-pointer select-none"
+              className="relative z-30 mb-[-12px] cursor-pointer select-none"
             >
-              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1 rounded-[18px] flex items-center justify-center min-w-[70px] max-w-[130px] shadow-sm border border-zinc-200/80 dark:border-zinc-700/80">
-                <span className="absolute -bottom-1 right-5 w-2 h-2 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/80 dark:border-zinc-700/80 rotate-45 transform" />
-                <span className="relative z-10 text-[11px] font-bold truncate">{activeNoteText ? activeNoteText : '+ Catatan'}</span>
+              <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-1.5 rounded-[18px] flex items-center justify-center min-w-[75px] max-w-[135px] shadow-md border border-zinc-200/90 dark:border-zinc-700/90">
+                {/* Ekor Chat Mengarah ke Kepala Avatar */}
+                <span className="absolute -bottom-1 right-6 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-800 border-r border-b border-zinc-200/90 dark:border-zinc-700/90 rotate-45 transform" />
+                <span className="relative z-10 text-[11px] font-bold truncate">
+                  {activeNoteText ? activeNoteText : 'Ada yang seru?'}
+                </span>
               </div>
             </div>
 
-            {/* Avatar Circle */}
-            <div className="relative">
+            {/* Avatar Circle (Bagian Atas Sedikit Tertutup Bubble) */}
+            <div className="relative z-10">
               <div
                 onClick={handleAvatarTap}
-                className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3.5px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-md cursor-pointer"
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[3.5px] border-white dark:border-zinc-950 overflow-hidden bg-zinc-800 shadow-md cursor-pointer"
               >
                 {session.avatarUrl ? (
                   <img src={session.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -390,11 +434,11 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Tombol Plus Biru Khas TikTok */}
+            {/* Tombol Plus Biru Muda Khas TikTok */}
             <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 z-20 w-7 h-7 sm:w-7.5 sm:h-7.5 bg-[#00C2F3] hover:bg-[#00b0dc] rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md transition-colors"
-              title="Ganti Foto"
+              title="Ganti Foto Profil"
             >
               <Plus size={14} strokeWidth={3} />
             </button>
