@@ -388,8 +388,8 @@ export default function AccountPage() {
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-          {/* BANNER DENGAN FADE TIPIS (Gambar 85%+ Jelas Terlihat, Tanpa Kabut Tebal) */}
-          <div className="absolute top-0 inset-x-0 h-[160px] sm:h-[180px] bg-transparent overflow-hidden select-none z-0">
+          {/* BANNER SEAMLESS: Media Larut Sempurna ke Warna Latar Sebelum Ujung (Nol Garis Tajam) */}
+          <div className="absolute top-0 inset-x-0 h-[200px] sm:h-[220px] bg-white dark:bg-zinc-950 overflow-hidden select-none z-0">
             {bannerType === 'video' ? (
               <video
                 key={currentBannerUrl}
@@ -399,7 +399,11 @@ export default function AccountPage() {
                 muted={isMuted}
                 playsInline
                 preload="auto"
-                className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
+                className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05] transform-gpu will-change-transform"
+                style={{
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.2) 68%, rgba(0,0,0,0) 84%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.2) 68%, rgba(0,0,0,0) 84%)',
+                }}
               >
                 <source src={currentBannerUrl} type="video/mp4" />
               </video>
@@ -408,14 +412,18 @@ export default function AccountPage() {
                 src={currentBannerUrl}
                 alt="Banner"
                 className="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.05]"
+                style={{
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.2) 68%, rgba(0,0,0,0) 84%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.2) 68%, rgba(0,0,0,0) 84%)',
+                }}
               />
             )}
 
-            {/* Gradien Tipis (~28px) Hanya di Ujung Paling Bawah agar Banner Tetap Jelas */}
-            <div className="absolute inset-x-0 bottom-0 h-7 sm:h-9 bg-gradient-to-b from-transparent via-white/60 to-white dark:via-zinc-950/60 dark:to-zinc-950 pointer-events-none z-10" />
+            {/* Gradien Pelindung Tambahan: Menjamin 100% Menyatu Tanpa Garis Pembatas di Mode Terang & Gelap */}
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-white/50 to-white dark:via-zinc-950/50 dark:to-zinc-950 pointer-events-none z-10" />
           </div>
 
-          {/* TOP BAR ICONS: EDIT PENSIL (KIRI), FOTO ANIME AUDIO 98/99+, USER+, MENU KEMBALI */}
+          {/* TOP BAR ICONS */}
           <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-3.5 z-30 mb-1">
             <div className="flex items-center space-x-2">
               <button
@@ -429,7 +437,7 @@ export default function AccountPage() {
             </div>
 
             <div className="flex items-center space-x-2">
-              {/* Profil Anime Pengunjung (Trigger Suara Banner Video) */}
+              {/* Profil Anime Pengunjung (Trigger Suara: Muted = 98, Suara On = 99+) */}
               <div className="relative">
                 <button
                   onClick={toggleSound}
@@ -474,15 +482,16 @@ export default function AccountPage() {
           </header>
 
           {/* MAIN PROFILE DETAILS */}
-          <div className="px-5 pt-[98px] sm:pt-[110px] relative z-20">
+          {/* pt-[90px] menempatkan NAMA tepat di garis transisi halus, USERNAME & BADGE tampil utuh di bawahnya */}
+          <div className="px-5 pt-[90px] sm:pt-[105px] relative z-20">
             {/* ROW PROFIL UTAMA: Nama & Avatar di perbatasan smooth */}
             <div className="flex items-start justify-between gap-3 relative">
               
-              {/* BLOK KIRI: NAMA DI PERBATASAN, USERNAME & BADGE JELAS DI KAWASAN BAWAH */}
+              {/* BLOK KIRI: NAMA DI PERBATASAN, USERNAME & BADGE UTUH JELAS DI KAWASAN BAWAH */}
               <div className="flex-1 min-w-0 pr-1">
-                {/* 1. Nama Besar + Badge Merah Notifikasi 99+ */}
+                {/* 1. Nama Besar (Tepat di perbatasan smooth banner) + Badge Merah 99+ */}
                 <div className="flex items-center space-x-1.5 flex-wrap">
-                  <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight text-slate-900 dark:text-white leading-tight font-sans line-clamp-1">
+                  <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight text-slate-900 dark:text-white leading-tight font-sans line-clamp-1 drop-shadow-xs">
                     {displayName}
                   </h1>
                   <span className="bg-[#ff2c55] text-white text-[10px] font-black px-1.5 py-0.5 min-w-[20px] h-4.5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0 tracking-tight">
@@ -490,7 +499,7 @@ export default function AccountPage() {
                   </span>
                 </div>
 
-                {/* 2. Username + Ceklis Biru Hexagon 3D Berkilau Sejajar Rapat */}
+                {/* 2. Username (@handle) tepat di bawah nama */}
                 <div className="inline-flex items-center mt-1 flex-wrap align-middle">
                   <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                     {displayAtUsername}
@@ -531,9 +540,9 @@ export default function AccountPage() {
                   )}
                 </div>
 
-                {/* 3. Lencana Badge: Tampil Utuh dan Jelas di Area Profil Solid */}
+                {/* 3. Lencana Badge: Tampil Utuh dan Jelas di Bawah Area Profil Solid */}
                 {(session.isVerified || session.role === 'DEVELOPER') && (
-                  <div className="flex flex-col gap-0.5 mt-1.5 mb-2.5">
+                  <div className="flex flex-col gap-1 mt-2 mb-2.5">
                     <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 leading-tight">
                       <Code2 size={13} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
                     </span>
@@ -554,7 +563,7 @@ export default function AccountPage() {
                     setNoteInput(activeNoteText || '');
                     setIsNoteModalOpen(true);
                   }}
-                  className="relative z-30 mb-[-12px] cursor-pointer select-none"
+                  className="relative z-30 mb-[-10px] cursor-pointer select-none"
                 >
                   <div className="relative bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3.5 py-2.5 rounded-[22px] border border-slate-100/90 dark:border-zinc-700/90 shadow-md min-w-[85px] max-w-[115px] flex flex-col items-center justify-center text-center">
                     <p className="text-[11px] font-bold text-slate-700 dark:text-zinc-200 leading-snug">
