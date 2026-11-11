@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
-  Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, User, Menu, X, Upload,
+  Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, Menu, X, Upload,
   Eye, EyeOff, Trash2, Code2, Cloud, Globe, Lock, Bookmark, Heart, Film
 } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT, computeInitials } from '@/lib/auth-session';
@@ -62,7 +62,7 @@ export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isCleanMode, setIsCleanMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'grid' | 'private' | 'bookmark' | 'liked'>('grid');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
@@ -388,7 +388,7 @@ export default function AccountPage() {
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-          {/* BANNER DENGAN FADE HALUS SEMPURNA DI MODE TERANG & GELAP */}
+          {/* BANNER DENGAN FADE HALUS SEMPURNA */}
           <div className="absolute top-0 inset-x-0 h-[165px] sm:h-[185px] bg-transparent overflow-hidden select-none z-0">
             {bannerType === 'video' ? (
               <video
@@ -411,58 +411,63 @@ export default function AccountPage() {
               />
             )}
 
-            {/* Gradien Fade Halus Alami: Menghilangkan Garis Tajam di Mode Terang & Gelap */}
+            {/* Gradien Fade Halus Alami: Menghilangkan Garis Tajam */}
             <div className="absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-b from-transparent via-white/70 to-white dark:via-zinc-950/70 dark:to-zinc-950 pointer-events-none z-10" />
           </div>
 
-          {/* TOP BAR ICONS */}
-          <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-3 z-30 mb-1">
+          {/* TOP BAR ICONS: EDIT PENSIL (KIRI), FOTO ANIME AUDIO 98/99+, USER+, MENU KEMBALI */}
+          <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-3.5 z-30 mb-1">
+            {/* Sisi Kiri: Hanya Tombol Pensil Edit */}
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-pointer"
+                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-pointer shadow-sm border border-white/15"
                 aria-label="Edit Profile"
                 title="Edit Banner & Profil"
               >
                 <Edit2 size={16} />
               </button>
-
-              <button
-                onClick={toggleSound}
-                className="relative w-8 h-8 rounded-full bg-amber-400 border-[2px] border-amber-200 flex items-center justify-center shadow-sm hover:brightness-105 transition active:scale-95 cursor-pointer select-none"
-                aria-label="Points & Audio"
-                title={isMuted ? 'Nyalakan Audio' : 'Matikan Audio'}
-              >
-                <span className="text-white font-black text-xs tracking-tight drop-shadow-sm">P</span>
-                {!isMuted && (
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-white" />
-                )}
-              </button>
             </div>
 
+            {/* Sisi Kanan: Foto Profil Anime Audio (Muted = 98, Suara On = 99+), User+, Menu */}
             <div className="flex items-center space-x-2">
+              {/* Profil Anime Pengunjung (Trigger Suara Banner Video) */}
               <div className="relative">
                 <button
-                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-default select-none"
-                  aria-label="Profile views"
+                  onClick={toggleSound}
+                  className="w-9 h-9 rounded-full p-[1.5px] bg-black/45 backdrop-blur-md flex items-center justify-center border border-white/25 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm overflow-hidden"
+                  aria-label="Toggle Suara Video"
+                  title={isMuted ? 'Suara Mati (Klik untuk Nyalakan / 98)' : 'Suara Nyala (99+)'}
                 >
-                  <User size={18} />
+                  <img
+                    src="/assets/aistudio/Alice_ac18f5a2.jpeg"
+                    alt="Pengunjung"
+                    className="w-full h-full object-cover rounded-full filter brightness-105"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=100&auto=format&fit=crop&q=80';
+                    }}
+                  />
                 </button>
-                <span className="absolute -bottom-1 -right-1 bg-white dark:bg-zinc-800 text-black dark:text-white font-extrabold text-[10px] leading-none px-1.5 py-0.5 rounded-md shadow-sm border border-slate-200 dark:border-zinc-700">
-                  5
+                {/* Badge Angka: 98 jika Muted, 99+ Merah jika Suara Menyala */}
+                <span className={`absolute -bottom-1 -right-1 font-extrabold text-[9px] leading-none px-1.5 py-0.5 rounded-full shadow-sm border border-slate-200 dark:border-zinc-700 select-none ${
+                  isMuted ? 'bg-white text-black' : 'bg-[#ff2c55] text-white animate-pulse'
+                }`}>
+                  {isMuted ? '98' : '99+'}
                 </span>
               </div>
 
+              {/* Tambah Teman (Pajangan) */}
               <button
-                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-default select-none"
+                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-default select-none border border-white/15"
                 aria-label="Add friends"
               >
                 <UserPlus size={18} />
               </button>
 
+              {/* Menu Garis Tiga (Kembali ke Beranda) */}
               <Link
                 href="/"
-                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-pointer"
+                className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition active:scale-95 cursor-pointer border border-white/15 shadow-sm"
                 aria-label="Menu Kembali"
                 title="Kembali ke Beranda"
               >
@@ -478,13 +483,13 @@ export default function AccountPage() {
               
               {/* BLOK KIRI: NAMA DI PERBATASAN, USERNAME & BADGE JELAS DI KAWASAN BAWAH */}
               <div className="flex-1 min-w-0 pr-1">
-                {/* 1. Nama Besar: Tepat di perbatasan garis smooth banner */}
+                {/* 1. Nama Besar + Badge Merah Notifikasi 99+ */}
                 <div className="flex items-center space-x-1.5 flex-wrap">
                   <h1 className="text-[26px] sm:text-[30px] font-black tracking-tight text-slate-900 dark:text-white leading-tight font-sans line-clamp-1">
                     {displayName}
                   </h1>
-                  <span className="bg-[#ff2c55] text-white text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0">
-                    3
+                  <span className="bg-[#ff2c55] text-white text-[10px] font-black px-1.5 py-0.5 min-w-[20px] h-4.5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0 tracking-tight">
+                    99+
                   </span>
                 </div>
 
