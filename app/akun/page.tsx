@@ -2,10 +2,57 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, User, Menu, X, Upload, Volume2, VolumeX, Eye, EyeOff, Trash2, Code2, Cloud, Globe } from 'lucide-react';
+import { Edit2, Plus, Wrench, Sticker, Image as ImageIcon, UserPlus, User, Menu, X, Upload, Eye, EyeOff, Trash2, Code2, Cloud, Globe } from 'lucide-react';
 import { UserSession, getStoredUserSession, saveUserSession, AUTH_CHANGE_EVENT, computeInitials } from '@/lib/auth-session';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
+
+// IndexedDB Helper untuk file banner besar / video agar tidak terkena limit localStorage 5MB
+const IDB_NAME = 'fztools_media_db';
+const IDB_STORE = 'banners';
+
+function openMediaDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !window.indexedDB) {
+      reject(new Error('IndexedDB not supported'));
+      return;
+    }
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(IDB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveLargeMedia(key: string, dataUrl: string): Promise<void> {
+  try {
+    const db = await openMediaDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(dataUrl, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) {
+    console.warn('IDB write error:', e);
+  }
+}
+
+async function getLargeMedia(key: string): Promise<string | null> {
+  try {
+    const db = await openMediaDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
 
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(() => getStoredUserSession());
@@ -24,7 +71,6 @@ export default function AccountPage() {
     return null;
   });
 
-  // Nama Besar (Display Name) Terpisah dari Username
   const [editName, setEditName] = useState(() => {
     const s = getStoredUserSession();
     return s?.name || s?.username.replace(/^@+/, '') || 'urxyn';
@@ -54,6 +100,19 @@ export default function AccountPage() {
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Muat banner tersimpan (termasuk dari IndexedDB jika ukurannya besar)
+  useEffect(() => {
+    const s = getStoredUserSession();
+    if (s?.bannerUrl === 'idb://custom_banner_media') {
+      getLargeMedia('custom_banner_media').then((media) => {
+        if (media) {
+          setBannerPreview(media);
+          setSession((prev) => (prev ? { ...prev, bannerUrl: media } : null));
+        }
+      });
+    }
+  }, []);
+
   useEffect(() => {
     try {
       const savedTheme = localStorage.getItem('fztools_theme') || 'light';
@@ -73,7 +132,9 @@ export default function AccountPage() {
         setEditName(updated.name || updated.username.replace(/^@+/, ''));
         setEditUsername(updated.username.startsWith('@') ? updated.username : `@${updated.username}`);
         setEditBio(updated.bio || 'Kreator FZTOOLS since 2026. Berkarya tanpa batas 🚀');
-        if (updated.bannerUrl) setBannerPreview(updated.bannerUrl);
+        if (updated.bannerUrl && updated.bannerUrl !== 'idb://custom_banner_media') {
+          setBannerPreview(updated.bannerUrl);
+        }
         if (updated.bannerType) setBannerType(updated.bannerType);
         if (updated.note?.text) {
           setNoteInput(updated.note.text);
@@ -99,7 +160,7 @@ export default function AccountPage() {
       setIsMuted(true);
       video.play().catch(() => {});
     });
-  }, [bannerPreview, bannerType]);
+  }, [bannerPreview, bannerType, isMuted]);
 
   const handleAvatarTap = () => {
     const now = Date.now();
@@ -137,58 +198,131 @@ export default function AccountPage() {
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !session) return;
-    if (file.size > 2 * 1024 * 1024) {
-      brutalistToast('Ukuran avatar maksimal 2MB', 'error');
+    if (file.size > 5 * 1024 * 1024) {
+      brutalistToast('Ukuran avatar maksimal 5MB', 'error');
       return;
     }
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const updated = { ...session, avatarUrl: reader.result as string };
-      saveUserSession(updated);
-      setSession(updated);
-      brutalistToast('Foto profil berhasil diperbarui', 'success');
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = Math.min(img.width, img.height, 512);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, size, size);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          const updated = { ...session, avatarUrl: compressed };
+          saveUserSession(updated);
+          setSession(updated);
+          brutalistToast('Foto profil berhasil diperbarui', 'success');
+        }
+      };
+      img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
 
+  // Upload Banner dengan Kompresi Otomatis (Mencegah Crash LocalStorage Quota)
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      brutalistToast('Ukuran banner maksimal 10MB', 'error');
+
+    if (file.size > 25 * 1024 * 1024) {
+      brutalistToast('Ukuran banner maksimal 25MB', 'error');
       return;
     }
+
     const isVid = file.type.startsWith('video');
     setBannerType(isVid ? 'video' : 'image');
+
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setBannerPreview(reader.result as string);
-      brutalistToast('Banner berhasil dimuat', 'success');
-    };
-    reader.readAsDataURL(file);
+
+    if (!isVid) {
+      // Kompresi Kanvas untuk Foto agar file ringan (~150KB) dan 100% bisa disimpan
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1600;
+          const maxH = 900;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW) {
+            h = Math.round((h * maxW) / w);
+            w = maxW;
+          }
+          if (h > maxH) {
+            w = Math.round((w * maxH) / h);
+            h = maxH;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, w, h);
+            const compressedUrl = canvas.toDataURL('image/jpeg', 0.85);
+            setBannerPreview(compressedUrl);
+            brutalistToast('Banner foto siap disimpan', 'success');
+          }
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Video langsung dibaca Data URL
+      reader.onload = () => {
+        const vidUrl = reader.result as string;
+        setBannerPreview(vidUrl);
+        brutalistToast('Banner video siap disimpan', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const saveProfileChanges = () => {
+  // Simpan Perubahan dengan Fallback Aman ke IndexedDB jika Melebihi Kuota LocalStorage
+  const saveProfileChanges = async () => {
     if (!session) return;
     const cleanUser = editUsername.trim().replace(/^@+/, '');
     if (!cleanUser) {
       brutalistToast('Username tidak boleh kosong', 'error');
       return;
     }
+
     const cleanName = editName.trim() || cleanUser;
+    const newBanner = bannerPreview || session.bannerUrl;
+    const newType = bannerType || session.bannerType;
+
     const updated: UserSession = {
       ...session,
       name: cleanName,
       username: `@${cleanUser}`,
       initials: computeInitials(cleanUser, cleanName),
       bio: editBio.trim(),
-      bannerUrl: bannerPreview || session.bannerUrl,
-      bannerType: bannerType || session.bannerType,
+      bannerUrl: newBanner,
+      bannerType: newType,
     };
-    saveUserSession(updated);
+
+    try {
+      saveUserSession(updated);
+    } catch {
+      // Jika browser menolak karena ukuran banner terlalu besar di localStorage
+      try {
+        if (newBanner) {
+          await saveLargeMedia('custom_banner_media', newBanner);
+          const safeSession = { ...updated, bannerUrl: 'idb://custom_banner_media' };
+          saveUserSession(safeSession);
+        }
+      } catch (err) {
+        console.error('IDB storage failed:', err);
+      }
+    }
+
     setSession(updated);
     setIsModalOpen(false);
-    brutalistToast('Profil berhasil disimpan', 'success');
+    brutalistToast('Banner dan profil berhasil disimpan!', 'success');
   };
 
   const handleSaveNote = (e: React.FormEvent) => {
@@ -238,6 +372,7 @@ export default function AccountPage() {
   }
 
   const currentBannerUrl =
+    bannerPreview ||
     session.bannerUrl ||
     '/assets/aistudio/From_Klickpin.com-_Fall_outfit_ideas_for_women_that_make_everyday_moments_look_more_intentional_memorable_and_beautifully_styled_for_anyone_planni_a1b1f661.mp4';
   const displayAtUsername = session.username.startsWith('@') ? session.username : `@${session.username}`;
@@ -245,8 +380,15 @@ export default function AccountPage() {
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-zinc-950 pb-20 overflow-x-hidden" style={{ fontFamily: 'var(--font-sfpro)' }}>
-      {/* BANNER DENGAN FADE RENDAH */}
-      <div className="relative w-full h-52 sm:h-64 bg-zinc-900 overflow-hidden">
+      {/* BANNER DENGAN EFEK USAP (WIPE) 90° & FEATHER ALA ALIGHT MOTION */}
+      <div
+        className="relative w-full h-56 sm:h-72 bg-zinc-950 overflow-hidden"
+        style={{
+          // Menerapkan Feather Transisi Vertikal 90° (Seperti efek Usap Alight Motion: 65% solid -> 100% feather fade-out)
+          WebkitMaskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%)',
+          maskImage: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%)',
+        }}
+      >
         {bannerType === 'video' ? (
           <video
             key={currentBannerUrl}
@@ -264,26 +406,22 @@ export default function AccountPage() {
           <img src={currentBannerUrl} alt="Banner" className="w-full h-full object-cover" />
         )}
 
-        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-black/15 pointer-events-none" />
 
-        {/* Gradien Fade Halus */}
-        <div className="absolute inset-x-0 bottom-0 h-16 sm:h-22 bg-gradient-to-t from-white dark:from-zinc-950 via-white/70 dark:via-zinc-950/70 to-transparent pointer-events-none" />
-
-        {/* TOP BAR ICONS: EDIT PENSIL, KOIN P, USER VISITS, USER+, DAN MENU GARIS 3 */}
+        {/* TOP BAR ICONS */}
         <AnimatePresence>
           {!isCleanMode && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-4 left-4 right-4 flex justify-between items-center z-20">
-              {/* Sisi Kiri: Tombol Pensil Lingkaran & Koin P (Fungsi Audio) */}
+              {/* Sisi Kiri: Pensil Lingkaran & Koin P */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/65 transition-colors shadow-sm"
+                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/70 transition-colors shadow-sm"
                   title="Edit Banner & Profil"
                 >
                   <Edit2 size={16} />
                 </button>
 
-                {/* Tombol Koin Kuning P (Fungsi Toggle Suara Video) */}
                 <button
                   onClick={toggleSound}
                   className="relative w-9 h-9 rounded-full bg-amber-400 text-amber-950 font-black flex items-center justify-center border-2 border-amber-300 hover:scale-105 transition-transform cursor-pointer shadow-md select-none"
@@ -296,10 +434,10 @@ export default function AccountPage() {
                 </button>
               </div>
 
-              {/* Sisi Kanan: Kunjungan Profil (Pajangan), User+ (Pajangan), dan Garis Tiga (Kembali) */}
+              {/* Sisi Kanan: Kunjungan Profil, UserPlus, dan Garis Tiga (Kembali) */}
               <div className="flex items-center gap-2">
                 <div
-                  className="relative w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
+                  className="relative w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
                   title="Kunjungan Profil"
                 >
                   <User size={16} />
@@ -309,7 +447,7 @@ export default function AccountPage() {
                 </div>
 
                 <div
-                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
+                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 select-none shadow-sm cursor-default"
                   title="Temukan Teman"
                 >
                   <UserPlus size={16} />
@@ -317,7 +455,7 @@ export default function AccountPage() {
 
                 <Link
                   href="/"
-                  className="w-9 h-9 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/65 transition-colors shadow-sm"
+                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/20 cursor-pointer hover:bg-black/70 transition-colors shadow-sm"
                   title="Kembali ke Beranda"
                 >
                   <Menu size={18} />
@@ -328,19 +466,16 @@ export default function AccountPage() {
         </AnimatePresence>
       </div>
 
-      {/* KONTEN PROFIL */}
-      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-10 sm:-mt-12 z-10 overflow-visible">
+      {/* KONTEN PROFIL: Posisi Mulai Tepat di Area Feather Alight Motion */}
+      <div className="relative px-4 sm:px-6 max-w-4xl mx-auto -mt-12 sm:-mt-14 z-10 overflow-visible">
         <div className="flex items-start justify-between gap-4">
-          {/* Kolom Kiri: Nama Besar, Username + Ceklis Biru Hexagon, Lencana Badge, & Statistik */}
+          {/* Kolom Kiri */}
           <div className="min-w-0 flex-1 pr-2">
-            {/* Nama Besar */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
-                {displayName}
-              </h1>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight line-clamp-1">
+              {displayName}
+            </h1>
 
-            {/* Username (@handle) Ditemani Ceklis Biru Hexagon (Lebih Kecil & Dekat) */}
+            {/* Username + Ceklis Biru Hexagon Kecil & Rapat */}
             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
               <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                 {displayAtUsername}
@@ -348,7 +483,6 @@ export default function AccountPage() {
 
               {(session.isVerified || session.role === 'DEVELOPER') && (
                 <span className="shrink-0 inline-flex items-center" title="Terverifikasi">
-                  {/* Ceklis Biru Hexagon Kecil & Rapat (Skala Proporsional 13px) */}
                   <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
@@ -366,7 +500,7 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* 3 Lencana Badge Dekat Di Bawah Username */}
+            {/* 3 Lencana Badge */}
             {(session.isVerified || session.role === 'DEVELOPER') && (
               <div className="flex flex-col gap-0.5 mt-1.5 mb-2.5">
                 <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
@@ -381,7 +515,7 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* Statistik TikTok Style: Mengikuti 547 | Pengikut 67,3 rb | Suka 547,2 rb */}
+            {/* Statistik TikTok Style Tanpa Garis Pembatas */}
             <div className="flex items-center gap-6 sm:gap-8 mt-3">
               <div className="flex flex-col">
                 <span className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-tight">547</span>
@@ -430,7 +564,7 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Tombol Plus Biru Muda */}
+            {/* Tombol Plus Biru TikTok */}
             <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 z-20 w-7 h-7 sm:w-7.5 sm:h-7.5 bg-[#00C2F3] hover:bg-[#00b0dc] rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-white cursor-pointer shadow-md transition-colors"
@@ -442,14 +576,13 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* Bio Kreator */}
+        {/* Bio */}
         <div className="mt-4 mb-4">
           <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-medium whitespace-pre-line">{session.bio}</p>
         </div>
 
-        {/* Action Pills Menu: Icon Dibungkus Lingkaran Gradient Merah Muda & Putih Khas TikTok */}
+        {/* Action Pills Menu: Icon Gradient Merah Muda & Putih TikTok */}
         <div className="flex overflow-x-auto gap-2.5 no-scrollbar pb-2">
-          {/* Studio FZ (TikTok Studio Style: Gradient Pink & White) */}
           <Link
             href="/"
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -460,7 +593,6 @@ export default function AccountPage() {
             Studio FZ
           </Link>
 
-          {/* Mode Bersih */}
           <button
             onClick={() => setIsCleanMode(!isCleanMode)}
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -471,7 +603,6 @@ export default function AccountPage() {
             Mode Bersih
           </button>
 
-          {/* IQC Media */}
           <Link
             href="/iqcv2"
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -482,7 +613,6 @@ export default function AccountPage() {
             IQC Media
           </Link>
 
-          {/* Brat Gen */}
           <Link
             href="/brat"
             className="shrink-0 flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100/90 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-full text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition-colors shadow-xs"
@@ -495,7 +625,7 @@ export default function AccountPage() {
         </div>
       </div>
 
-      {/* Modal Edit Profile dengan Kolom Nama Besar & Username Terpisah */}
+      {/* Modal Edit Profile */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -511,7 +641,7 @@ export default function AccountPage() {
                 <input type="file" ref={bannerInputRef} onChange={handleBannerUpload} accept="image/*,video/*" className="hidden" />
                 <div
                   onClick={() => bannerInputRef.current?.click()}
-                  className="w-full h-24 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center cursor-pointer border border-dashed border-zinc-400 overflow-hidden"
+                  className="w-full h-28 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center cursor-pointer border border-dashed border-zinc-400 dark:border-zinc-700 overflow-hidden"
                 >
                   {bannerPreview ? (
                     bannerType === 'video' ? (
@@ -523,7 +653,7 @@ export default function AccountPage() {
                     )
                   ) : (
                     <div className="flex items-center text-zinc-400">
-                      <Upload size={20} className="mr-2" /> <span className="text-xs">Upload Banner (Max 10MB)</span>
+                      <Upload size={20} className="mr-2" /> <span className="text-xs">Upload Banner (Foto/Video)</span>
                     </div>
                   )}
                 </div>
@@ -570,7 +700,7 @@ export default function AccountPage() {
                   />
                 </div>
 
-                <button onClick={saveProfileChanges} className="w-full py-3 bg-indigo-600 text-white font-bold text-xs uppercase rounded-xl hover:bg-indigo-500 transition-colors">
+                <button onClick={saveProfileChanges} className="w-full py-3 bg-indigo-600 text-white font-bold text-xs uppercase rounded-xl hover:bg-indigo-500 transition-colors cursor-pointer shadow-md">
                   Simpan Perubahan
                 </button>
               </div>
