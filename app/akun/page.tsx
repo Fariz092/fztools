@@ -11,7 +11,7 @@ import { HistoryItem, fetchUserHistory } from '@/lib/history-service';
 import { brutalistToast } from '@/lib/popup-service';
 import { motion, AnimatePresence } from 'motion/react';
 
-// IndexedDB Storage untuk Banner Besar / Video agar tidak terkena limit localStorage
+// IndexedDB Storage untuk Banner Besar / Video
 const IDB_NAME = 'fztools_media_db';
 const IDB_STORE = 'banners';
 
@@ -382,14 +382,14 @@ export default function AccountPage() {
 
   return (
     <div className="w-full min-h-screen bg-[#0f0f11] flex items-center justify-center p-0 sm:p-4 text-slate-900 dark:text-white selection:bg-pink-500 selection:text-white">
-      {/* FRAME CONTAINER PROFILE REPLICA TIKTOK */}
+      {/* FRAME CONTAINER PROFILE */}
       <main className="w-full max-w-[420px] min-h-screen sm:min-h-[820px] sm:max-h-[900px] bg-white dark:bg-zinc-950 sm:rounded-[36px] shadow-2xl overflow-hidden relative flex flex-col justify-between border-0 sm:border-[6px] sm:border-neutral-800 transition-colors">
         
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1 relative scroll-smooth pb-8 bg-white dark:bg-zinc-950">
 
-          {/* TOP ABSOLUTE BANNER IMAGE WITH CSS FADE MASK (PERSIS REPLICA HTML) */}
-          <div className="absolute top-0 inset-x-0 h-[240px] bg-white dark:bg-zinc-950 overflow-hidden select-none z-0">
+          {/* BANNER DIPERPENDEK (H-170px) AGAR PROFIL LEBIH DOMINAN */}
+          <div className="absolute top-0 inset-x-0 h-[170px] sm:h-[190px] bg-white dark:bg-zinc-950 overflow-hidden select-none z-0">
             {bannerType === 'video' ? (
               <video
                 key={currentBannerUrl}
@@ -401,8 +401,8 @@ export default function AccountPage() {
                 preload="auto"
                 className="w-full h-full object-cover object-top filter brightness-[0.98] contrast-[1.05]"
                 style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
                 }}
               >
                 <source src={currentBannerUrl} type="video/mp4" />
@@ -413,16 +413,15 @@ export default function AccountPage() {
                 alt="Banner"
                 className="w-full h-full object-cover object-top filter brightness-[0.98] contrast-[1.05]"
                 style={{
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
-                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0) 90%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 95%)',
                 }}
               />
             )}
           </div>
 
           {/* TOP BAR NAVIGATION ICONS */}
-          <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-4 z-30 mb-2">
-            {/* Left Action Icons */}
+          <header className="relative top-0 left-0 right-0 flex justify-between items-center px-4 pt-3 z-30 mb-2">
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -446,7 +445,6 @@ export default function AccountPage() {
               </button>
             </div>
 
-            {/* Right Action Icons */}
             <div className="flex items-center space-x-2">
               <div className="relative">
                 <button
@@ -478,138 +476,43 @@ export default function AccountPage() {
             </div>
           </header>
 
-          {/* MAIN PROFILE DETAILS */}
-          <div className="px-5 pt-8 relative z-20">
-            <div className="flex justify-between items-start">
+          {/* MAIN PROFILE DETAILS (DIMULAI DI PERBATASAN SMOOTH BANNER) */}
+          <div className="px-5 pt-10 sm:pt-14 relative z-20">
+            {/* ROW NAMA & AVATAR SEJAJAR SECARA PRESISI */}
+            <div className="flex items-center justify-between gap-3 relative">
               
-              {/* LEFT COLUMN: USERNAME & BADGE, HANDLE, STATS */}
-              <div className="flex-1 pr-2 pt-1">
-                <div className="flex items-center space-x-2">
-                  <h1 className="text-[32px] sm:text-[34px] font-black tracking-tight text-slate-900 dark:text-white leading-none font-sans line-clamp-1">
-                    {displayName}
-                  </h1>
-                  <span className="bg-[#ff2c55] text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0">
-                    3
-                  </span>
-                </div>
-
-                <div className="flex items-center space-x-1.5 mt-1.5 mb-2">
-                  <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 tracking-normal">
-                    {displayAtUsername}
-                  </p>
-                  {(session.isVerified || session.role === 'DEVELOPER') && (
-                    <span title="Terverifikasi" className="inline-flex items-center shrink-0">
-                      <svg className="w-4 h-4 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
-                          fill="#20D5EC"
-                        />
-                        <path
-                          d="M8.5 12.3l2.4 2.4 4.8-4.8"
-                          stroke="#FFFFFF"
-                          strokeWidth="2.4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  )}
-                </div>
-
-                {(session.isVerified || session.role === 'DEVELOPER') && (
-                  <div className="flex flex-col gap-0.5 mb-3">
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                      <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                      <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                      <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-6 my-2 text-left">
-                  <div className="cursor-pointer">
-                    <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547</div>
-                    <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Mengikuti</div>
-                  </div>
-                  <div className="cursor-pointer">
-                    <div className="text-xl font-black text-slate-900 dark:text-white leading-none">67,3 rb</div>
-                    <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Pengikut</div>
-                  </div>
-                  <div className="cursor-pointer">
-                    <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547,2 rb</div>
-                    <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Suka</div>
-                  </div>
-                </div>
-
-                <div className="mt-5 mb-4 text-slate-900 dark:text-zinc-100 font-extrabold text-sm sm:text-base tracking-wide whitespace-pre-line">
-                  {session.bio || '魚座'}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <Link
-                    href="/"
-                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
-                  >
-                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#FE2C55] to-[#FF85A0] flex items-center justify-center text-white shrink-0">
-                      <Wrench size={9} strokeWidth={2.5} />
-                    </span>
-                    <span>Studio FZ</span>
-                  </Link>
-
-                  <button
-                    onClick={() => setIsCleanMode(!isCleanMode)}
-                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white cursor-pointer"
-                  >
-                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#C084FC] flex items-center justify-center text-white shrink-0">
-                      {isCleanMode ? <EyeOff size={9} strokeWidth={2.5} /> : <Eye size={9} strokeWidth={2.5} />}
-                    </span>
-                    <span>{isCleanMode ? 'Mode Biasa' : 'Mode Bersih'}</span>
-                  </button>
-
-                  <Link
-                    href="/iqcv2"
-                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
-                  >
-                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#10B981] to-[#34D399] flex items-center justify-center text-white shrink-0">
-                      <ImageIcon size={9} strokeWidth={2.5} />
-                    </span>
-                    <span>IQC Media</span>
-                  </Link>
-
-                  <Link
-                    href="/brat"
-                    className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
-                  >
-                    <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#84CC16] to-[#A3E635] flex items-center justify-center text-black shrink-0">
-                      <Sticker size={9} strokeWidth={2.5} />
-                    </span>
-                    <span>Brat Gen</span>
-                  </Link>
-                </div>
+              {/* NAMA BESAR + BADGE MERAH 3 (SEJAJAR DENGAN AVATAR) */}
+              <div className="flex items-center space-x-2 min-w-0 flex-1 pr-2">
+                <h1 className="text-[28px] sm:text-[32px] font-black tracking-tight text-slate-900 dark:text-white leading-none font-sans line-clamp-1">
+                  {displayName}
+                </h1>
+                <span className="bg-[#ff2c55] text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm select-none shrink-0">
+                  3
+                </span>
               </div>
 
-              {/* RIGHT COLUMN: SPEECH BUBBLE & AVATAR */}
-              <div className="relative flex flex-col items-end shrink-0 z-30 pt-0">
+              {/* AVATAR + BUBBLE CATATAN MELAYANG DI ATASNYA */}
+              <div className="relative shrink-0 flex items-center">
+                {/* Bubble Chat Melayang di Atas Kepala Avatar */}
                 <div
                   onClick={() => {
                     setNoteInput(activeNoteText || '');
                     setIsNoteModalOpen(true);
                   }}
-                  className="relative mb-2 mr-1 bg-white dark:bg-zinc-800 px-4 py-2.5 rounded-2xl border border-slate-100 dark:border-zinc-700 shadow-md max-w-[130px] text-center transform transition duration-300 select-none cursor-pointer after:content-[''] after:absolute after:-bottom-[6px] after:right-[28px] after:w-3 after:h-3 after:bg-white dark:after:bg-zinc-800 after:rotate-45 after:border-r after:border-b after:border-slate-100 dark:after:border-zinc-700 after:rounded-[2px]"
+                  className="absolute -top-11 right-1 z-30 cursor-pointer select-none after:content-[''] after:absolute after:-bottom-[6px] after:right-[26px] after:w-3 after:h-3 after:bg-white dark:after:bg-zinc-800 after:rotate-45 after:border-r after:border-b after:border-slate-100 dark:after:border-zinc-700 after:rounded-[2px]"
                 >
-                  <p className="text-xs font-bold text-slate-600 dark:text-zinc-200 leading-tight">
-                    {activeNoteText ? activeNoteText : <>Ada yang<br />seru?</>}
-                  </p>
+                  <div className="bg-white dark:bg-zinc-800 px-3.5 py-1.5 rounded-2xl border border-slate-100 dark:border-zinc-700 shadow-md min-w-[75px] max-w-[130px] text-center">
+                    <p className="text-xs font-bold text-slate-600 dark:text-zinc-200 leading-tight">
+                      {activeNoteText ? activeNoteText : <>Ada yang<br />seru?</>}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="relative group cursor-pointer z-30 mt-1">
+                {/* Lingkaran Avatar Sejajar Horizontal dengan Nama Besar */}
+                <div className="relative group cursor-pointer z-20">
                   <div
                     onClick={handleAvatarTap}
-                    className="w-[104px] h-[104px] rounded-full p-[3px] bg-white dark:bg-zinc-900 shadow-lg overflow-hidden border border-slate-100 dark:border-zinc-800"
+                    className="w-[88px] h-[88px] sm:w-[98px] sm:h-[98px] rounded-full p-[3px] bg-white dark:bg-zinc-900 shadow-lg overflow-hidden border border-slate-100 dark:border-zinc-800"
                   >
                     {session.avatarUrl ? (
                       <img
@@ -624,6 +527,7 @@ export default function AccountPage() {
                     )}
                   </div>
 
+                  {/* Tombol Plus Biru */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute bottom-0 right-0 transform translate-x-0.5 translate-y-0.5 w-7 h-7 rounded-full bg-[#00f2fe] border-2 border-white dark:border-zinc-900 flex items-center justify-center shadow-md hover:brightness-110 active:scale-90 transition cursor-pointer"
@@ -638,96 +542,202 @@ export default function AccountPage() {
 
             </div>
 
-            {/* CONTENT TABS SECTION (TIKTOK STYLE) */}
-            <div className="mt-8 border-t border-slate-100 dark:border-zinc-800 pt-3">
-              <div className="flex justify-around items-center text-slate-400 dark:text-zinc-600">
-                <button
-                  onClick={() => setActiveTab('grid')}
-                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
-                    activeTab === 'grid'
-                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
-                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 4h5v5H3V4zm7 0h5v5h-5V4zm7 0h5v5h-5V4zM3 11h5v5H3v-5zm7 0h5v5h-5v-5zm7 0h5v5h-5v-5zM3 18h5v5H3v-5zm7 0h5v5h-5v-5zm7 0h5v5h-5v-5z"/>
-                  </svg>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('private')}
-                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
-                    activeTab === 'private'
-                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
-                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
-                  }`}
-                >
-                  <Lock className="w-5 h-5" />
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('bookmark')}
-                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
-                    activeTab === 'bookmark'
-                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
-                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
-                  }`}
-                >
-                  <Bookmark className="w-5 h-5" />
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('liked')}
-                  className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
-                    activeTab === 'liked'
-                      ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
-                      : 'hover:text-slate-600 dark:hover:text-zinc-400'
-                  }`}
-                >
-                  <Heart className="w-5 h-5" />
-                </button>
+            {/* USERNAME & BADGE TETAP DI KAWASAN PROFIL DI BAWAH NAMA */}
+            <div className="mt-1.5">
+              {/* Handle (@username) with hexagonal verified badge */}
+              <div className="flex items-center space-x-1.5 mb-2">
+                <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 tracking-normal">
+                  {displayAtUsername}
+                </p>
+                {(session.isVerified || session.role === 'DEVELOPER') && (
+                  <span title="Terverifikasi" className="inline-flex items-center shrink-0">
+                    <svg className="w-3.5 h-3.5 text-[#20D5EC]" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M10.5 3.3c.9-.5 2.1-.5 3 0l6.2 3.6c.9.5 1.5 1.5 1.5 2.5v7.2c0 1-.5 2-1.5 2.5l-6.2 3.6c-.9.5-2.1.5-3 0l-6.2-3.6c-.9-.5-1.5-1.5-1.5-2.5V9.4c0-1 .5-2 1.5-2.5l6.2-3.6z"
+                        fill="#20D5EC"
+                      />
+                      <path
+                        d="M8.5 12.3l2.4 2.4 4.8-4.8"
+                        stroke="#FFFFFF"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                )}
               </div>
 
-              {activeTab === 'grid' && (
-                historyItems.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-0.5 mt-2 rounded-lg overflow-hidden">
-                    {historyItems.map((item) => (
-                      <div key={item.id} className="aspect-[3/4] bg-slate-100 dark:bg-zinc-900 relative group overflow-hidden">
-                        {item.previewUrl ? (
-                          <img src={item.previewUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center p-2 text-center text-[10px] text-zinc-500 font-bold">
-                            {item.title}
-                          </div>
-                        )}
-                        <span className="absolute bottom-1.5 left-1.5 text-[9px] font-bold text-white bg-black/60 px-1 py-0.5 rounded backdrop-blur-xs flex items-center gap-1">
-                          <Film className="w-2.5 h-2.5" /> {item.fileFormat?.toUpperCase()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-0.5 mt-2 bg-slate-50 dark:bg-zinc-900/60 min-h-[160px] rounded-lg items-center justify-center text-slate-300 dark:text-zinc-700">
-                    <div className="col-span-3 text-center py-10">
-                      <Film className="w-10 h-10 mx-auto text-slate-300 dark:text-zinc-700 mb-2" strokeWidth={1.5} />
-                      <p className="text-xs font-semibold text-slate-400 dark:text-zinc-500">Belum ada video atau kreasi</p>
-                    </div>
-                  </div>
-                )
-              )}
-
-              {activeTab !== 'grid' && (
-                <div className="py-12 text-center text-xs font-semibold text-slate-400 dark:text-zinc-500">
-                  Tab ini bersifat privat
+              {/* Developer badges */}
+              {(session.isVerified || session.role === 'DEVELOPER') && (
+                <div className="flex flex-col gap-0.5 mb-3">
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                    <Code2 size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> programmer.verified
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                    <Cloud size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> cloud.engineer.verified
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                    <Globe size={12} className="text-zinc-400 dark:text-zinc-500 shrink-0" /> Verified Developer
+                  </span>
                 </div>
               )}
+
+              {/* Stats Row */}
+              <div className="flex items-center space-x-6 my-2 text-left">
+                <div className="cursor-pointer">
+                  <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547</div>
+                  <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Mengikuti</div>
+                </div>
+                <div className="cursor-pointer">
+                  <div className="text-xl font-black text-slate-900 dark:text-white leading-none">67,3 rb</div>
+                  <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Pengikut</div>
+                </div>
+                <div className="cursor-pointer">
+                  <div className="text-xl font-black text-slate-900 dark:text-white leading-none">547,2 rb</div>
+                  <div className="text-xs font-semibold text-slate-400 dark:text-zinc-500 mt-1">Suka</div>
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div className="mt-4 mb-3 text-slate-900 dark:text-zinc-100 font-extrabold text-sm sm:text-base tracking-wide whitespace-pre-line">
+                {session.bio || '魚座'}
+              </div>
+
+              {/* Action Pill Buttons */}
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <Link
+                  href="/"
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+                >
+                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#FE2C55] to-[#FF85A0] flex items-center justify-center text-white shrink-0">
+                    <Wrench size={9} strokeWidth={2.5} />
+                  </span>
+                  <span>Studio FZ</span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCleanMode(!isCleanMode)}
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white cursor-pointer"
+                >
+                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#C084FC] flex items-center justify-center text-white shrink-0">
+                    {isCleanMode ? <EyeOff size={9} strokeWidth={2.5} /> : <Eye size={9} strokeWidth={2.5} />}
+                  </span>
+                  <span>{isCleanMode ? 'Mode Biasa' : 'Mode Bersih'}</span>
+                </button>
+
+                <Link
+                  href="/iqcv2"
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+                >
+                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#10B981] to-[#34D399] flex items-center justify-center text-white shrink-0">
+                    <ImageIcon size={9} strokeWidth={2.5} />
+                  </span>
+                  <span>IQC Media</span>
+                </Link>
+
+                <Link
+                  href="/brat"
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition active:scale-95 shadow-2xs text-xs font-bold text-slate-900 dark:text-white"
+                >
+                  <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#84CC16] to-[#A3E635] flex items-center justify-center text-black shrink-0">
+                    <Sticker size={9} strokeWidth={2.5} />
+                  </span>
+                  <span>Brat Gen</span>
+                </Link>
+              </div>
             </div>
 
           </div>
 
+          {/* CONTENT TABS SECTION (TIKTOK STYLE) */}
+          <div className="mt-7 border-t border-slate-100 dark:border-zinc-800 pt-3 px-5">
+            <div className="flex justify-around items-center text-slate-400 dark:text-zinc-600">
+              <button
+                onClick={() => setActiveTab('grid')}
+                className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                  activeTab === 'grid'
+                    ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                    : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 4h5v5H3V4zm7 0h5v5h-5V4zm7 0h5v5h-5V4zM3 11h5v5H3v-5zm7 0h5v5h-5v-5zm7 0h5v5h-5v-5zM3 18h5v5H3v-5zm7 0h5v5h-5v-5zm7 0h5v5h-5v-5z"/>
+                </svg>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('private')}
+                className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                  activeTab === 'private'
+                    ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                    : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                }`}
+              >
+                <Lock className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => setActiveTab('bookmark')}
+                className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                  activeTab === 'bookmark'
+                    ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                    : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                }`}
+              >
+                <Bookmark className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => setActiveTab('liked')}
+                className={`flex-1 py-2 flex flex-col items-center cursor-pointer transition ${
+                  activeTab === 'liked'
+                    ? 'border-b-2 border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                    : 'hover:text-slate-600 dark:hover:text-zinc-400'
+                }`}
+              >
+                <Heart className="w-5 h-5" />
+              </button>
+            </div>
+
+            {activeTab === 'grid' && (
+              historyItems.length > 0 ? (
+                <div className="grid grid-cols-3 gap-0.5 mt-2 rounded-lg overflow-hidden">
+                  {historyItems.map((item) => (
+                    <div key={item.id} className="aspect-[3/4] bg-slate-100 dark:bg-zinc-900 relative group overflow-hidden">
+                      {item.previewUrl ? (
+                        <img src={item.previewUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center p-2 text-center text-[10px] text-zinc-500 font-bold">
+                          {item.title}
+                        </div>
+                      )}
+                      <span className="absolute bottom-1.5 left-1.5 text-[9px] font-bold text-white bg-black/60 px-1 py-0.5 rounded backdrop-blur-xs flex items-center gap-1">
+                        <Film className="w-2.5 h-2.5" /> {item.fileFormat?.toUpperCase()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-0.5 mt-2 bg-slate-50 dark:bg-zinc-900/60 min-h-[160px] rounded-lg items-center justify-center text-slate-300 dark:text-zinc-700">
+                  <div className="col-span-3 text-center py-10">
+                    <Film className="w-10 h-10 mx-auto text-slate-300 dark:text-zinc-700 mb-2" strokeWidth={1.5} />
+                    <p className="text-xs font-semibold text-slate-400 dark:text-zinc-500">Belum ada video atau kreasi</p>
+                  </div>
+                </div>
+              )
+            )}
+
+            {activeTab !== 'grid' && (
+              <div className="py-12 text-center text-xs font-semibold text-slate-400 dark:text-zinc-500">
+                Tab ini bersifat privat
+              </div>
+            )}
+          </div>
+
         </div>
 
-        {/* BOTTOM NAVIGATION BAR (TIKTOK STYLE) */}
+        {/* BOTTOM NAVIGATION BAR */}
         <nav className="border-t border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 px-4 py-2.5 flex justify-around items-center z-40 shrink-0">
           <Link href="/" className="flex flex-col items-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -807,7 +817,7 @@ export default function AccountPage() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none border border-zinc-200 dark:border-zinc-700 focus:border-indigo-500 transition-colors"
-                    placeholder="Nama tampilan (cth: urxyn)"
+                    placeholder="Nama tampilan (cth: UrxynnPedia)"
                   />
                 </div>
 
